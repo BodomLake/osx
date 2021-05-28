@@ -27,7 +27,7 @@ export default new Router({
       }
     },
     {
-      path: "stars",
+      path: "/stars",
       name: "Stars",
       component: Stars,
       meta: {
