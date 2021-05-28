@@ -27,6 +27,14 @@ export default new Router({
       }
     },
     {
+      path: "stars",
+      name: "Stars",
+      component: Stars,
+      meta: {
+        keepAlive: true // 需要被缓存
+      }
+    },
+    {
       path: "/home",
       name: "Home",
       component: Home,
@@ -60,11 +68,7 @@ export default new Router({
           name: "Parent",
           component: Parent
         },
-        {
-          path: "stars",
-          name: "Stars",
-          component: Stars
-        },
+
 
       ]
     },

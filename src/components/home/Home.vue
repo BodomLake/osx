@@ -8,8 +8,8 @@
       <router-link to="/home/doubleDND">doubleDND</router-link>
       <router-link to="/home/Grid">NineGrid</router-link>
       <router-link to="/home/parent">Parent</router-link> -->
-      <router-link to="/home/stars">Stars</router-link>
-      <router-link to="/home/nestedDragGrid">NestedDragGrid</router-link>
+      <router-link to="/stars">Stars</router-link>
+      <router-link to="/nestedDragGrid">NestedDragGrid</router-link>
     </template>
     <keep-alive>
       <router-view />
