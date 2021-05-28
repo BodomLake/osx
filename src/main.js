@@ -10,7 +10,6 @@ Vue.component('draggable', draggable)
 
 import VueDND from 'awe-dnd';
 Vue.use(VueDND)
-
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
