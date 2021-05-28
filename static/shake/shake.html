@@ -1,0 +1,82 @@
+<!doctype html>
+<html charset="utf-8">
+
+<head>
+  <link rel="dns-prefetch" href="http://i.tq121.com.cn">
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>重点在实现抖动</title>
+  <meta http-equiv="Content-Language" content="zh-cn">
+
+  <meta name="keywords" content="关键词,关键词,..." />
+  <meta name="description" content="关键词,关键词,..." />
+  <style type="text/css">
+    /* 实现图片旋转，当鼠标移动上去就停止 */
+
+    /* 实现的是过渡 */
+    img1:hover {
+      width: 1000px;
+      /* 开始之前等待两秒，实现过渡 */
+      transition: width 10s linear 0s;
+      /* Firefox 4 */
+      -moz-transition: width 10s linear 0s;
+      /* Safari and Chrome */
+      -webkit-transition: width 10s linear 0s;
+      /* Opera */
+      -o-transition: width 10s linear 0s;
+
+      /* 实现角度变化*/
+      transform: rotate(5deg);
+      -webkit-transform: rotate(5deg);
+      /* Safari 和 Chrome */
+      -moz-transform: rotate(5deg);
+    }
+
+    /* 实现抖动 */
+    @keyframes myfirst {
+      0% {
+        transform: scale(1) rotate(0);
+        transform: scale(1) rotate(0);
+      }
+
+      25% {
+        transform: scale(1) rotate(-1deg);
+        transform: scale(1) rotate(-1deg);
+      }
+
+      50% {
+        transform: scale(1) rotate(1deg);
+        transform: scale(1) rotate(1deg);
+      }
+
+      75% {
+        transform: scale(1) rotate(-1deg);
+        transform: scale(1) rotate(-1deg);
+      }
+
+      100% {
+        transform: scale(1) rotate(0);
+        transform: scale(1) rotate(0);
+      }
+    }
+
+    /* 实现捆绑 myfirst*/
+    img {
+      -webkit-animation: myfirst 3s both infinite;
+      -moz-animation: myfirst 3s both infinite;
+      -ms-animation: myfirst 3s both infinite;
+      animation: myfirst 0.5s both infinite;
+    }
+
+  </style>
+</head>
+
+<body>
+  <img width="150" height="150" src="../Wallpaper.jpg" />
+
+
+
+
+</body>
+
+</html>

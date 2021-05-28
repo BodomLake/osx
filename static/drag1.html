@@ -1,0 +1,173 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <style type="text/css">
+    #appBox {
+      height: 100%;
+      width: 100%;
+    }
+
+    #box1,
+    #box2,
+    #box3,
+    #box4 {
+      width: 200px;
+      height: 300px;
+      border-radius: 10px;
+      border: 1px solid #333;
+      margin-left: 20px;
+      padding: 20px;
+      display: inline-block;
+    }
+
+    #item1,
+    #item2,
+    #item3,
+    #item4,
+    #item5,
+    #item6 {
+      width: 100%;
+      margin: 0 auto;
+      margin-top: 10px;
+      border-radius: 10px;
+      height: 50px;
+      border: 1px solid #333;
+      text-align: center;
+      line-height: 50px;
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <div id="appBox" class="outerside" onmousedown="mousedown(event)">
+    <div id="box1" ondragover="allowDropIn(event)" ondrop="dropApp(event)" draggable="true" class="outer"
+      ondragstart="dragStart(event)">
+      <div id="item1" class="item" draggable="true" ondragstart="drag(event)">item1</div>
+      <div id="item2" class="item" draggable="true" ondragstart="drag(event)">item2</div>
+      <div id="item3" class="item" draggable="true" ondragstart="drag(event)">item3</div>
+    </div>
+    <div id="box2" ondragover="allowDropIn(event)" ondrop="dropApp(event)" draggable="true" class="outer"
+      ondragstart="dragStart(event)">
+      <div id="item4" class="item" draggable="true" ondragstart="drag(event)">item4</div>
+    </div>
+    <div id="box3" ondragover="allowDropIn(event)" ondrop="dropApp(event)" draggable="true" class="outer"
+      ondragstart="dragStart(event)">
+      <div id="item5" class="item" draggable="true" ondragstart="drag($event)">item5</div>
+    </div>
+    <div id="box4" ondragover="allowDropIn(event)" ondrop="dropApp(event)" draggable="true" class="outer"
+      ondragstart="dragStart(event)">
+      <div id="item6" class="item" draggable="true" ondragstart="drag(event)">item6</div>
+    </div>
+  </div>
+
+</body>
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.js"></script>
+<script type="text/javascript">
+  // 是内部拖动？
+  let innerDrag = false;
+  // 是外部拖动？
+  let outerDrag = false;
+
+  // 被拖动的DOM
+  let draggedDOM = {};
+  // 被替换的DOM
+  let replacedDOM = {};
+  // 被挤走的DOM
+  let relatedDOM = {};
+
+  function allowDropIn(ev) {
+    ev.preventDefault();
+    // console.log('原生事件', ev)
+  }
+
+  function drag(ev) {
+    ev.dataTransfer.setData("Text", ev.target.id);
+  }
+
+  // 开始拖动
+  function dragStart(ev) {
+    console.log('开始拖动', ev)
+    console.log(ev.target)
+  }
+
+  // 落入某一个AppBox中
+  function dropApp(ev) {
+    let pattern1 = /^box/
+    console.log('dropApp 移动到AppBox中', ev.target)
+    console.log(innerDrag ? '===内部驱动===' : '===外部驱动===')
+    replacedDOM = ev.target
+    var data = ev.dataTransfer.getData("Text");
+    if (pattern1.test(ev.target.id)) {
+      if (innerDrag) {
+        ev.target.appendChild(document.getElementById(data));
+      } else {
+        console.log("被拖动", draggedDOM)
+        console.log("被替换", replacedDOM, replacedDOM.nodeType)
+        // draggedDOM replacedDOM 互换
+        let appBox = document.getElementById("appBox")
+
+        console.log(appBox.children[0])
+        let appBoxList = appBox.children
+        let i1 = getArrayIndex(appBoxList, draggedDOM)
+        let i2 = getArrayIndex(appBoxList, replacedDOM)
+        console.log('被拖动的index', i1);
+        console.log('被替换的index', i2);
+        // appBox.replaceChild(draggedDOM, appBoxList[i2])
+        if (i1 < i2) {
+          $(replacedDOM).after($(draggedDOM))
+        } else {
+          $(replacedDOM).before($(draggedDOM))
+        }
+
+        console.log(appBox.children)
+      }
+      innerDrag = false;
+      outerDrag = false;
+      ev.preventDefault();
+    }
+  }
+
+  // 鼠标按键按下
+  function mousedown(event) {
+    console.log('鼠标下按', event.target)
+    draggedDOM = event.target;
+    console.log('鼠标按下的DOM:', draggedDOM);
+    if (draggedDOM.getAttribute('class')) {
+      let classes = draggedDOM.getAttribute('class').split(' ');
+      console.log('被点击的DOM的Class属性:', classes);
+      if (classes.includes('item')) {
+        innerDrag = true;
+      }
+      if (classes.includes('outer')) {
+        outerDrag = true;
+      }
+      console.log(innerDrag ? '===内部驱动===' : '===外部驱动===')
+      console.log(!outerDrag ? '===内部驱动===' : '===外部驱动===')
+    }
+  }
+
+  function getArrayIndex(arr, obj) {
+    var i = arr.length;
+    while (i--) {
+      if (arr[i] === obj) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  // 交换元素
+  function swapElement(arr, i1, i2) {
+    let temp = arr[i1]
+    Object.assign(arr[i1], arr[i2])
+    Object.assign(arr[i2], temp)
+    console.log(arr)
+  }
+
+</script>
+
+</html>

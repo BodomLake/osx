@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+  <!-- 外部容器  -->
+  <div class="container right-panel-active">
+    <!-- 注册框 -->
+    <div class="container-form container-signup">
+      <form action="#" class="form" id="form1">
+        <h2 class="form-title">注册1</h2>
+        <input type="text" placeholder="user" class="input">
+        <input type="email" placeholder="email" class="input">
+        <input type="password" placeholder="password" class="input">
+        <button class="btn">点击注册</button>
+      </form>
+    </div>
+    <!-- 登录框 -->
+    <div class="container-form container-signin">
+      <form action="#" class="form" id="form2">
+        <h2 class="form-title">登录</h2>
+        <input type="email" placeholder="email" class="input" />
+        <input type="password" placeholder="password" class="input">
+        <a href="#" class="link">忘记密码？</a>
+        <button class="btn">登录</button>
+      </form>
+    </div>
+    <!-- 覆盖框 -->
+    <div class="container-overlay">
+      <div class="overlay">
+        <div class="overlay-panel overlay-left">
+          <button class="btn" id="signin">已有账号，直接登录</button>
+        </div>
+        <div class="overlay-panel overlay-right">
+          <button class="btn" id="signup">没有账号，点击注册</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+<script src="./script.js"></script>
+
+</html>
