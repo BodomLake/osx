@@ -1,31 +1,32 @@
 <template>
   <div class="ndg">
-    <!-- 上下左右固定的盒子，拖入就会发生桌面位移 -->
-    <div class="ndg-shift-up ndg-shift" :draggable="true" @mouseenter="onMouseEnter($event,'top')" @mouseout="onMouseOut($event,'top')"
-      @dragenter="dragEnter($event,'top')"></div>
-    <div class="ndg-shift-left ndg-shift" :draggable="true" @mouseenter="onMouseEnter($event,'left')" @mouseout="onMouseOut($event,'left')"
-      @dragenter="dragEnter($event,'left')"></div>
-    <div class="ndg-shift-right ndg-shift" :draggable="true" @mouseenter="onMouseEnter($event,'right')" @mouseout="onMouseOut($event,'right')"
-      @dragenter="dragEnter($event,'right')"></div>
-    <div class="ndg-shift-down ndg-shift" :draggable="true" @mouseenter="onMouseEnter($event,'bottom')" @mouseout="onMouseOut($event,'bottom')"
-      @dragenter="dragEnter($event,'down')"></div>
+    <!-- 上下左右固定的盒子，拖入就会发生桌面位移，isDragging表示主界面的盒子拖动了，这些四周的固定盒子才允许被拖入 -->
+    <div class="ndg-shift-top ndg-shift" :style="{'z-index':isDragging?'3':'0'}" :draggable="isDragging" @mouseenter="onMouseEnter($event,'top')"
+      @mouseout="onMouseOut($event,'top')" @dragenter="intentToDragOver($event,'top')" @dragleave="intentDiscardDrag($event,'top')"></div>
+    <div class="ndg-shift-left ndg-shift" :style="{'z-index':isDragging?'3':'0'}" :draggable="isDragging" @mouseenter="onMouseEnter($event,'left')"
+      @mouseout="onMouseOut($event,'left')" @dragenter="intentToDragOver($event,'left')" @dragleave="intentDiscardDrag($event,'right')"></div>
+    <div class="ndg-shift-right ndg-shift" :style="{'z-index':isDragging?'3':'0'}" :draggable="isDragging" @mouseenter="onMouseEnter($event,'right')"
+      @mouseout="onMouseOut($event,'right')" @dragenter="intentToDragOver($event,'right')" @dragleave="intentDiscardDrag($event,'right')"></div>
+    <div class="ndg-shift-bottom ndg-shift" :style="{'z-index':isDragging?'3':'0'}" :draggable="isDragging"
+      @mouseenter="onMouseEnter($event,'bottom')" @mouseout="onMouseOut($event,'bottom')" @dragenter="intentToDragOver($event,'bottom')"
+      @dragleave="intentDiscardDrag($event,'bottom')"></div>
 
     <div class="ndg-background">
       <div class="ndg-desktop">
         <!-- 多个桌面 -->
-        <template v-for="(desk, k) in desks">
-          <div class="ndg-container" :key="k" :id="desk.id" @mousedown="onMouseDown">
+        <template v-for="(desk, i) in desks">
+          <div class="ndg-container" :key="i" :id="desk.id" @mousedown="onMouseDown($event, i)">
             <!-- 多个外部盒子 -->
-            <template v-for="(outerItem, i) in desk.boxes">
-              <div class="ndg-outer" :key="i" :id="outerItem.id" :name="outerItem.name" @dragover="outerDragover" @drag="outerOnDrag"
-                @drop="outerOnDrop" draggable="true" @mousedown="outerMouseDown" @dragstart="outerDragStart" @click="showModal(i)"
+            <template v-for="(outerItem, j) in desk.boxes">
+              <div class="ndg-outer" :key="j" :id="outerItem.id" :name="outerItem.name" @dragover="outerDragover" @drag="outerOnDrag"
+                @drop="outerOnDrop" draggable="true" @dragstart="outerDragStart($event)" @click="showModal(i)" @mousedown="onMouseDown($event, i, j)"
                 :class="{'shakeAnime':shakeAnime}">
                 <!-- 多个App -->
                 <div class="ndg-content-border">
                   <!-- 属于文件夹，九宫格模式 -->
-                  <template v-for="(innerItem, j) in outerItem.innerBoxes">
-                    <div class="ndg-inner" :key="j" :name="innerItem.name" @dragover="innerDragover" @drag="innerOnDrag" @drop="innerOnDrop"
-                      :id="innerItem.id" :draggable="enableDrag" @mousedown="innerMouseDown" @dragstart="innerDragStart">
+                  <template v-for="(innerItem, k) in outerItem.innerBoxes">
+                    <div class="ndg-inner" :key="k" :name="innerItem.name" @dragover="innerDragover" @drag="innerOnDrag" @drop="innerOnDrop"
+                      :id="innerItem.id" :draggable="enableDrag" @dragstart="innerDragStart($event)" @mousedown="onMouseDown($event, i, j, k )">
                       <my-icon :className="innerItem.name" v-if="innerItem.name!==''" :singleBox="outerItem.innerBoxes.length == 1"></my-icon>
                     </div>
                   </template>
@@ -48,11 +49,10 @@
   // 光晕效果
   // box-shadow: 1px 1px 25px 10px rgb(146 148 248 / 40%);
   // ondragstart -> ondrag -> ondragenter -> ondragover -> ondragleave -> ondragend -> ondrop
-  const prefix = "ndg-";
-  const container = prefix + "container";
-  const outer = prefix + "outer";
-  const inner = prefix + "inner";
-
+  const PREFIX = "ndg-";
+  const CONTAINER = PREFIX + "container";
+  const OUTER = PREFIX + "outer";
+  const INNER = PREFIX + "inner";
   import MyIcon from "./MyIcon.vue";
   import initMixin from "./initMixin.js";
   export default {
@@ -68,6 +68,11 @@
     props: {},
     data() {
       return {
+        index: {
+          deskIndex: 0,
+          boxIndex: 0,
+          appIndex: 0
+        },
         isDragging: false,
         draggingDom: {},
         replacedDom: {},
@@ -77,9 +82,6 @@
       };
     },
     methods: {
-      dragEnter($event) {
-        console.log("拖入，准备切换桌面", $event.target);
-      },
       // 定位可视界面中，每个（内外）box的x,y坐标
       innerOnDrag($event) {
         // console.log("内部", $event);
@@ -87,7 +89,7 @@
       outerOnDrag($event) {
         // console.log("外部", $event);
       },
-      innerDragStart($event) {
+      innerDragStart($event, appIndex) {
         $event.stopPropagation();
         // 确定拖拽的是哪个dom
         this.isDragging = true;
@@ -95,7 +97,7 @@
         let xpath = $event.path;
         this.locateDraggingDOM(xpath, this.draggingDom);
       },
-      outerDragStart($event) {
+      outerDragStart($event, boxIndex) {
         this.isDragging = true;
         console.log("%c开始拖拽", "color:blue");
         let xpath = $event.path;
@@ -105,7 +107,7 @@
         // 不要让内部拖拽事件冒泡成为外部拖拽事件
         $event.stopPropagation();
         // 打印出事件详情
-        console.log("%c内部drop\n", "color:red", $event);
+        console.log("%c内部drop in\n", "color:red", $event);
         // 组内切换位置，位置互调
         let xpath = $event.path;
         this.locateDraggingDOM(xpath, this.replacedDom);
@@ -113,7 +115,7 @@
       },
       outerOnDrop($event) {
         // 打印出事件详情
-        console.log("%c外部drop\n", "color:blue", $event);
+        console.log("%c外部drop in \n", "color:blue", $event);
         // 组见切换位置，位置互调
         let xpath = $event.path;
         this.locateDraggingDOM(xpath, this.replacedDom);
@@ -129,16 +131,17 @@
         // $event.stopPropagation();
         $event.preventDefault();
       },
+      // 定位正在被拖拽的盒子是哪一个？
       locateDraggingDOM(xpath, dom) {
         for (let i = 0; i < xpath.length; i++) {
           // console.log(xpath[i].className);
           if (xpath[i].className && xpath[i].tagName == "DIV") {
-            if (xpath[i].className.indexOf("ndg-inner") != -1) {
+            if (xpath[i].className.indexOf(INNER) != -1) {
               dom = xpath[i];
               console.log("inner确定被拖拽的DOM", dom);
               break;
             }
-            if (xpath[i].className.indexOf("ndg-outer") != -1) {
+            if (xpath[i].className.indexOf(OUTER) != -1) {
               dom = xpath[i];
               console.log("outer确定被拖拽的DOM", dom);
               break;
@@ -149,11 +152,18 @@
       showModal(index) {},
       // TODO
       findIndexById(arr, id) {},
-      outerMouseDown() {},
-      innerMouseDown() {},
       // 鼠标按下，确定dom的坐标；
-      onMouseDown($event) {
-        // console.log("鼠标左键按下", $event);
+      onMouseDown($event, deskIndex, boxIndex, appIndex) {
+        // 确定当前桌面的下标
+        // return;
+        let target = $event.target;
+        $event.stopPropagation();
+        console.log("鼠标左键按下", target, deskIndex, boxIndex, appIndex);
+        // 因为冒泡事件被中断，所以一步到位
+        this.index.deskIndex = this.isNumber(deskIndex) ? deskIndex : 0;
+        this.index.boxIndex = this.isNumber(boxIndex) ? boxIndex : 0;
+        this.index.appIndex = this.isNumber(appIndex) ? appIndex : 0;
+
         // console.log({
         //   path: $event.path,
         //   target: $event.target,
@@ -169,11 +179,30 @@
       // 上下方向：方便用户上下滚动 scrollToTop scrollToBottom
       onMouseEnter($event, orientation) {
         // console.log($event,orientation);
-        let shiftDOM = $event.target;
-        shiftDOM.style.backgroundImage = `linear-gradient(to ${orientation}, rgb(146 148 248 / 10%), rgb(255 255 255 / 50%))`;
+        // let shiftDOM = $event.target;
+        // shiftDOM.style.backgroundImage = `linear-gradient(to ${orientation}, rgb(146 148 248 / 10%), rgb(255 255 255 / 50%))`;
       },
       onMouseOut($event, orientation) {
         // console.log($event,orientation);
+        // let shiftDOM = $event.target;
+        // shiftDOM.style.backgroundImage = "";
+      },
+      intentToDragOver($event, orientation) {
+        console.log("拖入，准备切换桌面", $event.target);
+        // 判断 orientation (left right up down)决定主界面平移方向  scrollTo()来垂直拉动 水平移动
+
+        // 垂直移动 clientHeight减去DIV.ndg-background的的scrollHeight是垂直活动的空间，增减scrollTop实现偏移
+
+        // 水平移动 .ndg-background的DIV的scrollWidth属性的 1/n 来计算每次平移的偏移量，增减scrollLeft实现偏移
+        // 或者 clientWidth减去DIV.ndg-background的的scrollWidth作为水平活动的空间，增减scrollLeft实现偏移
+        // 放弃 translateX() 和 translateY()         // 还要加上模糊色效果；
+
+        let shiftDOM = $event.target;
+        shiftDOM.style.backgroundImage = `linear-gradient(to ${orientation}, rgb(146 148 248 / 10%), rgb(255 255 255 / 50%))`;
+      },
+      intentDiscardDrag($event, orientation) {
+        console.log("撤出，放弃切换桌面", $event.target);
+        // 放弃切换桌面，把背景模糊颜色消除
         let shiftDOM = $event.target;
         shiftDOM.style.backgroundImage = "";
       }
@@ -241,7 +270,7 @@
   align-content: stretch;
   width: 100%;
   height: 60rem;
-  padding: 0rem 16rem;
+  padding: 3rem 16rem;
   /* border: 1px solid green; */
 }
 /* 十六宫格四等分 4*4 */
@@ -332,17 +361,19 @@
 }
 .ndg-shift {
   /* border: 1px solid red; */
-  z-index: 3;
+  /* 没有进入拖拽状态的时候放在desktop的下面 */
+  /* 进入拖拽状态的时候增加z-index到3 */
+  z-index: 0;
   /* background-color: aqua; */
   position: absolute;
 }
-.ndg-shift-up {
+.ndg-shift-top {
   position: fixed;
   top: 0%;
   min-height: 3rem;
   width: 100%;
 }
-.ndg-shift-down {
+.ndg-shift-bottom {
   position: fixed;
   bottom: 0%;
   min-height: 3rem;

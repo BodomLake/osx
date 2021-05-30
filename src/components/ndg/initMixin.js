@@ -34,7 +34,7 @@ export default {
 
     for (let i = 0; i < deskNum; i++) {
       // 新建一个桌面
-      let desk = new Desk(uuidv4(), '第' + (i+1) + '个桌面', i + 1);
+      let desk = new Desk(uuidv4(), '第' + (i + 1) + '个桌面', i + 1);
       // 遍历 该个桌面下的 多个盒子
       for (let j = 0; j < folderNum; j++) {
         // 新建一个盒子
@@ -55,8 +55,6 @@ export default {
       // desk[i].boxes.push(new Box(uuidv4(), '', {}));
     }
 
-
-
     desks[0].boxes[0].innerBoxes[0].name = "edge";
     desks[0].boxes[0].innerBoxes[1].name = "xunlei_nomarl";
     desks[0].boxes[0].innerBoxes[2].name = "Safari";
@@ -76,7 +74,10 @@ export default {
   },
   data() {
     return {
-      desks
+      desks,
+      deskWidth: (deskNum * 100) + '%',
+      folderNum: folderNum,
+      appNum: appNum,
     }
   },
   methods: {
@@ -96,5 +97,14 @@ export default {
         }
       );
     },
+    isNumber(val) {
+      if (val == undefined || val == null) {
+        return false;
+      }
+      if (val === 0 || val ==0) {
+        return true;
+      }
+      return !isNaN(val);
+    }
   },
 }
