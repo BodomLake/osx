@@ -1,5 +1,5 @@
 let desks = [];
-let deskNum = 3;
+let deskNum = 4;
 let folderNum = 16;
 let appNum = 9;
 // top:0,bottom:0,left:0,right:0,x:0,y:0,width:0,height:0
@@ -69,8 +69,10 @@ export default {
 
     desks[0].boxes[2].innerBoxes[0].name = "pdd";
     desks[0].boxes[2].innerBoxes[1].name = "51job";
-    desks[1].boxes[2].name = "jingdong";
-    desks[1].boxes[3].name = "taobao";
+
+
+    desks[1].boxes[0].innerBoxes[0].name = "jingdong";
+    desks[1].boxes[0].innerBoxes[1].name = "taobao";
   },
   data() {
     return {

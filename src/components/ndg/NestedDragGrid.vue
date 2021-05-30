@@ -12,7 +12,7 @@
       @dragleave="intentDiscardDrag($event,'bottom')"></div>
 
     <div class="ndg-background">
-      <div class="ndg-desktop">
+      <div class="ndg-desktop" :style="{'width': deskWidth}">
         <!-- 多个桌面 -->
         <template v-for="(desk, i) in desks">
           <div class="ndg-container" :key="i" :id="desk.id" @mousedown="onMouseDown($event, i)">
@@ -254,7 +254,7 @@
   /* flex-basis: 45rem; */
   /* flex-direction: row; */
   /* 有n个桌面就是 n个 100% */
-  width: 300%;
+  /* width: 300%; */
   /* 偏移量的改变就是移动桌面 每次移动X = 100/n */
   transform: translateX(0%);
 }

@@ -51,7 +51,7 @@
   display: inline;
   /* margin: 0.05rem; */
   position: absolute;
-  top: 50%;
+  top: 48%;
   left: 50%;
   transform: translate(-50%, -50%);
   -webkit-transform: translate(-50%, -50%);
