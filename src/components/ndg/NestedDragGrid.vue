@@ -39,20 +39,21 @@
                 </div>
                 <!-- 文件夹文字说明 -->
                 <div class="ndg-desc" style="animation:none">文件集合</div> <!-- {{outerItem.name}}-->
-                <!-- 文件夹的模态框，要在确定了的情况下加以渲染 -->
-                <div class="ndg-modal" :class="{'ndg-modal-show':modal.show}" v-if="modal.show && modal.index.desk == i && modal.index.box == j">
-                  <div class="ngd-modal-header">
-                    <div class="ndg-modal-desc" style="animation:none">文件集合</div>
-                  </div>
-                  <div class="ngd-modal-content">
-                  </div>
-                  <div class="ngd-modal-footer">
-                  </div>
-                </div>
+
               </div>
             </template>
           </div>
         </template>
+      </div>
+    </div>
+    <!-- 文件夹的模态框，要在确定了的情况下加以渲染 -->
+    <div class="ndg-modal" :class="{'ndg-modal-show':modal.show}" v-if="modal.show" ref="ngd-modal">
+      <div class="ngd-modal-header">
+        <div class="ndg-modal-desc" style="animation:none">文件集合</div>
+      </div>
+      <div class="ngd-modal-content">
+      </div>
+      <div class="ngd-modal-footer">
       </div>
     </div>
 
@@ -567,23 +568,24 @@
   flex-direction: column;
   align-content: center;
   justify-items: auto;
-  z-index: -1;
-  opacity: 0;
+  /* 以下css属性都要被动态class重置 */
   position: absolute;
   height: 100%;
   width: 100%;
+  z-index: -1;
+  opacity: 0;
 }
 .ndg-modal-show {
   animation: showModal 0.5s linear fill;
   z-index: 3;
   opacity: 1;
   background-color: rgb(146 148 248 / 10%);
-  top: 0%;
-  left: 0%;
+  top: 50%;
+  left: 50%;
   width: 30%;
   height: 65%;
   position: fixed;
-  transform: translateX(50%) translateY(50%);
+  transform: translateX(-50%) translateY(-50%);
 }
 .ngd-modal-header {
   flex-grow: 2;

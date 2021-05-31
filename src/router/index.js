@@ -1,9 +1,11 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import DraggableDND from "@/components/Draggable-DND";
-import FolderList from "@/components/FolderList";
-import DND from "@/components/DND";
-import DoubleDND from "@/components/doubleDND";
+
+import DraggableDND from "@/components/experience/Draggable-DND";
+import FolderList from "@/components/experience/FolderList";
+import DND from "@/components/experience/DND";
+import DoubleDND from "@/components/experience/doubleDND";
+
 import Grid from "@/components/grid/Grid";
 import Home from "@/components/home/Home";
 import Parent from "@/components/model/Parent";
@@ -39,27 +41,27 @@ export default new Router({
       name: "Home",
       component: Home,
       children: [{
-          path: "draggableDND",
+          path: "/draggableDND",
           name: "draggableDND",
           component: DraggableDND
         },
         {
-          path: "folderList",
+          path: "/folderList",
           name: "FolderList",
           component: FolderList
         },
         {
-          path: "dnd",
+          path: "/dnd",
           name: "DND",
           component: DND
         },
         {
-          path: "doubleDND",
+          path: "/doubleDND",
           name: "DoubleDND",
           component: DoubleDND
         },
         {
-          path: "grid",
+          path: "/grid",
           name: "Grid",
           component: Grid
         },
