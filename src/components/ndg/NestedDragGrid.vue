@@ -60,8 +60,6 @@
 </template>
 
 <script>
-  // 光晕效果
-  // box-shadow: 1px 1px 25px 10px rgb(146 148 248 / 40%);
   // ondragstart -> ondrag -> ondragenter -> ondragover -> ondragleave -> ondragend -> ondrop
   const PREFIX = "ndg-";
   const CONTAINER = PREFIX + "container";
