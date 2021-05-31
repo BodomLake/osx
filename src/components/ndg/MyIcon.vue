@@ -66,7 +66,7 @@
   overflow: hidden;
 }
 .singleBox {
-  width: 8em;
-  height: 8rem;
+  width: 10em;
+  height: 10rem;
 }
 </style>

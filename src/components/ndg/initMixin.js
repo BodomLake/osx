@@ -1,6 +1,6 @@
 let desks = [];
 let deskNum = 4;
-let folderNum = 16;
+let folderNum = 13;
 let appNum = 9;
 // top:0,bottom:0,left:0,right:0,x:0,y:0,width:0,height:0
 import {
@@ -42,7 +42,7 @@ export default {
         // 再往该盒子内填充App
         for (let k = 0; k < appNum; k++) {
           // 新建一个app，作为填充物
-          if (j == 1) break;
+          if (j == 1 || j == 3 || j == 4  ) continue;
           let app = new App(uuidv4(), '');
           box.innerBoxes.push(app);
           if (k == 2 && j == 2) break;
@@ -65,14 +65,18 @@ export default {
     desks[0].boxes[0].innerBoxes[7].name = "app-store";
     desks[0].boxes[0].innerBoxes[8].name = "we-chat";
 
+    //
     desks[0].boxes[1].name = "QQ";
+    desks[0].boxes[3].name = 'chrome';
+    desks[0].boxes[4].name = 'amap'
 
     desks[0].boxes[2].innerBoxes[0].name = "pdd";
     desks[0].boxes[2].innerBoxes[1].name = "51job";
 
 
     desks[1].boxes[0].innerBoxes[0].name = "jingdong";
-    desks[1].boxes[0].innerBoxes[1].name = "taobao";
+    desks[1].boxes[0].innerBoxes[1].name = "xueqiu";
+    desks[1].boxes[0].innerBoxes[2].name = "git1";
   },
   data() {
     return {
@@ -103,7 +107,7 @@ export default {
       if (val == undefined || val == null) {
         return false;
       }
-      if (val === 0 || val ==0) {
+      if (val === 0 || val == 0) {
         return true;
       }
       return !isNaN(val);
