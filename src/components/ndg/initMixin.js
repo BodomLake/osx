@@ -1,6 +1,6 @@
 let desks = [];
 let deskNum = 4;
-let folderNum = 13;
+let folderNum = 15;
 let appNum = 10;
 // top:0,bottom:0,left:0,right:0,x:0,y:0,width:0,height:0
 import {
@@ -20,6 +20,8 @@ class Box {
     this.name = name;
     this.id = id;
     this.innerBoxes = [];
+    // 小窗口/模态窗口 显示的组号 默认第一组
+    this.displayNo = 0;
     this.DOMRect = DOMRect;
   }
 }

@@ -51,7 +51,7 @@
   display: inline;
   /* margin: 0.05rem; */
   position: absolute;
-  top: 48%;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   -webkit-transform: translate(-50%, -50%);
@@ -60,13 +60,13 @@
   z-index: 2;
 }
 .icon {
-  width: 3em;
-  height: 3rem;
+  width: 2em;
+  height: 2rem;
   fill: currentColor;
   overflow: hidden;
 }
 .singleBox {
-  width: 10em;
-  height: 10rem;
+  width: 8em;
+  height: 8rem;
 }
 </style>
