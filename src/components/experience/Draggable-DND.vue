@@ -10,7 +10,7 @@
 </template>
 <script>
   // import draggable from "vuedraggable";
-  import Folder2 from "@/components/Folder2";
+  import Folder2 from "./Folder2";
   export default {
     name: "draggableDND",
     components: {

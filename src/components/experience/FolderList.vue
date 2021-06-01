@@ -16,7 +16,7 @@
 <script>
   // import draggable from "vuedraggable";
   // import Folder from "./Folder";
-  const Folder = () => import("@/components/Folder")
+  const Folder = () => import("./Folder")
   export default {
     name: "folderList",
     components: {

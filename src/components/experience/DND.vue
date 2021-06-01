@@ -11,7 +11,7 @@
 </template>
 
 <script>
-  import Folder from "@/components/Folder";
+  import Folder from "./Folder";
 
   export default {
     name: "DND",
