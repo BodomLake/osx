@@ -85,9 +85,15 @@ export default {
   data() {
     return {
       desks,
-      deskWidth: (deskNum * 100) + '%',
+      // deskWidth: (deskNum * 100) + '%',
       folderNum: folderNum,
       appNum: appNum,
+    }
+  },
+  computed: {
+    // 计算桌面总宽度
+    deskWidth() {
+      return (deskNum * 100) + '%'
     }
   },
   methods: {

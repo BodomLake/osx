@@ -152,11 +152,15 @@
           },
           draggable: false
         },
-        // 拖拽模式下的动画开关
-        shakeAnimeFlag: false,
         // 启用拖拽？
         enableDrag: true
       };
+    },
+    computed: {
+      // 拖拽模式下的动画开关
+      shakeAnimeFlag() {
+        return !this.enableDrag;
+      }
     },
     methods: {
       appBoxnDrag($event) {
@@ -186,8 +190,8 @@
         if (dragShowElement) {
           $event.dataTransfer.setDragImage(
             dragShowElement,
-            dragShowElement.clientWidth / 2,
-            dragShowElement.clientHeight / 2
+            dragShowElement.clientWidth / 2 + 32,
+            dragShowElement.clientHeight / 2 + 32
           );
         }
       },
@@ -328,6 +332,7 @@
         let colorStart = "rgb(146 148 248 / 10%)";
         let colorEnd = "rgb(255 255 255 / 50%)";
         shiftDOM.style.backgroundImage = `linear-gradient(to ${orientation}, ${colorStart}, ${colorEnd})`;
+        // 切换桌面
         let transform = () => {
           document.querySelector(
             "div.ndg-background"
