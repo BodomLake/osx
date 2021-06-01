@@ -1,9 +1,10 @@
 let desks = [];
 let deskNum = 4;
 let folderNum = 13;
-let appNum = 9;
+let appNum = 10;
 // top:0,bottom:0,left:0,right:0,x:0,y:0,width:0,height:0
 import {
+  stringify,
   v4 as uuidv4
 } from "uuid";
 class Desk {
@@ -42,7 +43,7 @@ export default {
         // 再往该盒子内填充App
         for (let k = 0; k < appNum; k++) {
           // 新建一个app，作为填充物
-          if (j == 1 || j == 3 || j == 4  ) continue;
+          if (j == 1 || j == 3 || j == 4) continue;
           let app = new App(uuidv4(), '');
           box.innerBoxes.push(app);
           if (k == 2 && j == 2) break;
@@ -64,6 +65,7 @@ export default {
     desks[0].boxes[0].innerBoxes[6].name = "taobao";
     desks[0].boxes[0].innerBoxes[7].name = "app-store";
     desks[0].boxes[0].innerBoxes[8].name = "we-chat";
+    desks[0].boxes[0].innerBoxes[9].name = "meituan";
 
     //
     desks[0].boxes[1].name = "QQ";
@@ -88,7 +90,7 @@ export default {
   },
   methods: {
     locateCoordinate() {
-      Array.from(document.querySelector("." + container).children).forEach(
+      Array.from(document.querySelector("." + CONTAINER).children).forEach(
         (outer, oi) => {
           if (outer.className.indexOf("ndg-outer") != -1) {
             this.box[oi].DOMRect = outer.getBoundingClientRect();
@@ -103,14 +105,21 @@ export default {
         }
       );
     },
-    isNumber(val) {
-      if (val == undefined || val == null) {
-        return false;
+    calcWidth(arr) {
+      if (arr && arr.length > 0) {
+        return 100 * arr.length + '%'
+      } else {
+        return '100%';
       }
-      if (val === 0 || val == 0) {
-        return true;
+    },
+    splitArr(arr, num) {
+      //arr是你要分割的数组，num是以几个为一组
+      let newArr = []; //首先创建一个新的空数组。用来存放分割好的数组
+      for (let i = 0; i < arr.length;) {
+        //注意：这里与for循环不太一样的是，没有i++
+        newArr.push(arr.slice(i, (i += num)));
       }
-      return !isNaN(val);
+      return newArr;
     }
   },
 }
