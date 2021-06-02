@@ -422,8 +422,8 @@
   flex-direction: row;
   justify-content: flex-start;
   align-content: stretch;
-  width: 45rem;
-  height: 45rem;
+  width: 100vmin;
+  height: 100vmin;
   /* padding: 3rem 16rem; */
   /* border: 1px solid green; */
 }
@@ -449,7 +449,7 @@
   /* box-shadow: 0 5px 10px rgb(0 0 0 / 50%) inset; */
   padding: 0.4rem;
   position: relative;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 .ndg-content-border {
   /* border: 1px solid white; */
@@ -458,7 +458,7 @@
   height: 100%;
   border-radius: 5%;
   box-shadow: 1px 1px 5px 1px rgb(0 0 0 / 60%);
-  overflow-x: hidden;
+  overflow: hidden;
 }
 .ndg-content-border::after {
   content: "";

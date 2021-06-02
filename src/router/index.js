@@ -6,10 +6,10 @@ import FolderList from "@/components/experience/FolderList";
 import DND from "@/components/experience/DND";
 import DoubleDND from "@/components/experience/doubleDND";
 
-import Grid from "@/components/grid/Grid";
+import Grid from "@/components/experience/Grid";
 import Home from "@/components/home/Home";
-import Parent from "@/components/model/Parent";
-import Stars from "@/components/Stars";
+import Parent from "@/components/experience/model/Parent";
+import Stars from "@/components/experience/Stars";
 // Nested Drag Grid
 import NestedDragGrid from "@/components/ndg/NestedDragGrid"
 
