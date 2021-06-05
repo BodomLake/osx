@@ -34,11 +34,14 @@
 
 <style lang="css" scoped>
 .body {
-  position: absolute;
-  width: 100%;
-  height: 100%;
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  top: 0%;
+  left: 0%;
   margin: 0;
   padding: 0;
+  overflow: hidden;
   background: radial-gradient(
     200% 100% at bottom center,
     #f7f7b6,
@@ -71,7 +74,7 @@
   position: absolute;
   perspective-origin: 50% 100%;
   left: 45%;
-  animation: rotate 180s infinite linear;
+  animation: rotate 370s infinite linear;
   bottom: 0;
 }
 .star {

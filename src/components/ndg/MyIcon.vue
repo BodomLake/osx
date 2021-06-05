@@ -1,7 +1,7 @@
 <template>
   <div class="my-icon">
     <!-- <remote-js :src="src"></remote-js> -->
-    <svg class="icon svg-icon" :class="{'singleBox':singleBox}" aria-hidden="true" width="100%" height="100%" preserveAspectRatio="none">
+    <svg class="icon svg-icon" :style="{'width':`${size}vmin`,'height':`${size}vmin`}" aria-hidden="true" width="100%" height="100%" preserveAspectRatio="none">
       <use :xlink:href="'#icon-' + className"></use>
     </svg>
   </div>
@@ -41,6 +41,12 @@
         default: () => {
           return false;
         }
+      },
+      size: {
+        type: Number,
+        default: () => {
+          return 5;
+        }
       }
     },
     mounted() {}
@@ -51,7 +57,7 @@
   display: inline;
   /* margin: 0.05rem; */
   position: absolute;
-  top: 51%;
+  top: 52%;
   left: 50%;
   transform: translate(-50%, -50%);
   -webkit-transform: translate(-50%, -50%);
@@ -60,13 +66,11 @@
   z-index: 2;
 }
 .icon {
-  width: 5.5vmin;
-  height: 5.5vmin;
+  width: 5vmin;
+  height: 5vmin;
   fill: currentColor;
   overflow: hidden;
 }
-.singleBox {
-  width: 19vmin;
-  height: 19vmin;
+@media screen and (max-device-width: 100px) and (orientation: landscape) {
 }
 </style>

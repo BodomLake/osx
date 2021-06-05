@@ -16,9 +16,6 @@
   export default {
     name: "DND",
     components: {Folder},
-    comments: {
-      folder: Folder
-    },
     data() {
       let arr = new Array();
       let arr1 = [

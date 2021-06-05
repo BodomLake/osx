@@ -1,84 +1,60 @@
 <template>
   <div class="ndg">
     <!-- 上下左右固定的盒子，拖入就会发生桌面位移，isDragging表示主界面的盒子拖动了，这些四周的固定盒子才允许被拖入 -->
-    <div class="ndg-shift-top ndg-shift" :style="{'z-index':isDragging?'3':'-1'}" :draggable="isDragging" @dragenter="intentToDragOver($event,'top')"
-      @dragleave="intentDiscardDrag($event,'top')"></div>
-    <div class="ndg-shift-left ndg-shift" :style="{'z-index':isDragging?'3':'-1'}" :draggable="isDragging"
-      @dragenter="intentToDragOver($event,'left')" @dragleave="intentDiscardDrag($event,'right')"></div>
-    <div class="ndg-shift-right ndg-shift" :style="{'z-index':isDragging?'3':'-1'}" :draggable="isDragging"
-      @dragenter="intentToDragOver($event,'right')" @dragleave="intentDiscardDrag($event,'right')"></div>
-    <div class="ndg-shift-bottom ndg-shift" :style="{'z-index':isDragging?'3':'-1'}" :draggable="isDragging"
-      @dragenter="intentToDragOver($event,'bottom')" @dragleave="intentDiscardDrag($event,'bottom')"></div>
-    <!--  @dragenter="intentToDragOver($event,'top')" @dragleave="intentDiscardDrag($event,'top')" -->
 
-    <div class="ndg-background" :style="{'width': deskWidth}">
+    <shift-zone orientation="top" :flowOver="isDragging" @switchDesktop="switchDesktop"></shift-zone>
+    <shift-zone orientation="left" :flowOver="isDragging" @switchDesktop="switchDesktop"></shift-zone>
+    <shift-zone orientation="right" :flowOver="isDragging" @switchDesktop="switchDesktop"></shift-zone>
+    <shift-zone orientation="bottom" :flowOver="isDragging" @switchDesktop="switchDesktop"></shift-zone>
 
+    <div class="ndg-background" :style="{'width': deskWidth, 'filter': modal.show?'blur(5px)':''}">
       <!-- 多个桌面 -->
       <template v-for="(desk, i) in desks">
         <div class="ndg-desktop" :key="desk.id" :id="desk.id" :draggable="isDragging" @drop="dropIntoDesktop($event, i)"
           @dragenter="dragEnterDesktop($event, i)" @dragover="handleDragover">
           <div class="ndg-container" :data-order="i">
             <!-- 多个外部盒子 -->
-            <template v-for="(outerItem, j) in desk.boxes">
-              <div class="ndg-outer" :key="outerItem.id" :id="outerItem.id" :name="outerItem.name" :data-order="j" @dragover="handleDragover"
-                @drag="appBoxnDrag" @drop="outerOnDrop" draggable="true" @dragstart="boxStartDrag($event)" @dblclick="showModal(i,j)"
-                :class="{'shakeAnime':shakeAnimeFlag}">
+            <template v-for="(box, j) in desk.boxes">
+              <div class="ndg-outer" :key="box.id" :id="box.id" :name="box.name" :data-order="j" @dragover="handleDragover" @drag="appBoxnDrag"
+                @drop="outerOnDrop($event, j)" draggable="true" @dragstart="boxStartDrag($event,this)" @dblclick="showModal(i,j)"
+                :class="{'shakeAnime':shakeAnimeFlag}" @touchstart="touchstart" @touchend="touchend" @touchmove="touchmove">
                 <!-- 大于等于100%宽度的 九宫格 -->
                 <div class="ndg-content-border">
-                  <div class="ndg-scroll-box" :style="{'width': calcWidth(splitArr(outerItem.innerBoxes, 9))}">
-                    <!-- 属于文件夹，九宫格模式，默认分割为9个一组，每一组作为一个大方格，含有9个或者以下的方格 -->
-                    <template v-for="(group, k) in splitArr(outerItem.innerBoxes, 9) ">
-                      <div class="ndg-box-group" :key="k" :data-fullpathOrder="i + '-' + j + '-' + k">
-                        <!-- 九个app -->
-                        <template v-for="(innerItem, l) in group">
-                          <!-- @dragstart="appGroupDragStart($event)"  @drop="innerOnDrop"  @dragover="innerDragover" :draggable="isDragging"  @drag="appOnDrag" -->
-                          <div class="ndg-app" :key="innerItem.id" :name="innerItem.name" :data-group="k" :data-order="9*k+l" :id="innerItem.id">
-                            <my-icon :className="innerItem.name" v-if="innerItem.name!==''" :singleBox="outerItem.innerBoxes.length == 1"></my-icon>
-                          </div>
-                        </template>
-                      </div>
-                    </template>
-                    <!-- 如果不属于文件夹，也是innerBox长度为0 -->
-                    <template v-if="outerItem.innerBoxes.length == 0">
-                      <my-icon :className="outerItem.name" :singleBox="true"></my-icon>
-                    </template>
-                  </div>
+                  <box v-model="box.apps" :multipleSize="5" :singleSize="17" :currentAppGroup="box.displayNo" ref="box"></box>
                 </div>
                 <!-- 文件夹文字说明 -->
-                <div class="ndg-desc" style="animation:none">{{outerItem.name | resolveAppName}}</div> <!-- {{outerItem.name}}-->
-
+                <div class="ndg-desc" style="animation:none">{{box.apps[0].name | resolveAppName}}</div> <!-- {{box.name}}-->
               </div>
             </template>
           </div>
         </div>
       </template>
-
     </div>
-    <!-- 文件夹的模态框，要在确定了的情况下加以渲染 -->
-    <div class="ndg-modal" :class="{'ndg-modal-show':modal.show}" v-if="modal.show" ref="ngd-modal">
-      <div class="ngd-modal-header">
-        <div class="ndg-modal-desc" style="animation:none">文件集合</div>
-      </div>
-      <div class="ngd-modal-content">
-      </div>
-      <div class="ngd-modal-footer">
-      </div>
-    </div>
-
+    <!-- 文件夹的模态框，要在确定了的情况下加以渲染，即同时满足当下的定位和双击事件-->
+    <boxModal v-model="desks[modal.index.desk].boxes[modal.index.box].apps" :name="desks[modal.index.desk].boxes[modal.index.box].name"
+      :showFlag="modal.show" ref="modal"></boxModal>
   </div>
 </template>
 
 <script>
+  // TODO: 还要做的事情有很多：模态框；通过悬停时间长短，决定是否放入还是换位；换位/并入的 动画 要做出来；
+  // 并入，模态框拽出app，并入盒子，模态框消失在视野中，模糊度恢复到blur(0px);
+  // TODO: 启用拖拽模式的时候，outerBox如果内部已经有9倍的盒子，就要让出DOM空间，给app放入，这样显得顺理成章，流畅；
   // ondragstart -> ondrag -> ondragenter -> ondragover -> ondragleave -> ondragend -> ondrop
-  const PREFIX = "ndg-";
-  const CONTAINER = PREFIX + "container";
-  const OUTER = PREFIX + "outer";
-  const APP = PREFIX + "app";
+  import { CONTAINER, OUTER, APP, DELAY, DESKTOP } from "./common.js";
   import MyIcon from "./MyIcon.vue";
-  import initMixin from "./initMixin.js";
+  import ShiftZone from "./ShiftZone.vue";
+  import BoxModal from "./BoxModal.vue";
+  import Box from "./Box.vue";
+  import initMixin from "./mixins/initMixin.js";
   export default {
-    components: { MyIcon },
     name: "nested-drag-grid",
+    components: {
+      MyIcon: MyIcon,
+      boxModal: BoxModal,
+      box: Box,
+      ShiftZone: ShiftZone
+    },
     mounted() {
       setTimeout(() => {
         // console.clear();
@@ -90,14 +66,15 @@
     mounted() {
       window.addEventListener("keydown", $event => {
         let keyCode = $event.key;
-
+        // debugger;
         switch (keyCode) {
           case "ArrowLeft":
             $event.preventDefault();
-            console.log("左移");
+            this.switchDesktop("left");
             break;
           case "ArrowRight":
             $event.preventDefault();
+            this.switchDesktop("right");
             break;
           case "ArrowUp":
             $event.preventDefault();
@@ -105,14 +82,20 @@
           case "ArrowDown":
             $event.preventDefault();
             break;
+          case "Escape":
+            this.modal.show = false;
           default:
         }
       });
+      window.addEventListener('click', $event => {
+        if(this.modal.show == true)
+        this.modal.show = false;
+        // console.log($event)
+      }) 
     },
     data() {
       return {
         isDragging: false,
-        currentDeskNum: 0,
         // 被拖拽的DOM
         draggingDom: {
           desk: {
@@ -150,10 +133,16 @@
             desk: 0,
             box: 0
           },
+          position: {
+            clientX: 0,
+            clientY: 0
+          },
           draggable: false
         },
         // 启用拖拽？
-        enableDrag: true
+        enableDrag: true,
+        // 是否要切换桌面的计时器 DELAY是给用户的考虑时间
+        intentToSwitch: {}
       };
     },
     computed: {
@@ -163,6 +152,15 @@
       }
     },
     methods: {
+      touchstart($event) {
+        console.log("touchstart", $event);
+      },
+      touchmove($event) {
+        console.log("touchmove", $event);
+      },
+      touchend($event) {
+        console.log("touchend", $event);
+      },
       appBoxnDrag($event) {
         // console.log("内部", $event);
       },
@@ -177,15 +175,22 @@
         let xpath = $event.path;
         this.locateDraggingDOM(xpath, this.draggingDom);
       },
-      boxStartDrag($event, boxIndex) {
+      boxStartDrag($event) {
         this.isDragging = true;
         console.log("%c开始拖拽", "color:blue");
         let xpath = $event.path;
         this.locateDraggingDOM(xpath, this.draggingDom);
-        // TODO:默认拖拽显示的图片元素是 appBox里面的第一组
-        let dragShowElement = document.querySelector(
-          `div.ndg-box-group[data-fullpathOrder='${this.draggingDom.desk.index}-${this.draggingDom.box.index}-0']`
-        );
+        // TODO:目前默认拖拽显示的图片元素是 appBox当前显示的组
+        let deskIndex = this.draggingDom.desk.index;
+        let boxIndex = this.draggingDom.box.index;
+        let boxDisplayNo = this.desks[deskIndex].boxes[boxIndex].displayNo;
+        // console.log(this.$refs.box, "\n");
+        let dragShowElement = document.getElementsByClassName(DESKTOP)[deskIndex]
+          .children[0].children[boxIndex].children[0].children[0].children[
+          boxDisplayNo
+        ];
+
+        $event.dataTransfer.effectAllowed = "link";
         // console.log(dragShowElement.clientHeight,dragShowElement.clientWidth)
         if (dragShowElement) {
           $event.dataTransfer.setDragImage(
@@ -279,9 +284,9 @@
           if (xpath[i].className && xpath[i].tagName == "DIV") {
             // 给正在拖拽的，拖拽目的地的 DOM 具体化；
             if (xpath[i].className.indexOf(APP) != -1) {
-              console.log("inner-app确定被拖拽的DOM", xpath[i].dataset.order);
               // 如果不是 使能拖拽的情况就不要定位
-              if (!this.modal.show && this.enableDrag) {
+              if (this.modal.show && this.enableDrag) {
+                console.log("inner-app确定被拖拽的DOM", xpath[i].dataset.order);
                 targetDOM.app.body = xpath[i];
                 targetDOM.app.index = xpath[i].dataset.order;
               }
@@ -301,9 +306,12 @@
       },
       // 打开该文件筐的模态窗
       showModal(deskIndex, boxIndex) {
-        this.modal.index.desk = deskIndex;
-        this.modal.index.box = boxIndex;
-        this.modal.show = this.modal.show ? false : true;
+        // 只有多应用才能打开模态框
+        if (this.desks[deskIndex].boxes[boxIndex].apps.length > 1) {
+          this.modal.index.desk = deskIndex;
+          this.modal.index.box = boxIndex;
+          this.modal.show = this.modal.show ? false : true;
+        }
       },
       // 左右方向：进行一段延时之后 滑动桌面
       // 上下方向：方便用户上下滚动 scrollToTop scrollToBottom
@@ -333,35 +341,16 @@
         let colorEnd = "rgb(255 255 255 / 50%)";
         shiftDOM.style.backgroundImage = `linear-gradient(to ${orientation}, ${colorStart}, ${colorEnd})`;
         // 切换桌面
-        let transform = () => {
-          document.querySelector(
-            "div.ndg-background"
-          ).style.transform = `translateX(-${25 * this.currentDeskNum}%)`;
-        };
-
-        switch (orientation) {
-          case "right":
-            if (this.currentDeskNum < this.desks.length) {
-              this.currentDeskNum++;
-              transform();
-            }
-            break;
-          case "left":
-            transform();
-            if (this.currentDeskNum > 0) {
-              this.currentDeskNum--;
-              transform();
-            }
-            break;
-          default:
-            console.log("wtf");
-        }
+        this.intentToSwitch = setTimeout(() => {
+          this.switchDesktop(orientation);
+        }, DELAY);
       },
       intentDiscardDrag($event, orientation) {
         console.log("撤出，放弃切换桌面", $event.target);
         // 放弃切换桌面，把背景模糊颜色消除
         let shiftDOM = $event.target;
         shiftDOM.style.backgroundImage = "";
+        this.intentToSwitch = null;
       }
     },
     watch: {
@@ -385,6 +374,7 @@
   top: 0%;
   left: 0%;
   width: 100%;
+  height: 100%;
   background-image: url("../../assets/Wallpaper.jpg");
 }
 /* 主题背景，大背景，大布局 */
@@ -422,11 +412,12 @@
   flex-direction: row;
   justify-content: flex-start;
   align-content: stretch;
-  width: 100vmin;
-  height: 100vmin;
+  width: 95vmin;
+  height: 95vmin;
   /* padding: 3rem 16rem; */
   /* border: 1px solid green; */
 }
+
 /* 十六宫格四等分 4*4 */
 .ndg-outer {
   display: flex;
@@ -451,6 +442,7 @@
   position: relative;
   overflow: hidden;
 }
+
 .ndg-content-border {
   /* border: 1px solid white; */
   position: relative;
@@ -485,9 +477,10 @@
   flex-direction: row;
   height: 100%;
   position: relative;
-  transform: translateX(0%);
+  transition: 0.5s all ease-in-out;
+  /* transform: translateX(0%); */
 }
-.ndg-box-group {
+.ndg-app-group {
   width: 100%;
   height: 100%;
   border-radius: 10%;
@@ -519,7 +512,7 @@
 }
 
 .ndg-desc {
-  font-size: 1rem;
+  font-size: 2.5vmin;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
     Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   /* align-self: flex-end; */
@@ -586,81 +579,33 @@
   border-radius: 10px;
 }
 @keyframes showModal {
-  0%,
+  0% {
+    z-index: -1;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+  }
   100% {
+    z-index: 3;
+    opacity: 1;
+  }
+}
+@media screen and (orientation: portrait) {
+  .ndg-container {
+    width: 95vmin;
+    height: 95vmax;
+    align-content: flex-start;
+  }
+  .ndg-outer {
+    /* 限制宽度 */
+    min-width: calc(calc(100% / 4));
+    max-width: calc(calc(100% / 4));
+    /* 限制高度 */
+    max-height: calc(calc(100% / 8));
+    min-height: calc(calc(100% / 8));
+  }
+  .ndg-desc {
+    font-size: 4px;
   }
 }
 </style>
-<!-- 切屏区域css样式 -->
-<style scoped>
-.ndg-shift {
-  /* border: 1px solid red; */
-  /* 没有进入拖拽状态的时候放在desktop的下面 */
-  /* 进入拖拽状态的时候增加z-index到3 */
-  z-index: 0;
-  /* background-color: aqua; */
-  position: absolute;
-}
-.ndg-shift-top {
-  position: fixed;
-  top: 0%;
-  min-height: 3rem;
-  width: 100%;
-}
-.ndg-shift-bottom {
-  position: fixed;
-  bottom: 0%;
-  min-height: 3rem;
-  width: 100%;
-}
-.ndg-shift-left {
-  position: fixed;
-  left: 0%;
-  min-width: 3rem;
-  height: 100%;
-  overflow-y: auto;
-}
-.ndg-shift-right {
-  position: fixed;
-  right: 0%;
-  min-width: 3rem;
-  height: 100%;
-  overflow-y: auto;
-}
-</style>
-<!-- 模态框css样式 -->
-<style scoped>
-.ndg-modal {
-  display: flex;
-  flex-direction: column;
-  align-content: center;
-  justify-items: auto;
-  /* 以下css属性都要被动态class重置 */
-  position: absolute;
-  height: 100%;
-  width: 100%;
-  z-index: -1;
-  opacity: 0;
-}
-.ndg-modal-show {
-  animation: showModal 0.5s linear fill;
-  z-index: 3;
-  opacity: 1;
-  background-color: rgb(146 148 248 / 10%);
-  top: 50%;
-  left: 50%;
-  width: 30%;
-  height: 65%;
-  position: fixed;
-  transform: translateX(-50%) translateY(-50%);
-}
-.ngd-modal-header {
-  flex-grow: 2;
-}
-.ngd-modal-content {
-  flex-grow: 10;
-}
-.ngd-modal-footer {
-  flex-grow: 1;
-}
-</style>y
