@@ -1,13 +1,13 @@
 <template>
-  <div class="ndg-scroll-box" :style="{'width': calcBoxWidth(splitArr(apps)),
-                   'transform': calcBoxOffsetX(splitArr(apps), currentAppGroup)}">
+  <div class="ndg-scroll-box" :style="{'width': calcBoxWidth(appGroups),
+                   'transform': calcBoxOffsetX(appGroups, box.displayNo)}">
     <!-- 属于文件夹，九宫格模式，默认分割为9个一组，每一组作为一个大方格，含有9个或者以下的方格 -->
-    <template v-for="(group, gid) in splitArr(apps)">
-      <div class="ndg-app-group" :key="gid" v-if="apps.length > 1">
+    <template v-for="(group, gid) in appGroups">
+      <div class="ndg-app-group" :key="gid" v-if="box.apps.length > 1" :style="{'visibility': box.displayNo != gid ? 'hidden': ''}">
         <!-- 九个app -->
         <template v-for="(app, aid) in group">
           <!-- @dragstart="appGroupDragStart($event)"  @drop="innerOnDrop"  @dragover="innerDragover" :draggable="isDragging"  @drag="appOnDrag" -->
-          <div class="ndg-app" :key="app.id" :name="app.name" :data-group="gid" :data-order="9*gid+aid" :id="app.id">
+          <div class="ndg-app" :key="app.id" :name="app.name" :data-group="gid" :data-order="9*gid+aid" :id="app.id" :draggable="draggable">
             <my-icon :className="app.name" v-if="app.name!==''" :size="multipleSize"></my-icon>
             <div class="ndg-app-desc" v-if="showAppName">
               {{app.name}}
@@ -18,8 +18,8 @@
       </div>
     </template>
     <!-- 如果不属于文件夹，也是innerBox长度为0 -->
-    <template v-if="apps.length == 1">
-      <my-icon :className="apps[0].name" :size="singleSize"></my-icon>
+    <template v-if="box.apps.length == 1">
+      <my-icon :className="box.apps[0].name" :size="singleSize"></my-icon>
     </template>
   </div>
 </template>
@@ -34,24 +34,26 @@
       MyIcon: MyIcon
     },
     model: {
-      prop: "apps",
-      event: "changeApp"
+      prop: "box",
+      event: "changeBox"
     },
     data() {
       return {};
     },
-    props: {
-      apps: {
-        type: Array,
-        default: () => {
-          return [];
+    computed: {
+      appGroups() {
+        let groups = [];
+        for (let i = 0; i < this.box.apps.length; ) {
+          groups.push(this.box.apps.slice(i, (i += this.box.groupAppLimit)));
         }
-      },
-      // 每组app数量上限
-      groupAppLimit: {
-        type: Number,
+        return groups;
+      }
+    },
+    props: {
+      box: {
+        type: Object,
         default: () => {
-          return 9;
+          return {};
         }
       },
       // 单个app时候的尺寸大小
@@ -68,13 +70,11 @@
           return 5;
         }
       },
-      currentAppGroup: {
-        type: Number,
-        default: () => {
-          return 0;
-        }
-      },
       showAppName: {
+        type: Boolean,
+        default: false
+      },
+      draggable: {
         type: Boolean,
         default: false
       }
@@ -89,17 +89,14 @@
       },
       calcBoxOffsetX(arr, displayNo) {
         let len = arr.length;
-        // debugger
         return `translateX(-${displayNo * (100 / len)}%)`;
       },
       splitArr(arr) {
-        //arr是你要分割的数组，num是以几个为一组
-        let newArr = []; //首先创建一个新的空数组。用来存放分割好的数组
+        let groups = [];
         for (let i = 0; i < arr.length; ) {
-          //注意：这里与for循环不太一样的是，没有i++
-          newArr.push(arr.slice(i, (i += this.groupAppLimit)));
+          groups.push(arr.slice(i, (i += this.box.groupAppLimit)));
         }
-        return newArr;
+        return groups;
       }
     }
   };
@@ -142,6 +139,7 @@
   max-height: calc(calc(100% / 3));
 }
 .ndg-app-desc {
+  font-size: 8px;
   position: absolute;
   bottom: 0%;
   left: 50%;

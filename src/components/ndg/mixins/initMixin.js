@@ -1,18 +1,14 @@
 let desks = [];
-let deskNum = 4;
-let folderNum = 15;
-let appNum = 11;
+let deskNum = 2;
+let folderNum = 16;
+let appNum = 16;
 // top:0,bottom:0,left:0,right:0,x:0,y:0,width:0,height:0
 
 import {
   BACKGROUND,
   CONTAINER,
-  GROUPAPPLIMIT
+  GROUPAPPLIMIT,
 } from "../common.js";
-import {
-  stringify,
-  v4 as uuidv4
-} from "uuid";
 class Desk {
   constructor(id, name, order) {
     this.order = order;
@@ -22,12 +18,13 @@ class Desk {
   }
 }
 class Box {
-  constructor(id, name) {
+  constructor(id, name, groupAppLimit) {
     this.id = id;
     this.name = name;
     this.apps = [];
     // 小窗口/模态窗口 显示的组号 默认第一组
     this.displayNo = 0;
+    this.groupAppLimit = GROUPAPPLIMIT;
   }
 }
 class App {
@@ -36,6 +33,10 @@ class App {
     this.id = id;
   }
 }
+import {
+  stringify,
+  v4 as uuidv4
+} from "uuid";
 export default {
   // 初始化 二维数组
   beforeCreate() {
@@ -74,7 +75,13 @@ export default {
     desks[0].boxes[0].apps[7].name = "app-store";
     desks[0].boxes[0].apps[8].name = "we-chat";
     desks[0].boxes[0].apps[9].name = "meituan";
-    desks[0].boxes[0].apps[10].name = "wangyiyun"
+    desks[0].boxes[0].apps[10].name = "wangyiyun";
+
+    desks[0].boxes[0].apps[11].name = "sougoup"
+    desks[0].boxes[0].apps[12].name = "wangyiyun"
+    desks[0].boxes[0].apps[13].name = "douyin"
+    desks[0].boxes[0].apps[14].name = "shezhi"
+    desks[0].boxes[0].apps[15].name = "tianmao"
 
     //
     desks[0].boxes[1].apps[0].name = "QQ";
@@ -97,6 +104,10 @@ export default {
       currentDeskNum: 0,
       groupAppLimit: GROUPAPPLIMIT
     };
+  },
+  model: {
+    value: 'desks',
+    event: 'changeDesk'
   },
   computed: {
     // 计算桌面总宽度
@@ -124,27 +135,6 @@ export default {
           });
         }
       );
-    },
-    calcBoxWidth(arr) {
-      if (arr && arr.length > 0) {
-        return 100 * arr.length + "%";
-      } else {
-        return "100%";
-      }
-    },
-    calcBoxOffsetX(arr, displayNo) {
-      let len = arr.length;
-      // debugger
-      return `translateX(-${displayNo*(100/len)}%)`;
-    },
-    splitArr(arr) {
-      //arr是你要分割的数组，num是以几个为一组
-      let newArr = []; //首先创建一个新的空数组。用来存放分割好的数组
-      for (let i = 0; i < arr.length;) {
-        //注意：这里与for循环不太一样的是，没有i++
-        newArr.push(arr.slice(i, (i += this.groupAppLimit)));
-      }
-      return newArr;
     },
     switchDesktop(orientation) {
       // 切换桌面

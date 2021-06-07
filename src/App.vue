@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" class="hor-vet-center">
     <template v-if="$route.path == '/'">
       <!-- <router-link to="/helloWorld">helloworld</router-link>
       <router-link to="/draggableDND">DraggableDND</router-link>
@@ -43,7 +43,15 @@
   color: #2c3e50;
   padding: 0;
   margin: 0;
+  /* height: 100vh; */
+  position: fixed;
+  width: 100vw;
   height: 100vh;
+}
+.hor-vet-center {
+  left: 50%;
+  top: 50%;
+  transform: translateX(-50%) translateY(-50%);
 }
 /*滚动条整体样式*/
 body::-webkit-scrollbar {

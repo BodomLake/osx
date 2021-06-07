@@ -1,13 +1,12 @@
 <template>
   <div class="ndg">
     <!-- 上下左右固定的盒子，拖入就会发生桌面位移，isDragging表示主界面的盒子拖动了，这些四周的固定盒子才允许被拖入 -->
-
-    <shift-zone orientation="top" :flowOver="isDragging" @switchDesktop="switchDesktop"></shift-zone>
+    <!-- <shift-zone orientation="top" :flowOver="isDragging" @switchDesktop="switchDesktop"></shift-zone> -->
     <shift-zone orientation="left" :flowOver="isDragging" @switchDesktop="switchDesktop"></shift-zone>
     <shift-zone orientation="right" :flowOver="isDragging" @switchDesktop="switchDesktop"></shift-zone>
-    <shift-zone orientation="bottom" :flowOver="isDragging" @switchDesktop="switchDesktop"></shift-zone>
+    <!-- <shift-zone orientation="bottom" :flowOver="isDragging" @switchDesktop="switchDesktop"></shift-zone> -->
 
-    <div class="ndg-background" :style="{'width': deskWidth, 'filter': modal.show?'blur(5px)':''}">
+    <div class="ndg-background" :style="{'width': deskWidth}">
       <!-- 多个桌面 -->
       <template v-for="(desk, i) in desks">
         <div class="ndg-desktop" :key="desk.id" :id="desk.id" :draggable="isDragging" @drop="dropIntoDesktop($event, i)"
@@ -20,7 +19,7 @@
                 :class="{'shakeAnime':shakeAnimeFlag}" @touchstart="touchstart" @touchend="touchend" @touchmove="touchmove">
                 <!-- 大于等于100%宽度的 九宫格 -->
                 <div class="ndg-content-border">
-                  <box v-model="box.apps" :multipleSize="5" :singleSize="17" :currentAppGroup="box.displayNo" ref="box"></box>
+                  <box v-model="desk.boxes[j]" :multipleSize="5" :singleSize="17" ref="box"></box>
                 </div>
                 <!-- 文件夹文字说明 -->
                 <div class="ndg-desc" style="animation:none">{{box.apps[0].name | resolveAppName}}</div> <!-- {{box.name}}-->
@@ -31,8 +30,11 @@
       </template>
     </div>
     <!-- 文件夹的模态框，要在确定了的情况下加以渲染，即同时满足当下的定位和双击事件-->
-    <boxModal v-model="desks[modal.index.desk].boxes[modal.index.box].apps" :name="desks[modal.index.desk].boxes[modal.index.box].name"
-      :showFlag="modal.show" ref="modal"></boxModal>
+    <!-- <keep-alive> -->
+      <boxModal v-show="modal.show" v-model="desks[modal.index.desk].boxes[modal.index.box]" :showFlag="modal.show" ref="modal">
+      </boxModal>
+    <!-- </keep-alive> -->
+
   </div>
 </template>
 
@@ -62,7 +64,7 @@
       }, 1000);
     },
     mixins: [initMixin],
-    props: {},
+
     mounted() {
       window.addEventListener("keydown", $event => {
         let keyCode = $event.key;
@@ -87,11 +89,13 @@
           default:
         }
       });
-      window.addEventListener('click', $event => {
-        if(this.modal.show == true)
-        this.modal.show = false;
+      window.addEventListener("click", $event => {
+        if (this.modal.show == true) this.modal.show = false;
         // console.log($event)
-      }) 
+      });
+      window.addEventListener("touchend", $event => {
+        if (this.modal.show == true) this.modal.show = false;
+      });
     },
     data() {
       return {
@@ -149,16 +153,23 @@
       // 拖拽模式下的动画开关
       shakeAnimeFlag() {
         return !this.enableDrag;
+      },
+      boxContent() {
+        return this.desks[this.modal.index.desk].boxes[this.modal.index.box];
       }
     },
     methods: {
       touchstart($event) {
+        // if (this.modal.show == false) this.modal.show = true;
         console.log("touchstart", $event);
+        $event.preventDefault();
       },
       touchmove($event) {
         console.log("touchmove", $event);
       },
       touchend($event) {
+        if (this.modal.show == false) this.modal.show = true;
+        $event.stopPropagation();
         console.log("touchend", $event);
       },
       appBoxnDrag($event) {
@@ -310,7 +321,7 @@
         if (this.desks[deskIndex].boxes[boxIndex].apps.length > 1) {
           this.modal.index.desk = deskIndex;
           this.modal.index.box = boxIndex;
-          this.modal.show = this.modal.show ? false : true;
+          this.modal.show = !this.modal.show;
         }
       },
       // 左右方向：进行一段延时之后 滑动桌面
@@ -361,7 +372,7 @@
         if (appName || appName != "") {
           return appName;
         } else {
-          return "APP文件夹";
+          return "app-box";
         }
       }
     }
@@ -512,14 +523,14 @@
 }
 
 .ndg-desc {
-  font-size: 2.5vmin;
+  font-size: 1vmin;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
     Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   /* align-self: flex-end; */
   /* position: absolute; */
   bottom: 0rem;
   color: whitesmoke;
-  font-weight: 600;
+  font-weight: 200;
   align-self: center;
 }
 
@@ -605,7 +616,7 @@
     min-height: calc(calc(100% / 8));
   }
   .ndg-desc {
-    font-size: 4px;
+    font-size: 2vmin;
   }
 }
 </style>
