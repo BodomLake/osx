@@ -46,7 +46,7 @@
   import { CONTAINER, OUTER, APP, DELAY, DESKTOP } from "./common.js";
   import MyIcon from "./MyIcon.vue";
   import ShiftZone from "./ShiftZone.vue";
-  import BoxModal from "./BoxModal.vue";
+  import BoxModal from "./modal/BoxModal.vue";
   import Box from "./Box.vue";
   import initMixin from "./mixins/initMixin.js";
   export default {

@@ -39,7 +39,7 @@
       // 默认最大四个游标
       displayMaxNum: {
         type: Number,
-        default: 4
+        default: 5
       }
     },
     model: {
