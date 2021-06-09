@@ -1,0 +1,18 @@
+@media screen and (orientation: portrait) {
+  .ndg-container {
+    width: 95vmin;
+    height: 95vmax;
+    align-content: flex-start;
+  }
+  .ndg-outer {
+    /* 限制宽度 */
+    min-width: calc(calc(100% / 4));
+    max-width: calc(calc(100% / 4));
+    /* 限制高度 */
+    max-height: calc(calc(100% / 8));
+    min-height: calc(calc(100% / 8));
+  }
+  .ndg-desc {
+    font-size: 2vmin;
+  }
+}
