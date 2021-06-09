@@ -423,8 +423,8 @@
   flex-direction: row;
   justify-content: flex-start;
   align-content: stretch;
-  width: 95vmin;
-  height: 95vmin;
+  width: 100vmin;
+  height: 100vmin;
   /* padding: 3rem 16rem; */
   /* border: 1px solid green; */
 }
@@ -603,8 +603,8 @@
 }
 @media screen and (orientation: portrait) {
   .ndg-container {
-    width: 95vmin;
-    height: 95vmax;
+    width: 100vmin;
+    height: 100vmax;
     align-content: flex-start;
   }
   .ndg-outer {
