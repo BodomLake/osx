@@ -394,7 +394,8 @@
   overflow-x: hidden;
   margin: 0 auto;
   width: 100vw;
-  max-height: 100vh;
+  height: 100%;
+  max-height: 100%;
   display: flex;
   flex-direction: row;
   transition: 0.5s all ease-in-out;
@@ -402,7 +403,7 @@
 }
 /* 当前桌面 */
 .ndg-desktop {
-  height: 100vh;
+  height: 100%;
   position: relative;
   /* display: flex; */
   flex-direction: row;
