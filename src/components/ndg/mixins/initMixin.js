@@ -136,7 +136,7 @@ export default {
         }
       );
     },
-    switchDesktop(orientation) {
+    switchUnit(orientation) {
       // 切换桌面
       let transform = () => {
         document.querySelector(

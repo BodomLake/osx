@@ -1,10 +1,10 @@
 <template>
   <div class="ndg">
     <!-- 上下左右固定的盒子，拖入就会发生桌面位移，isDragging表示主界面的盒子拖动了，这些四周的固定盒子才允许被拖入 -->
-    <!-- <shift-zone orientation="top" :flowOver="isDragging" @switchDesktop="switchDesktop"></shift-zone> -->
-    <shift-zone orientation="left" :flowOver="isDragging" @switchDesktop="switchDesktop"></shift-zone>
-    <shift-zone orientation="right" :flowOver="isDragging" @switchDesktop="switchDesktop"></shift-zone>
-    <!-- <shift-zone orientation="bottom" :flowOver="isDragging" @switchDesktop="switchDesktop"></shift-zone> -->
+    <!-- <shift-zone orientation="top" :flowOver="isDragging" @switchUnit="switchUnit"></shift-zone> -->
+    <shift-zone orientation="left" :flowOver="isDragging" @switchUnit="switchUnit" :size="3"></shift-zone>
+    <shift-zone orientation="right" :flowOver="isDragging" @switchUnit="switchUnit" :size="3"></shift-zone>
+    <!-- <shift-zone orientation="bottom" :flowOver="isDragging" @switchUnit="switchUnit"></shift-zone> -->
 
     <div class="ndg-background" :style="{'width': deskWidth}">
       <!-- 多个桌面 -->
@@ -72,11 +72,11 @@
         switch (keyCode) {
           case "ArrowLeft":
             $event.preventDefault();
-            this.switchDesktop("left");
+            this.switchUnit("left");
             break;
           case "ArrowRight":
             $event.preventDefault();
-            this.switchDesktop("right");
+            this.switchUnit("right");
             break;
           case "ArrowUp":
             $event.preventDefault();
@@ -353,7 +353,7 @@
         shiftDOM.style.backgroundImage = `linear-gradient(to ${orientation}, ${colorStart}, ${colorEnd})`;
         // 切换桌面
         this.intentToSwitch = setTimeout(() => {
-          this.switchDesktop(orientation);
+          this.switchUnit(orientation);
         }, DELAY);
       },
       intentDiscardDrag($event, orientation) {
