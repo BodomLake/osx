@@ -2,7 +2,7 @@
   <div class="ndg-scroll-indicator">
     <div class="ndg-scroll-zone" :style="[overLimitShowStyle]">
       <template v-for="(unit, ui) in appGroups">
-        <div :key="ui" class="ndg-unit-box" @click="scrollToAppGroup($event, ui)" :style="[unitWidth]">
+        <div :key="ui" class="ndg-unit-box" @click="scrollToAppGroup($event, ui)" :style="[unitWidth]" v-if="appGroups.length >1">
           <div class="ndg-unit" :class="{'ndg-checked-unit': box.displayNo == ui ,'moreItem': moreItem}">
           </div>
         </div>

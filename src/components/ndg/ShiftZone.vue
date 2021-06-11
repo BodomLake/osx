@@ -1,9 +1,8 @@
 <template>
-  <div class="ndg-shift" :class="[`ndg-shift-${orientation}`]" :style="[layer,ratio]" :draggable="flowOver" @dragenter="intentToDragOver($event)"
+  <div class="ndg-shift" :class="[`ndg-shift-${orientation}`]" :style="[layer,ratio]" :draggable="flowOver" @dragenter="intentToDragEnter($event)"
     @dragleave="intentDiscardDrag($event)"></div>
 </template>
 <script>
-  import { CONTAINER, OUTER, APP, DELAY, DESKTOP } from "./common.js";
   export default {
     name: "shift-zone",
     data() {
@@ -45,11 +44,15 @@
       size: {
         type: Number,
         default: 10
+      },
+      delaySwitchTime: {
+        type: Number,
+        default: 250
       }
     },
     methods: {
-      intentToDragOver($event) {
-        // console.log("拖入，准备切换桌面", $event.target, this.orientation);
+      intentToDragEnter($event) {
+        console.log("拖入，准备切换", $event.target, this.orientation);
         let shiftDOM = $event.target;
         let colorStart = "rgb(146 148 248 / 10%)";
         let colorEnd = "rgb(255 255 255 / 50%)";
@@ -57,14 +60,14 @@
         // 切换桌面
         this.intentToSwitch = setTimeout(() => {
           this.$emit("switchUnit", this.orientation);
-        }, DELAY);
+        }, this.delaySwitchTime);
       },
       intentDiscardDrag($event) {
-        // console.log("撤出，放弃切换桌面", $event.target);
+        console.log("撤出，放弃切换", $event.target);
         // 放弃切换桌面，把背景模糊颜色消除
         let shiftDOM = $event.target;
         shiftDOM.style.backgroundImage = "";
-        this.intentToSwitch = null;
+        clearTimeout(this.intentToSwitch)
       }
     }
   };

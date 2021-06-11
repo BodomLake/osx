@@ -5,4 +5,3 @@ export const OUTER = PREFIX + "outer";
 export const DESKTOP = PREFIX + 'desktop';
 export const APP = PREFIX + "app";
 export const GROUPAPPLIMIT = 9;
-export const DELAY = 150;

@@ -1,6 +1,7 @@
-<template>
+<template >
   <!-- :style="{'filter': showFlag ?'blur(5px)':''}" -->
-  <div class="ndg-modal hor-vet-center">
+  <!-- <transition name="modal"> -->
+  <div class="ndg-modal hor-vet-center" v-show="showFlag" :style="[popAnime,closeAnime]">
     <div class="ndg-modal-left"></div>
     <div class="ndg-modal-center">
       <div class="ndg-modal-header">
@@ -10,22 +11,25 @@
         </div>
         <!-- <slot name="header"></slot> -->
       </div>
-      <div class="ndg-modal-content-border" @click="keepModal">
-        <shift-zone orientation="left" :flowOver="isDragging" @switchUnit="switchUnit"></shift-zone>
-        <div class="ndg-modal-content">
-          <box v-model="box" :multipleSize="13" :showAppName='true' :draggable="true"></box>
+      <transition name="modal">
+        <div class="ndg-modal-content-border" @click="keepModal" v-show="showFlag">
+          <shift-zone orientation="left" :flowOver="isDragging" @switchUnit="switchUnit" :delaySwitchTime="400"></shift-zone>
+          <div class="ndg-modal-content">
+            <box v-model="box" :multipleSize="13" :showAppName='true' :draggable="true"></box>
+          </div>
+          <shift-zone orientation="right" :flowOver="isDragging" @switchUnit="switchUnit" :delaySwitchTime="400"></shift-zone>
+          <indicator v-model="box">
+          </indicator>
+          <!-- <slot name="content"></slot> -->
         </div>
-        <shift-zone orientation="right" :flowOver="isDragging" @switchUnit="switchUnit"></shift-zone>
-        <indicator v-model="box">
-        </indicator>
-        <!-- <slot name="content"></slot> -->
-      </div>
+      </transition>
       <div class="ndg-modal-footer">
         <!-- <slot name="footer"></slot> -->
       </div>
     </div>
     <div class="ndg-modal-right"></div>
   </div>
+  <!-- </transition> -->
 </template>
 
 <script>
@@ -55,6 +59,15 @@
           groups.push(this.box.apps.slice(i, (i += this.box.groupAppLimit)));
         }
         return groups;
+      },
+      popAnime() {
+        return {
+          "--init-scale": "0.4",
+          "--init-pos": "0"
+        };
+      },
+      closeAnime() {
+        return {};
       }
     },
     model: {
@@ -79,6 +92,19 @@
         default: () => {
           return false;
         }
+      },
+      // 初始位置
+      initPos: {
+        type: Object,
+        // default: '40%'
+        default: () => {
+          return {
+            x: "40%",
+            y: "40%",
+            w: 0,
+            h: 0
+          };
+        }
       }
     },
     methods: {
@@ -102,7 +128,7 @@
         } else if (orientation == "left" && this.box.displayNo > 0) {
           this.box.displayNo--;
         }
-      },
+      }
     },
     beforeCreate() {},
     mounted() {}
@@ -127,7 +153,7 @@
   z-index: 1;
   height: 100%;
   width: 100%;
-  background-color: rgba(255, 255, 255, 0.5);
+  /* background-color: rgba(255, 255, 255, 0.5); */
 }
 .ndg-modal-header {
   flex-grow: 1;
@@ -154,7 +180,7 @@
   min-width: 60vmin;
   max-height: 60vmin;
   min-height: 60vmin;
-  background-color: rgba(255, 255, 255, 0.45);
+  background-color: rgba(255, 255, 255, 0.5);
   border-radius: 10%;
   overflow: hidden;
   position: relative;
@@ -213,6 +239,37 @@
 .ndg-modal-left {
   height: 100%;
   width: 20vmax;
+}
+</style>
+<style scoped>
+@keyframes showModal {
+  0% {
+    transform: scale(var(--init-scale), var(--init-scale)) translate(20%, -165%);
+    z-index: 3;
+    opacity: 0.2;
+  }
+  100% {
+    z-index: 3;
+    opacity: 1;
+    transform: scale(100%, 100%) translate(-50%, 0%);
+  }
+}
+/* .modal-enter {
+  z-index: -1;
+  opacity: 0;
+  width: 20%;
+  height: 20%;
+} */
+.modal-enter {
+  transform: scale(40%, 40%) translate(20%, -165%);
+  z-index: 3;
+  opacity: 0.2;
+}
+.modal-enter-to {
+  z-index: 3;
+  opacity: 1;
+  transform: scale(100%, 100%) translate(-50%, 0%);
+  animation: showModal 0.3s forwards;
 }
 </style>
 <style scoped>

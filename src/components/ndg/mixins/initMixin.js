@@ -1,13 +1,9 @@
 import { desks } from "../app.js";
-
 import { BACKGROUND, CONTAINER, GROUPAPPLIMIT } from "../common.js";
-
-import { stringify, v4 as uuidv4 } from "uuid";
 
 export default {
   // 初始化 二维数组
-  beforeCreate() {
-  },
+  beforeCreate() {},
   data() {
     return {
       desks,
@@ -30,21 +26,27 @@ export default {
   },
   watch: {},
   methods: {
-    locateCoordinate() {
-      Array.from(document.querySelector("." + CONTAINER).children).forEach(
-        (outer, oi) => {
-          if (outer.className.indexOf("ndg-outer") != -1) {
-            this.box[oi].DOMRect = outer.getBoundingClientRect();
-          }
-          // console.log(outer.children);
-          Array.from(outer.children).forEach((inner, ii) => {
-            if (inner.className.indexOf("ndg-inner") != -1) {
-              this.box[oi].innerBox[ii].DOMRect = inner.getBoundingClientRect();
-              // console.log(inner.getBoundingClientRect());
-            }
-          });
-        }
-      );
+    locateCoordinate(deskIndex) {
+      // debugger;
+      //  多个桌面
+      // DOMRect = box.getBoundingClientRect();
+      document.querySelectorAll("." + CONTAINER).forEach((container, cid) => {
+        let boxes = container.children;
+        Array.from(boxes).forEach((box, bid) => {
+          console.log(box.getBoundingClientRect());
+          this.desks[cid].boxes[bid].DOMRect = {
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            width: 0,
+            height: 0,
+            x: 0,
+            y: 0
+          };
+          this.desks[cid].boxes[bid].DOMRect = box.getBoundingClientRect();
+        });
+      });
     },
     switchUnit(orientation) {
       // 切换桌面

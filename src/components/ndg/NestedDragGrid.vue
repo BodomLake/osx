@@ -5,21 +5,22 @@
     <shift-zone orientation="left" :flowOver="isDragging" @switchUnit="switchUnit" :size="3"></shift-zone>
     <shift-zone orientation="right" :flowOver="isDragging" @switchUnit="switchUnit" :size="3"></shift-zone>
     <!-- <shift-zone orientation="bottom" :flowOver="isDragging" @switchUnit="switchUnit"></shift-zone> -->
-
-    <div class="ndg-background" :style="{'width': deskWidth}">
+    <!-- 'filter': modal.show? 'blur(4px)':'blur(0px)' -->
+    <div class="ndg-background" :style="{'width': deskWidth,}">
       <!-- 多个桌面 -->
       <template v-for="(desk, i) in desks">
+        <!-- <desktop></desktop> -->
         <div class="ndg-desktop" :key="desk.id" :id="desk.id" :draggable="isDragging" @drop="dropIntoDesktop($event, i)"
           @dragenter="dragEnterDesktop($event, i)" @dragover="handleDragover">
           <div class="ndg-container" :data-order="i">
             <!-- 多个外部盒子 -->
             <template v-for="(box, j) in desk.boxes">
               <div class="ndg-outer" :key="box.id" :id="box.id" :name="box.name" :data-order="j" @dragover="handleDragover" @drag="appBoxnDrag"
-                @drop="outerOnDrop($event, j)" draggable="true" @dragstart="boxStartDrag($event,this)" @dblclick="showModal(i,j)"
+                @drop="outerOnDrop($event, j)" draggable="true" @dragstart="boxStartDrag($event,this)" @dblclick="showModal($event, i,j)"
                 :class="{'shakeAnime':shakeAnimeFlag}" @touchstart="touchstart" @touchend="touchend" @touchmove="touchmove">
                 <!-- 大于等于100%宽度的 九宫格 -->
                 <div class="ndg-content-border">
-                  <box v-model="desk.boxes[j]" :multipleSize="5" :singleSize="17" ref="box"></box>
+                  <box v-model="desk.boxes[j]" :multipleSize="5" :singleSize="17"></box>
                 </div>
                 <!-- 文件夹文字说明 -->
                 <div class="ndg-desc" style="animation:none">{{box.apps[0].name | resolveAppName}}</div> <!-- {{box.name}}-->
@@ -31,8 +32,9 @@
     </div>
     <!-- 文件夹的模态框，要在确定了的情况下加以渲染，即同时满足当下的定位和双击事件-->
     <!-- <keep-alive> -->
-      <boxModal v-show="modal.show" v-model="desks[modal.index.desk].boxes[modal.index.box]" :showFlag="modal.show" ref="modal">
-      </boxModal>
+    <!-- <transition name="modal"></transition> -->
+    <boxModal class="modal-show" v-model="desks[modal.index.desk].boxes[modal.index.box]" :showFlag="modal.show" ref="modal">
+    </boxModal>
     <!-- </keep-alive> -->
 
   </div>
@@ -57,15 +59,13 @@
       box: Box,
       ShiftZone: ShiftZone
     },
+    mixins: [initMixin],
     mounted() {
       setTimeout(() => {
         // console.clear();
-        // this.locateCoordinate();
+        // 给所有的dom定位
+        this.locateCoordinate(0);
       }, 1000);
-    },
-    mixins: [initMixin],
-
-    mounted() {
       window.addEventListener("keydown", $event => {
         let keyCode = $event.key;
         // debugger;
@@ -139,7 +139,13 @@
           },
           position: {
             clientX: 0,
-            clientY: 0
+            clientY: 0,
+            x: 0,
+            y: 0,
+            offsetX: 0,
+            offsetY: 0,
+            pageX: 0,
+            pageY: 0
           },
           draggable: false
         },
@@ -153,12 +159,10 @@
       // 拖拽模式下的动画开关
       shakeAnimeFlag() {
         return !this.enableDrag;
-      },
-      boxContent() {
-        return this.desks[this.modal.index.desk].boxes[this.modal.index.box];
       }
     },
     methods: {
+      // 移动端适配 事件
       touchstart($event) {
         // if (this.modal.show == false) this.modal.show = true;
         console.log("touchstart", $event);
@@ -250,28 +254,17 @@
         $event.stopPropagation();
       },
       // 模态框单个app，或者整个box 拖入desktop，应该追加到该桌面的最后一个位子 push();
-      dropIntoDesktop($event, destinationDeskIndex) {
-        console.log(
-          "%c拖拽Drop并入桌面\n",
-          "color:green",
-          $event,
-          destinationDeskIndex
-        );
-        // 整个box的情况，追加Box，把原来的删了
-        // return;
-
+      dropIntoDesktop($event, destDeskIndex) {
+        console.log("%c拖拽Drop并入桌面\n", "color:green", $event, destDeskIndex);
         let draggingDom = this.desks[this.draggingDom.desk.index].boxes[
           this.draggingDom.box.index
         ];
         // if (draggingDom.innerBoxes.length == 0 && draggingDom.innerBoxes) {
-        this.desks[destinationDeskIndex].boxes.push(draggingDom);
+        this.desks[destDeskIndex].boxes.push(draggingDom);
         this.desks[this.draggingDom.desk.index].boxes.splice(
           this.draggingDom.box.index,
           1
         );
-        // }
-
-        // 模态框单个app
       },
       dragEnterDesktop($event, deskIndex) {
         // console.log("%c拖拽Enter并入桌面\n", "color:green", $event, deskIndex);
@@ -316,56 +309,35 @@
         }
       },
       // 打开该文件筐的模态窗
-      showModal(deskIndex, boxIndex) {
+      showModal($event, deskIndex, boxIndex) {
         // 只有多应用才能打开模态框
+        console.log($event);
         if (this.desks[deskIndex].boxes[boxIndex].apps.length > 1) {
           this.modal.index.desk = deskIndex;
           this.modal.index.box = boxIndex;
           this.modal.show = !this.modal.show;
+          let xpath = $event.path;
+          for (let i = 0; i < xpath.length; i++) {
+            
+            // if (xpath[i].className.indexOf(OUTER) != -1) {
+            //   console.log("点击要打开的modal：");
+            // }
+          }
+
+          this.modal.position = {
+            offsetX: $event.offsetX,
+            offsetY: $event.offsetY,
+            x: $event.x,
+            y: $event.y,
+            clientX: $event.clientX,
+            clientY: $event.clientY,
+            pageX: $event.pageX,
+            pageY: $event.pageY
+          };
+          this.toggleBox(deskIndex, boxIndex);
         }
       },
-      // 左右方向：进行一段延时之后 滑动桌面
-      // 上下方向：方便用户上下滚动 scrollToTop scrollToBottom
-      onMouseEnter($event, orientation) {
-        console.log($event, orientation);
-        // let shiftDOM = $event.target;
-        // shiftDOM.style.backgroundImage = `linear-gradient(to ${orientation}, rgb(146 148 248 / 10%), rgb(255 255 255 / 50%))`;
-      },
-      onMouseOut($event, orientation) {
-        console.log($event, orientation);
-        // let shiftDOM = $event.target;
-        // shiftDOM.style.backgroundImage = "";
-      },
-      // TODO: 切换桌面
-      intentToDragOver($event, orientation) {
-        console.log("拖入，准备切换桌面", $event.target, orientation);
-        // 判断 orientation (left right up down)决定主界面平移方向  scrollTo()来垂直拉动 水平移动
-
-        // 垂直移动 clientHeight减去DIV.ndg-background的的scrollHeight是垂直活动的空间，增减scrollTop实现偏移
-        // 水平移动 .ndg-background的DIV的scrollWidth属性的 1/n 来计算每次平移的偏移量，增减scrollLeft实现偏移
-        // 或者 clientWidth减去DIV.ndg-background的的scrollWidth作为水平活动的空间，增减scrollLeft实现偏移
-
-        // 水平移动 也可以考虑 在 overflow:hidden translateX() 和 translateY() 每次偏移量为 100%/n
-
-        let shiftDOM = $event.target;
-        let colorStart = "rgb(146 148 248 / 10%)";
-        let colorEnd = "rgb(255 255 255 / 50%)";
-        shiftDOM.style.backgroundImage = `linear-gradient(to ${orientation}, ${colorStart}, ${colorEnd})`;
-        // 切换桌面
-        this.intentToSwitch = setTimeout(() => {
-          this.switchUnit(orientation);
-        }, DELAY);
-      },
-      intentDiscardDrag($event, orientation) {
-        console.log("撤出，放弃切换桌面", $event.target);
-        // 放弃切换桌面，把背景模糊颜色消除
-        let shiftDOM = $event.target;
-        shiftDOM.style.backgroundImage = "";
-        this.intentToSwitch = null;
-      }
-    },
-    watch: {
-      data(newValue, oldValue) {}
+      toggleBox(deskIndex, boxIndex) {}
     },
     filters: {
       resolveAppName(appName) {
@@ -601,6 +573,9 @@
     z-index: 3;
     opacity: 1;
   }
+}
+.modal-show {
+  /* animation: showModal 1s both; */
 }
 @media screen and (orientation: portrait) {
   .ndg-container {
