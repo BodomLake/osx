@@ -26,25 +26,29 @@ export default {
   },
   watch: {},
   methods: {
-    locateCoordinate(deskIndex) {
+    locateCoordinate() {
       // debugger;
       //  多个桌面
       // DOMRect = box.getBoundingClientRect();
       document.querySelectorAll("." + CONTAINER).forEach((container, cid) => {
         let boxes = container.children;
         Array.from(boxes).forEach((box, bid) => {
-          console.log(box.getBoundingClientRect());
-          this.desks[cid].boxes[bid].DOMRect = {
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: 0,
-            width: 0,
-            height: 0,
-            x: 0,
-            y: 0
-          };
-          this.desks[cid].boxes[bid].DOMRect = box.getBoundingClientRect();
+          // console.log(box.getBoundingClientRect());
+          this.$set(
+            this.desks[cid].boxes[bid],
+            "DOMRect",
+            box.getBoundingClientRect()
+          );
+          // this.desks[cid].boxes[bid].DOMRect = {
+          //   top: 0,
+          //   bottom: 0,
+          //   left: 0,
+          //   right: 0,
+          //   width: 0,
+          //   height: 0,
+          //   x: 0,
+          //   y: 0
+          // };
         });
       });
     },

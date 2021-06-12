@@ -1,7 +1,6 @@
 <template >
-  <!-- :style="{'filter': showFlag ?'blur(5px)':''}" -->
-  <!-- <transition name="modal"> -->
-  <div class="ndg-modal hor-vet-center" v-show="showFlag" :style="[popAnime,closeAnime]">
+  <!-- :style="{'filter': modal.show ?'blur(5px)':''}" -->
+  <div class="ndg-modal hor-vet-center" v-show="modalInfo.show" :style="[popAnime,closeAnime]">
     <div class="ndg-modal-left"></div>
     <div class="ndg-modal-center">
       <div class="ndg-modal-header">
@@ -12,14 +11,13 @@
         <!-- <slot name="header"></slot> -->
       </div>
       <transition name="modal">
-        <div class="ndg-modal-content-border" @click="keepModal" v-show="showFlag">
+        <div class="ndg-modal-content-border" @click="keepModal" v-show="modalInfo.show">
           <shift-zone orientation="left" :flowOver="isDragging" @switchUnit="switchUnit" :delaySwitchTime="400"></shift-zone>
           <div class="ndg-modal-content">
             <box v-model="box" :multipleSize="13" :showAppName='true' :draggable="true"></box>
           </div>
           <shift-zone orientation="right" :flowOver="isDragging" @switchUnit="switchUnit" :delaySwitchTime="400"></shift-zone>
-          <indicator v-model="box">
-          </indicator>
+          <indicator v-model="box"></indicator>
           <!-- <slot name="content"></slot> -->
         </div>
       </transition>
@@ -29,7 +27,6 @@
     </div>
     <div class="ndg-modal-right"></div>
   </div>
-  <!-- </transition> -->
 </template>
 
 <script>
@@ -49,7 +46,8 @@
     data() {
       return {
         editable: true,
-        isDragging: true
+        isDragging: true,
+        popAnime: {}
       };
     },
     computed: {
@@ -60,14 +58,36 @@
         }
         return groups;
       },
-      popAnime() {
-        return {
-          "--init-scale": "0.4",
-          "--init-pos": "0"
-        };
-      },
       closeAnime() {
         return {};
+      }
+    },
+    mounted() {},
+    watch: {
+      "modalInfo.show": {
+        handler: function(newFlag, oldFlag) {
+          if (newFlag == true) {
+            // debugger;
+            // 先处理好 变大的尺寸，然后再是动画走过的路径也就是
+            // 多个动画帧走过的路线，最后我们来决定一个时间函数曲线
+            let initWidth = this.box.DOMRect.width;
+            let initHeight = this.box.DOMRect.height;
+            // 获取以px为单位的 100个vmin的px长度
+            let vmin = Math.min(window.innerHeight, window.innerWidth);
+            let initScaleX = initWidth / (vmin * 0.6);
+            let initScaleY = initHeight / (vmin * 0.6);
+            // 处理距离
+
+            this.popAnime = {
+              "--init-scale-x": initScaleX,
+              "--init-scale-y": initScaleY,
+              "--init-offset-x": '-520px',
+              "--init-offset-y": '-520px'
+            };
+          }
+        },
+        deep: true,
+        immediate: false
       }
     },
     model: {
@@ -87,30 +107,16 @@
           return "";
         }
       },
-      showFlag: {
-        type: Boolean,
-        default: () => {
-          return false;
-        }
-      },
-      // 初始位置
-      initPos: {
+      modalInfo: {
         type: Object,
-        // default: '40%'
         default: () => {
-          return {
-            x: "40%",
-            y: "40%",
-            w: 0,
-            h: 0
-          };
+          return {};
         }
       }
     },
     methods: {
       changeModalShow(showFlag) {
-        debugger;
-        this.showFlag = showFlag;
+        this.modalInfo.show = showFlag;
       },
       keepModal($event) {
         // console.log($event);
@@ -130,8 +136,7 @@
         }
       }
     },
-    beforeCreate() {},
-    mounted() {}
+    beforeCreate() {}
   };
 </script>
 <!-- 模态框css样式 -->
@@ -155,18 +160,9 @@
   width: 100%;
   /* background-color: rgba(255, 255, 255, 0.5); */
 }
-.ndg-modal-header {
-  flex-grow: 1;
-  position: relative;
-  max-width: 60vmin;
-  left: 50%;
-  transform: translateX(-50%);
-}
 .ndg-modal-center {
   display: flex;
   flex-direction: column;
-  align-content: center;
-  justify-items: auto;
   /* 以下css属性都要被动态class重置 */
   /* position: fixed; */
   height: 100vmin;
@@ -174,18 +170,25 @@
   min-width: 60vmax;
   z-index: 10;
 }
-
+.ndg-modal-header {
+  flex-grow: 1;
+  position: relative;
+  max-width: 60vmin;
+  width: 60vmin;
+  align-self: center;
+}
 .ndg-modal-content-border {
+  width: 60vmin;
   max-width: 60vmin;
   min-width: 60vmin;
+  height: 60vmin;
   max-height: 60vmin;
   min-height: 60vmin;
   background-color: rgba(255, 255, 255, 0.5);
   border-radius: 10%;
   overflow: hidden;
   position: relative;
-  left: 50%;
-  transform: translateX(-50%);
+  align-self: center;
 }
 .ndg-modal-content-border > :nth-child(2) {
   /* background-color: rgba(255, 255, 255, 0.45); */
@@ -244,14 +247,15 @@
 <style scoped>
 @keyframes showModal {
   0% {
-    transform: scale(var(--init-scale), var(--init-scale)) translate(20%, -165%);
+    transform: scale(var(--init-scale-x), var(--init-scale-y))
+      translate(var(--init-offset-x), var(--init-offset-y));
     z-index: 3;
-    opacity: 0.2;
+    opacity: 0.3;
   }
   100% {
     z-index: 3;
     opacity: 1;
-    transform: scale(100%, 100%) translate(-50%, 0%);
+    transform: scale(100%, 100%) translate(0%, 0%);
   }
 }
 /* .modal-enter {
@@ -268,8 +272,8 @@
 .modal-enter-to {
   z-index: 3;
   opacity: 1;
-  transform: scale(100%, 100%) translate(-50%, 0%);
-  animation: showModal 0.3s forwards;
+  transform: scale(100%, 100%) translate(0%, 0%);
+  animation: showModal 0.5s forwards;
 }
 </style>
 <style scoped>

@@ -19,11 +19,11 @@
                 @drop="outerOnDrop($event, j)" draggable="true" @dragstart="boxStartDrag($event,this)" @dblclick="showModal($event, i,j)"
                 :class="{'shakeAnime':shakeAnimeFlag}" @touchstart="touchstart" @touchend="touchend" @touchmove="touchmove">
                 <!-- 大于等于100%宽度的 九宫格 -->
-                <div class="ndg-content-border">
+                <div class="ndg-content-border" v-show="!toggleBox(i,j)">
                   <box v-model="desk.boxes[j]" :multipleSize="5" :singleSize="17"></box>
                 </div>
                 <!-- 文件夹文字说明 -->
-                <div class="ndg-desc" style="animation:none">{{box.apps[0].name | resolveAppName}}</div> <!-- {{box.name}}-->
+                <div class="ndg-desc" style="animation:none" v-show="!toggleBox(i,j)">{{box.name | resolveAppName}}</div> <!-- {{box.name}}-->
               </div>
             </template>
           </div>
@@ -33,7 +33,7 @@
     <!-- 文件夹的模态框，要在确定了的情况下加以渲染，即同时满足当下的定位和双击事件-->
     <!-- <keep-alive> -->
     <!-- <transition name="modal"></transition> -->
-    <boxModal class="modal-show" v-model="desks[modal.index.desk].boxes[modal.index.box]" :showFlag="modal.show" ref="modal">
+    <boxModal class="modal-show" v-model="desks[modal.index.desk].boxes[modal.index.box]" :modalInfo="modal" ref="modal">
     </boxModal>
     <!-- </keep-alive> -->
 
@@ -64,8 +64,8 @@
       setTimeout(() => {
         // console.clear();
         // 给所有的dom定位
-        this.locateCoordinate(0);
-      }, 1000);
+        this.locateCoordinate();
+      }, 300);
       window.addEventListener("keydown", $event => {
         let keyCode = $event.key;
         // debugger;
@@ -159,7 +159,7 @@
       // 拖拽模式下的动画开关
       shakeAnimeFlag() {
         return !this.enableDrag;
-      }
+      },
     },
     methods: {
       // 移动端适配 事件
@@ -311,18 +311,12 @@
       // 打开该文件筐的模态窗
       showModal($event, deskIndex, boxIndex) {
         // 只有多应用才能打开模态框
-        console.log($event);
+        // console.log($event);
         if (this.desks[deskIndex].boxes[boxIndex].apps.length > 1) {
           this.modal.index.desk = deskIndex;
           this.modal.index.box = boxIndex;
           this.modal.show = !this.modal.show;
           let xpath = $event.path;
-          for (let i = 0; i < xpath.length; i++) {
-            
-            // if (xpath[i].className.indexOf(OUTER) != -1) {
-            //   console.log("点击要打开的modal：");
-            // }
-          }
 
           this.modal.position = {
             offsetX: $event.offsetX,
@@ -334,10 +328,28 @@
             pageX: $event.pageX,
             pageY: $event.pageY
           };
-          this.toggleBox(deskIndex, boxIndex);
+          // this.toggleBox(deskIndex, boxIndex);
         }
       },
-      toggleBox(deskIndex, boxIndex) {}
+      toggleBox(deskIndex, boxIndex) {
+        let that = this;
+        // document.querySelectorAll("." + CONTAINER).forEach((container, cid) => {
+        //   if (cid == deskIndex) {
+        //     let boxes = container.children;
+        //     Array.from(boxes).forEach((box, bid) => {
+        //       if (bid == boxIndex) {
+        //         box.style.visibility = that.modal.show ? "" : "hidden";
+        //         console.log(box.style)
+        //       }
+        //     });
+        //   }
+        // });
+        return (
+          this.modal.show &&
+          this.modal.index.desk == deskIndex &&
+          this.modal.index.box == boxIndex
+        );
+      }
     },
     filters: {
       resolveAppName(appName) {
