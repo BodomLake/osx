@@ -159,7 +159,7 @@
       // 拖拽模式下的动画开关
       shakeAnimeFlag() {
         return !this.enableDrag;
-      },
+      }
     },
     methods: {
       // 移动端适配 事件
@@ -311,7 +311,16 @@
       // 打开该文件筐的模态窗
       showModal($event, deskIndex, boxIndex) {
         // 只有多应用才能打开模态框
-        // console.log($event);
+        console.log("showModal", {
+          offsetX: $event.offsetX,
+          offsetY: $event.offsetY,
+          x: $event.x,
+          y: $event.y,
+          clientX: $event.clientX,
+          clientY: $event.clientY,
+          pageX: $event.pageX,
+          pageY: $event.pageY
+        });
         if (this.desks[deskIndex].boxes[boxIndex].apps.length > 1) {
           this.modal.index.desk = deskIndex;
           this.modal.index.box = boxIndex;
@@ -383,7 +392,6 @@
   display: flex;
   flex-direction: row;
   transition: 0.5s all ease-in-out;
-  transform: translateX(0%);
 }
 /* 当前桌面 */
 .ndg-desktop {
@@ -397,10 +405,7 @@
 
 /* ndg容器布局 */
 .ndg-container {
-  position: relative;
-  left: 50%;
-  top: 50%;
-  transform: translateX(-50%) translateY(-50%);
+  margin: 0 auto;
   display: flex;
   display: -webkit-flex;
   display: -ms-flexbox;

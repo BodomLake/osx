@@ -4,9 +4,9 @@
     <div class="ndg-modal-left"></div>
     <div class="ndg-modal-center">
       <div class="ndg-modal-header">
-        <div class="ndg-modal-desc" v-if="editable" style="animation:none" @click="keepModal">
+        <div class="ndg-modal-desc" v-show="editable" @click="keepModal">
           {{box.name}}
-          <my-icon className="delete" v-if="editable"></my-icon>
+          <my-icon className="delete" v-show="editable"></my-icon>
         </div>
         <!-- <slot name="header"></slot> -->
       </div>
@@ -77,12 +77,25 @@
             let initScaleX = initWidth / (vmin * 0.6);
             let initScaleY = initHeight / (vmin * 0.6);
             // 处理距离
-
+            let offsetX = this.modalInfo.position.clientX - window.innerWidth / 2;
+            let offsetY =
+              this.modalInfo.position.clientY - window.innerHeight / 2;
+            let adjustDistance = (offset, bl) => {
+              if (offset > 0 || offset == 0) {
+                offset += bl;
+              } else {
+                offset -= bl;
+              }
+              return offset;
+            };
+            offsetX = adjustDistance(offsetX, initWidth);
+            offsetY = adjustDistance(offsetY, initHeight);
             this.popAnime = {
               "--init-scale-x": initScaleX,
               "--init-scale-y": initScaleY,
-              "--init-offset-x": '-520px',
-              "--init-offset-y": '-520px'
+              "--init-offset-x": offsetX + "px",
+              "--init-offset-y": offsetY + "px",
+              "--duration-time": "0.5s"
             };
           }
         },
@@ -229,6 +242,18 @@
   /* border: 1px solid brown; */
   border-radius: 3%;
   background-color: rgba(0, 0, 0, 0.35);
+  animation: fadeIn var(--duration-time) forwards;
+}
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  70% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 .hor-vet-center {
   left: 50%;
@@ -250,7 +275,7 @@
     transform: scale(var(--init-scale-x), var(--init-scale-y))
       translate(var(--init-offset-x), var(--init-offset-y));
     z-index: 3;
-    opacity: 0.3;
+    opacity: 0.1;
   }
   100% {
     z-index: 3;
@@ -258,22 +283,10 @@
     transform: scale(100%, 100%) translate(0%, 0%);
   }
 }
-/* .modal-enter {
-  z-index: -1;
-  opacity: 0;
-  width: 20%;
-  height: 20%;
-} */
-.modal-enter {
-  transform: scale(40%, 40%) translate(20%, -165%);
-  z-index: 3;
-  opacity: 0.2;
-}
-.modal-enter-to {
+.modal-enter-active {
   z-index: 3;
   opacity: 1;
-  transform: scale(100%, 100%) translate(0%, 0%);
-  animation: showModal 0.5s forwards;
+  animation: showModal var(--duration-time) none;
 }
 </style>
 <style scoped>

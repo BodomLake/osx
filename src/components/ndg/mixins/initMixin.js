@@ -24,7 +24,8 @@ export default {
       return 100 / desks.length;
     }
   },
-  watch: {},
+  watch: {
+  },
   methods: {
     locateCoordinate() {
       // debugger;
