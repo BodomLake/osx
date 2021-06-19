@@ -7,8 +7,9 @@ export default {
   data() {
     return {
       desks,
-      currentDeskNum: 0,
-      groupAppLimit: GROUPAPPLIMIT
+      currentDeskNo: 0,
+      groupAppLimit: GROUPAPPLIMIT,
+      switchDeskTime: 0.5
     };
   },
   model: {
@@ -24,13 +25,9 @@ export default {
       return 100 / desks.length;
     }
   },
-  watch: {
-  },
+  watch: {},
   methods: {
     locateCoordinate() {
-      // debugger;
-      //  多个桌面
-      // DOMRect = box.getBoundingClientRect();
       document.querySelectorAll("." + CONTAINER).forEach((container, cid) => {
         let boxes = container.children;
         Array.from(boxes).forEach((box, bid) => {
@@ -40,16 +37,24 @@ export default {
             "DOMRect",
             box.getBoundingClientRect()
           );
-          // this.desks[cid].boxes[bid].DOMRect = {
-          //   top: 0,
-          //   bottom: 0,
-          //   left: 0,
-          //   right: 0,
-          //   width: 0,
-          //   height: 0,
-          //   x: 0,
-          //   y: 0
-          // };
+          // 是否被 dragover
+          this.$set(this.desks[cid].boxes[bid], "dragOverFlag", false);
+          // 悬停时长，判断当前BOX是否要被合并；至于是否换位（挤压），还要判断鼠标指针 和 BOX几何中心的距离
+          this.$set(this.desks[cid].boxes[bid], "suspendTime", 0);
+          // 做出translate动作以后，dragover要重置为false，suspendTime要归零
+          this.$set(
+            this.desks[cid].boxes[bid],
+            "translate",
+            "translate(0%,0%)"
+          );
+        });
+      });
+    },
+    // 更新所有BOX的位置信息
+    relocateDOM() {
+      document.querySelectorAll("." + CONTAINER).forEach((container, cid) => {
+        Array.from(container.children).forEach((box, bid) => {
+          this.desks[cid].boxes[bid].DOMRect = box.getBoundingClientRect();
         });
       });
     },
@@ -59,25 +64,44 @@ export default {
         document.querySelector(
           "div." + BACKGROUND
         ).style.transform = `translateX(-${this.deskShiftOffset *
-          this.currentDeskNum}%)`;
+          this.currentDeskNo}%)`;
+        // 切换桌面要500ms的时间，所以延时执行relcoateDOM
+        setTimeout(() => {
+          this.relocateDOM();
+        }, this.switchDeskTime * 1000);
       };
       switch (orientation) {
         case "right":
-          if (this.currentDeskNum + 1 < this.desks.length) {
-            this.currentDeskNum++;
+          if (this.currentDeskNo + 1 < this.desks.length) {
+            this.currentDeskNo++;
             transform();
           }
           break;
         case "left":
           transform();
-          if (this.currentDeskNum > 0) {
-            this.currentDeskNum--;
+          if (this.currentDeskNo > 0) {
+            this.currentDeskNo--;
             transform();
           }
           break;
         default:
-          console.log("wtf");
+          console.log("what the keycode that you pressed just now");
       }
+    },
+    clearTranslate() {
+      document.querySelectorAll("." + CONTAINER).forEach((container, cid) => {
+        let boxes = container.children;
+        Array.from(boxes).forEach((box, bid) => {
+          box.style.transform = "";
+          box.style.transition = "";
+        });
+      });
+    },
+    swap(a, b) {
+      let swap = {};
+      swap = a;
+      a = b;
+      b = swap;
     }
   }
 };

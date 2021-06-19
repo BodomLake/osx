@@ -52,7 +52,7 @@
     },
     methods: {
       intentToDragEnter($event) {
-        console.log("拖入，准备切换", $event.target, this.orientation);
+        // console.log("拖入，准备切换", $event.target, this.orientation);
         let shiftDOM = $event.target;
         let colorStart = "rgb(146 148 248 / 10%)";
         let colorEnd = "rgb(255 255 255 / 50%)";
@@ -63,7 +63,7 @@
         }, this.delaySwitchTime);
       },
       intentDiscardDrag($event) {
-        console.log("撤出，放弃切换", $event.target);
+        // console.log("撤出，放弃切换", $event.target);
         // 放弃切换桌面，把背景模糊颜色消除
         let shiftDOM = $event.target;
         shiftDOM.style.backgroundImage = "";

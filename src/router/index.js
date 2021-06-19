@@ -1,5 +1,5 @@
-import Vue from 'vue'
-import Router from 'vue-router'
+import Vue from "vue";
+import Router from "vue-router";
 
 import DraggableDND from "@/components/experience/Draggable-DND";
 import FolderList from "@/components/experience/FolderList";
@@ -11,19 +11,29 @@ import Home from "@/components/home/Home";
 import Parent from "@/components/experience/model/Parent";
 import Stars from "@/components/experience/Stars";
 // Nested Drag Grid
-import NestedDragGrid from "@/components/ndg/NestedDragGrid"
+import NestedDragGrid from "@/components/ndg/NestedDragGrid";
+import NDG from "@/components/ndg/NDG";
 
-Vue.use(Router)
+Vue.use(Router);
 
 export default new Router({
-  routes: [{
-      path: '/',
-      redirect: '/home'
+  routes: [
+    {
+      path: "/",
+      redirect: "/home"
     },
     {
       path: "/nestedDragGrid",
       name: "NestedDragGrid",
       component: NestedDragGrid,
+      meta: {
+        keepAlive: true // 需要被缓存
+      }
+    },
+    {
+      path: "/ndg",
+      name: "NDG",
+      component: NDG,
       meta: {
         keepAlive: true // 需要被缓存
       }
@@ -40,7 +50,8 @@ export default new Router({
       path: "/home",
       name: "Home",
       component: Home,
-      children: [{
+      children: [
+        {
           path: "/draggableDND",
           name: "draggableDND",
           component: DraggableDND
@@ -69,11 +80,8 @@ export default new Router({
           path: "parent",
           name: "Parent",
           component: Parent
-        },
-
-
+        }
       ]
-    },
-
+    }
   ]
 });

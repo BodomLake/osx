@@ -10,6 +10,7 @@
       <router-link to="/parent">Parent</router-link> -->
       <router-link to="/stars">Stars</router-link>
       <router-link to="/nestedDragGrid">NestedDragGrid</router-link>
+      <router-link to="/ndg">ndg</router-link>
     </template>
     <keep-alive>
       <router-view />
