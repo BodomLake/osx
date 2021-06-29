@@ -42,7 +42,7 @@
   left: 50%;
   transform: translate(-50%, 0%);
   width: 90vw;
-  height: 15vh;
+  height: 14vh;
   border-radius: 15px 15px 15px 15px;
   background-color: rgba(255, 255, 255, 0.5);
 }

@@ -9,7 +9,7 @@
       <!-- 多个桌面 -->
       <template v-for="(desk, i) in desks">
         <!-- // TODO: 拖入桌面的情况 要重新考虑，判断剩余桌面空间和剩余的方格数 -->
-        <div class="ndg-desktop" :key="desk.id" :id="desk.id">
+        <div class="ndg-desktop" :key="desk.id" :id="desk.id" @dragover="dragOverContainer($event)">
           <transition-group class="ndg-container" :data-order="i" name="ndg-outer-shift" :duration="200" tag="div">
             <template v-for="(box, j) in desk.boxes">
               <div :style="[gridSize]" class="ndg-outer" :key="box.id" @dragover="handleDragover($event)">
@@ -17,13 +17,12 @@
                   :name="box.name" :data-order="j" @drag="appBoxnDrag" @dragenter="handleDragEnter" @dragleave="handleDragLeave" draggable="true"
                   @dragstart="boxStartDrag($event,this)" @dblclick="showModal($event, i,j)" @touchstart="touchstart" @touchend="touchend"
                   @touchmove="touchmove">
-                  <Box v-model="desk.boxes[j]" :multipleSize="3" :singleSize="15"></Box>
+                  <Box v-model="desk.boxes[j]" :multipleSize="4" :singleSize="12"></Box>
                 </div>
                 <div class="ndg-desc" style="animation:none" v-show="!toggleBox(i,j)">{{box.name | resolveAppName}}</div> <!-- {{box.name}}-->
               </div>
             </template>
           </transition-group>
-          <!-- </div> -->
         </div>
       </template>
     </div>
@@ -159,10 +158,12 @@
         },
         // 启用拖拽？
         enableDrag: true,
-        // 是否要切换桌面的计时器 DELAY是给用户的考虑时间
-        intentToSwitch: {},
-        // 拖拽跨过-节流计时器
-        dragOverTimer: 0,
+        // 正在切换桌面
+        deskSwitching: false,
+        // box之间拖拽跨过-节流计时器
+        boxDOTimer: 0,
+        // desk之间拖拽跨入
+        deskDOTimer: 0,
         // 鼠标移动计时器
         mouseTimer: true,
         mouse: {
@@ -239,34 +240,54 @@
           );
         }
       },
-      // 模态框单个app，或者整个box 拖入desktop，应该追加到该桌面的最后一个位子 push();
-      dropIntoDesktop($event, destDeskIndex) {
-        console.log("%c拖拽Drop并入桌面\n", "color:green", $event, destDeskIndex);
-        let draggingDom = this.desks[this.draggingDom.desk.index].boxes[
-          this.draggingDom.box.index
-        ];
-        this.desks[destDeskIndex].boxes.push(draggingDom);
-        this.desks[this.draggingDom.desk.index].boxes.splice(
-          this.draggingDom.box.index,
-          1
-        );
-      },
-      dragEnterDesktop($event, deskIndex) {
-        // console.log("%c拖拽Enter并入桌面\n", "color:green", $event, deskIndex);
-        $event.preventDefault();
-      },
-      // 处理动画 N*M宫格
-      handleDragover($event) {
-        $event.preventDefault();
+      dragOverContainer($event) {
         const throttleTime = 100;
         // 节流100ms执行一次
-        if (Date.now() - this.dragOverTimer < throttleTime || !this.isDragging) {
+        if (Date.now() - this.deskDOTimer < throttleTime || !this.isDragging) {
           return;
         }
         // 新一轮计时，重新获取目前时间
-        this.dragOverTimer = Date.now();
+        this.deskDOTimer = Date.now();
         setTimeout(() => {
-          this.locateMouseMove($event);
+          console.log("dragOverContainer------");
+
+          let rect1 = this.desks[this.currentDeskNo].restSpace.rect1;
+          let rect2 = this.desks[this.currentDeskNo].restSpace.rect2;
+          // console.log(rect1, rect2);
+          // 判断是否包含在剩余空间（非BOX的container）范围内？
+          let includeFlag = rectRect => {
+            return (
+              rectRect.left < $event.clientX &&
+              rectRect.top < $event.clientY &&
+              rectRect.right > $event.clientX &&
+              rectRect.bottom > $event.clientY
+            );
+          };
+          if (rect1) {
+            if (includeFlag(rect1)) {
+              console.log("进入剩余区域1");
+            }
+          }
+          if (rect2) {
+            if (includeFlag(rect2)) {
+              console.log("进入剩余区域2");
+            }
+          }
+          this.showEvent($event);
+        }, throttleTime);
+      },
+      // 处理动画 N*M宫格
+      handleDragover($event) {
+        // $event.preventDefault();
+        const throttleTime = 100;
+        // 节流100ms执行一次
+        if (Date.now() - this.boxDOTimer < throttleTime || !this.isDragging) {
+          return;
+        }
+        // 新一轮计时，重新获取目前时间
+        this.boxDOTimer = Date.now();
+        setTimeout(() => {
+          this.deterMouseMove($event);
           // 循环当前所有的box的坐标
           this.desks[this.currentDeskNo].boxes.forEach((box, bid) => {
             let domRect = box.DOMRect;
@@ -288,7 +309,7 @@
               this.desks[this.currentDeskNo].boxes.forEach((item, index) => {
                 if (index == bid) {
                   item.covered = true;
-                  console.log(bid, "covered状态已被修改");
+                  // console.log(bid, "covered状态已被修改");
                 } else {
                   item.covered = false;
                 }
@@ -298,42 +319,38 @@
               return;
             }
           });
-          // this.showEvent($event);
-          // 交换dom，交换array内部元素的下表
+          this.showEvent($event);
         }, throttleTime);
-        $event.stopPropagation();
+        // 禁止传播？
+        // $event.stopPropagation();
       },
       // 让 draggingDOM和tragetBox交换位子
       exchangeBox(targetDesktop, targetBox) {
         // 同一个桌面
         let boxIndex = this.draggingDom.box.index;
-        let deskIndex = this.draggingDom.box.index;
+        let deskIndex = this.draggingDom.desk.index;
+        // 置换后腰修改draggingDom所在的定位
         let relocate = () => {
           this.draggingDom.box.index = targetBox;
           this.draggingDom.desk.index = targetDesktop;
           this.relocateDOM();
         };
-
         if (targetDesktop == this.draggingDom.desk.index) {
-          // this.desks[this.currentDeskNo].boxes[boxIndex].translate =
-          //   "translate(100%,0%)";
-          // this.desks[this.currentDeskNo].boxes[targetBox].translate =
-          //   "translate(-100%,0%)";
-
-          this.desks[this.currentDeskNo].boxes = this.swapArray(
-            this.desks[this.currentDeskNo].boxes,
+          this.desks[targetDesktop].boxes = this.swapArray(
+            this.desks[targetDesktop].boxes,
             boxIndex,
             targetBox
           );
-          setTimeout(() => {
-            // this.desks[this.currentDeskNo].boxes[boxIndex].translate =
-            //   "translate(0%,0%)";
-            // this.desks[this.currentDeskNo].boxes[targetBox].translate =
-            //   "translate(0%,0%)";
-          }, 250);
           relocate();
         } else {
           // 切换到其他桌面
+          let origin = this.desks[deskIndex].boxes[boxIndex];
+          let replaced = this.desks[targetDesktop].boxes[boxIndex];
+          // 删除，加入
+          this.desks[targetDesktop].boxes[targetBox] = origin;
+          this.desks[deskIndex].boxes[boxIndex] = replaced;
+          console.log(origin, replaced);
+          relocate();
         }
       },
       // 处理拖入 suspendTime计时判断，悬停位置最后的offset 相关动画，行为（并入）
@@ -364,7 +381,8 @@
           }
         }
       },
-      locateMouseMove($event) {
+      // 决定鼠标动向
+      deterMouseMove($event) {
         let changeX = $event.clientX - this.mouse.x;
         let changeY = $event.clientY - this.mouse.y;
 
@@ -378,13 +396,13 @@
         } else if (changeY > 0) {
           this.mouse.orientation.vet = "down";
         }
-        console.log(
-          "和初始位置作比较",
-          changeX,
-          changeY,
-          this.mouse.orientation.hor,
-          this.mouse.orientation.vet
-        );
+        // console.log(
+        //   "和初始位置作比较",
+        //   changeX,
+        //   changeY,
+        //   this.mouse.orientation.hor,
+        //   this.mouse.orientation.vet
+        // );
       },
       // 打开该文件筐的模态窗
       showModal($event, deskIndex, boxIndex) {
@@ -425,10 +443,12 @@
           this.modal.index.box == boxIndex
         );
       },
+      // 鼠标按下定位好点击地址
       mousedown($event) {
         this.mouse.x = $event.clientX;
         this.mouse.y = $event.clientY;
       },
+      // 鼠标移动 节流
       mousemove($event) {
         if (!this.mouseTimer) {
           return;
@@ -501,8 +521,8 @@
 
 /* ndg容器布局 */
 .ndg-container {
-  /* margin: 1vh auto 0 auto; */
-  margin:  0 auto;
+  margin: 1vh auto 0 auto;
+  /* margin: 0 auto; */
   display: flex;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -526,8 +546,8 @@
   min-width: var(--gw);
   max-width: var(--gw);
   /* 限制高度 */
-  max-height: calc(calc(100% / 4));
-  min-height: calc(calc(100% / 4));
+  max-height: var(--gh);
+  min-height: var(--gh);
   box-sizing: border-box;
   border-radius: 10%;
   cursor: pointer;
@@ -623,8 +643,6 @@
   font-size: 12px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
     Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-  /* align-self: flex-end; */
-  /* position: absolute; */
   bottom: 0rem;
   color: whitesmoke;
   font-weight: 400;

@@ -152,7 +152,7 @@ export var desks = [
       },
       {
         id: "1617791e-1ab6-4568-a924-33f3a686cbd4",
-        name: "第9个盒子",
+        name: "第8个盒子",
         apps: [
           {
             name: "sougoup",
@@ -164,7 +164,7 @@ export var desks = [
       },
       {
         id: "971c84fd-0aae-4d40-816f-170841498ee2",
-        name: "第10个盒子",
+        name: "第9个盒子",
         apps: [
           {
             name: "eliaomo",
@@ -176,7 +176,7 @@ export var desks = [
       },
       {
         id: "42883f8f-1f10-4162-aae7-c7adb2fcd710",
-        name: "第11个盒子",
+        name: "第10个盒子",
         apps: [
           {
             name: "bilibili",
@@ -188,7 +188,7 @@ export var desks = [
       },
       {
         id: "d1990732-d1df-4666-adaa-7636b41be54f",
-        name: "第12个盒子",
+        name: "第11个盒子",
         apps: [
           {
             name: "souhu",
@@ -200,7 +200,7 @@ export var desks = [
       },
       {
         id: "bae1ea10-6770-4bfa-812a-7921c12e8e19",
-        name: "第13个盒子",
+        name: "第12个盒子",
         apps: [
           {
             name: "zhongguodianxin",
@@ -212,7 +212,7 @@ export var desks = [
       },
       {
         id: "929d4fe2-ce56-44b1-b1f1-d755ab69e750",
-        name: "第14个盒子",
+        name: "第13个盒子",
         apps: [
           {
             name: "zhongguoliantong",
@@ -224,7 +224,7 @@ export var desks = [
       },
       {
         id: "58b3215c-fc74-4f25-92a6-f6ff6bd69992",
-        name: "第15个盒子",
+        name: "第14个盒子",
         apps: [
           {
             name: "guotaijunan",
@@ -236,7 +236,7 @@ export var desks = [
       },
       {
         id: "f05bde14-1cda-4f11-832e-d415fa6e4ebe",
-        name: "第16个盒子",
+        name: "第15个盒子",
         apps: [
           {
             name: "nongyeyinhang",
@@ -248,7 +248,7 @@ export var desks = [
       },
       {
         id: "cf012f21-4861-4a9d-81cc-f08915b04912",
-        name: "第17个盒子",
+        name: "第16个盒子",
         apps: [
           {
             name: "ziyuan102",
@@ -386,18 +386,18 @@ export var desks = [
         displayNo: 0,
         groupAppLimit: 9
       },
-      {
-        id: "98820344-0c8c-466a-9faa-c310556f5f42",
-        name: "第11个盒子",
-        apps: [
-          {
-            name: "tonghuashun",
-            id: "092b4fcc-1a77-4f43-8729-24be5f1042e0"
-          }
-        ],
-        displayNo: 0,
-        groupAppLimit: 9
-      }
+      // {
+      //   id: "98820344-0c8c-466a-9faa-c310556f5f42",
+      //   name: "第11个盒子",
+      //   apps: [
+      //     {
+      //       name: "tonghuashun",
+      //       id: "092b4fcc-1a77-4f43-8729-24be5f1042e0"
+      //     }
+      //   ],
+      //   displayNo: 0,
+      //   groupAppLimit: 9
+      // }
     ],
     name: "第2个桌面",
     id: "7e6473d2-fcda-4e27-bb52-72ebdccdaa6a"
