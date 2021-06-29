@@ -30,7 +30,7 @@
   // 并入，模态框拽出app，并入盒子，模态框消失在视野中，模糊度恢复到blur(0px);
   // TODO: 启用拖拽模式的时候，outerBox如果内部已经有9倍的盒子，就要让出DOM空间，给app放入，这样显得顺理成章，流畅；
   // ondragstart -> ondrag -> ondragenter -> ondragover -> ondragleave -> ondragend -> ondrop
-  import { CONTAINER, OUTER, APP, DELAY, DESKTOP } from "./common.js";
+  import { CONTAINER, CONTENT_BORDER, APP, DELAY, DESKTOP } from "./common.js";
   import MyIcon from "./MyIcon.vue";
   import ShiftZone from "./ShiftZone.vue";
   import BoxModal from "./modal/BoxModal.vue";
@@ -279,7 +279,7 @@
                 targetDOM.app.index = xpath[i].dataset.order;
               }
             }
-            if (xpath[i].className.indexOf(OUTER) != -1) {
+            if (xpath[i].className.indexOf('ndg-outer') != -1) {
               console.log("outer-box确定被拖拽的DOM", xpath[i].dataset.order);
               targetDOM.box.body = xpath[i];
               targetDOM.box.index = xpath[i].dataset.order;
@@ -578,7 +578,7 @@
   }
 }
 .modal-show {
-  /* animation: showModal 1s both; */
+  animation: showModal 1s both;
 }
 @media screen and (orientation: portrait) {
   .ndg-container {

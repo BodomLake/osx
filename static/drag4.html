@@ -1,0 +1,76 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <style type="text/css">
+    #appBox {
+      height: 100%;
+      width: 100%;
+      display: flex;
+    }
+
+    #box1,
+    #box2,
+    #box3,
+    #box4 {
+      width: 200px;
+      height: 300px;
+      border-radius: 10px;
+      border: 1px solid #333;
+      margin-left: 20px;
+      padding: 20px;
+      display: inline-block;
+      transition: 2s all ease-in-out;
+    }
+
+    #item1,
+    #item2,
+    #item3,
+    #item4,
+    #item5,
+    #item6 {
+      width: 100%;
+      margin: 0 auto;
+      margin-top: 10px;
+      border-radius: 10px;
+      height: 50px;
+      border: 1px solid #333;
+      text-align: center;
+      line-height: 50px;
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <div id="appBox" class="outerside" onmousedown="mousedown(event)">
+    <div id="box1" style="order: 1;">
+      <div id="item1" class="item" draggable="true" ondragstart="drag(event)">item1</div>
+      <div id="item2" class="item" draggable="true" ondragstart="drag(event)">item2</div>
+      <div id="item3" class="item" draggable="true" ondragstart="drag(event)">item3</div>
+    </div>
+    <div id="box2" style="order: 2;">
+      <div id="item4" class="item" draggable="true" ondragstart="drag(event)">item4</div>
+    </div>
+    <div id="box3" style="order: 3;">
+      <div id="item5" class="item" draggable="true" ondragstart="drag($event)">item5</div>
+    </div>
+    <div id="box4" style="order: 4;">
+      <div id="item6" class="item" draggable="true" ondragstart="drag(event)">item6</div>
+    </div>
+  </div>
+
+</body>
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.js"></script>
+<script type="text/javascript">
+  window.onload = function () {
+    setTimeout(() => {
+      document.querySelector('#box1').style.order = "5"
+      // document.querySelector('#box4').style.order = "1"
+    }, 1300);
+
+  }
+
+</script>

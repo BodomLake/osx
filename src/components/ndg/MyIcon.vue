@@ -45,7 +45,7 @@
       size: {
         type: Number,
         default: () => {
-          return 5;
+          return 1;
         }
       }
     },

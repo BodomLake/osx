@@ -60,14 +60,14 @@
       singleSize: {
         type: Number,
         default: () => {
-          return 17;
+          return 10;
         }
       },
       // 多个app时候的尺寸大小
       multipleSize: {
         type: Number,
         default: () => {
-          return 5;
+          return 1;
         }
       },
       showAppName: {
@@ -130,7 +130,6 @@
   border-radius: 3%;
   cursor: pointer;
   position: relative;
-  /* border: 1px solid red; */
   /* 限制宽度 */
   min-width: calc(calc(100% / 3));
   max-width: calc(calc(100% / 3));

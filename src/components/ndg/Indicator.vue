@@ -125,10 +125,7 @@
   height: 0px;
 }
 .ndg-unit-box {
-  /* border: 1px solid black; */
   position: relative;
-  /* min-width: 20%; */
-  /* max-width: 20%; */
 }
 .moreItem {
   width: 1vmin;

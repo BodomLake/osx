@@ -1,0 +1,42 @@
+<style>
+  .col-12 {
+    width: 70%;
+    text-align: center;
+  }
+
+  .list-group-item {
+    position: relative;
+    display: block;
+    padding: .75rem 1.25rem;
+    margin-bottom: -1px;
+    background-color: #fff;
+    border: 1px solid rgba(0, 0, 0, .125);
+  }
+
+  .list-group-item:first-child {
+    border-top-left-radius: .25rem;
+    border-top-right-radius: .25rem;
+  }
+
+</style>
+<div class="row">
+  <h4 class="col-12">简单列表拖拽</h4>
+  <div class="col-12">
+    <div id="example1" class="list-group col">
+      <div class="list-group-item" draggable="false">Item 1</div>
+      <div class="list-group-item" draggable="false">Item 2</div>
+      <div class="list-group-item" draggable="false">Item 3</div>
+      <div class="list-group-item" draggable="false">Item 4</div>
+      <div class="list-group-item" draggable="false">Item 5</div>
+      <div class="list-group-item" draggable="false">Item 6</div>
+    </div>
+  </div>
+</div>
+<script src="../node_modules/sortablejs/Sortable.js"></script>
+<script>
+  let sort = new Sortable(example1, {
+    animation: 500,
+    ghostClass: 'blue-background-class'
+  });
+
+</script>

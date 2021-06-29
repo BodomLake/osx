@@ -1,5 +1,4 @@
 <template >
-  <!-- :style="{'filter': modal.show ?'blur(5px)':''}" -->
   <div class="ndg-modal hor-vet-center" v-show="modalInfo.show" :style="[popAnime,closeAnime]">
     <div class="ndg-modal-left"></div>
     <div class="ndg-modal-center">
