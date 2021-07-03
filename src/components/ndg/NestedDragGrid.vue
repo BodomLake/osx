@@ -278,7 +278,7 @@
       },
       // 处理动画 N*M宫格
       handleDragover($event) {
-        // $event.preventDefault();
+        $event.preventDefault();
         const throttleTime = 100;
         // 节流100ms执行一次
         if (Date.now() - this.boxDOTimer < throttleTime || !this.isDragging) {
@@ -304,25 +304,21 @@
             // 定位到BOX的矩形范围内，得到具体的BOX下标，另外不能覆盖自己，不用和自己交换位子
             if (includeFlag && !selfCoverFlag) {
               console.log("已定位：", "桌面", this.currentDeskNo, "盒子", bid);
-              // console.log(domRect);
-              // 把定位到的box 的 cover状态改为true，其他的box都回归到false
               this.desks[this.currentDeskNo].boxes.forEach((item, index) => {
                 if (index == bid) {
                   item.covered = true;
-                  // console.log(bid, "covered状态已被修改");
                 } else {
                   item.covered = false;
                 }
               });
               this.exchangeBox(this.currentDeskNo, bid);
-              // 定位到了 就跳出循环
+              // 禁止传播
+              $event.stopPropagation();
               return;
             }
           });
           this.showEvent($event);
         }, throttleTime);
-        // 禁止传播？
-        // $event.stopPropagation();
       },
       // 让 draggingDOM和tragetBox交换位子
       exchangeBox(targetDesktop, targetBox) {
