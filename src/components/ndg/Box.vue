@@ -1,24 +1,22 @@
 <template>
   <div class="ndg-scroll-box" :style="{'width': calcBoxWidth(appGroups),
                    'transform': calcBoxOffsetX(appGroups, box.displayNo)}">
-    <!-- 属于文件夹，九宫格模式，默认分割为9个一组，每一组作为一个大方格，含有9个或者以下的方格 -->
+    <!-- 属于文件夹，默认九宫格模式，分割为9个一组，每一组作为一个大方格，含有9个或者以下的方格 -->
     <template v-for="(group, gid) in appGroups">
-      <div class="ndg-app-group" :key="gid" v-if="box.apps.length > 1" :style="{'visibility': box.displayNo != gid ? 'hidden': ''}">
+      <div class="ndg-app-group" :key="gid" v-if="gridMode" :style="{'visibility': box.displayNo != gid ? 'hidden': ''}">
         <!-- 九个app -->
         <template v-for="(app, aid) in group">
-          <!-- @dragstart="appGroupDragStart($event)"  @drop="innerOnDrop"  @dragover="innerDragover" :draggable="isDragging"  @drag="appOnDrag" -->
           <div class="ndg-app" :key="app.id" :name="app.name" :data-group="gid" :data-order="9*gid+aid" :id="app.id" :draggable="draggable">
             <my-icon :className="app.name" v-if="app.name!==''" :size="multipleSize"></my-icon>
             <div class="ndg-app-desc" v-if="showAppName">
               {{app.name}}
             </div>
           </div>
-
         </template>
       </div>
     </template>
-    <!-- 如果不属于文件夹，也是innerBox长度为0 -->
-    <template v-if="box.apps.length == 1">
+    <!-- 不开启宫格模式 -->
+    <template v-if="!gridMode">
       <my-icon :className="box.apps[0].name" :size="singleSize"></my-icon>
     </template>
   </div>
@@ -47,6 +45,9 @@
           groups.push(this.box.apps.slice(i, (i += this.box.groupAppLimit)));
         }
         return groups;
+      },
+      gridMode() {
+        return this.box.apps.length > 1;
       }
     },
     props: {

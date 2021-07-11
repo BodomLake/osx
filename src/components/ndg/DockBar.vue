@@ -47,3 +47,10 @@
   background-color: rgba(255, 255, 255, 0.5);
 }
 </style>
+<style scoped>
+@media screen and (orientation: portrait) {
+  .dock-bar {
+    height: 8vh;
+  }
+}
+</style>

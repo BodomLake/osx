@@ -385,7 +385,7 @@ export var desks = [
         ],
         displayNo: 0,
         groupAppLimit: 9
-      },
+      }
       // {
       //   id: "98820344-0c8c-466a-9faa-c310556f5f42",
       //   name: "第11个盒子",

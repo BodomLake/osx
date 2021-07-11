@@ -1,5 +1,5 @@
 import { desks } from "../app.js";
-import { BACKGROUND, CONTAINER, GROUPAPPLIMIT } from "../common.js";
+import { BACKGROUND, CONTAINER } from "../common.js";
 
 export default {
   // 初始化 二维数组
@@ -10,14 +10,9 @@ export default {
       // 当前指向的桌面序号
       currentDeskNo: 0,
       // 每个BOX每页限制显示数量的上限
-      groupAppLimit: GROUPAPPLIMIT,
+      // groupAppLimit: GROUPAPPLIMIT,
       // 切换桌面所需要的时间（transition动画时间）
-      switchDeskTime: 0.5,
-      // 方格尺寸
-      gridSize: {
-        "--gw": 100 / this.grid.col + "%",
-        "--gh": 100 / this.grid.row + "%"
-      }
+      switchDeskTime: 0.5
     };
   },
   model: {
@@ -39,16 +34,28 @@ export default {
       document.querySelectorAll("." + CONTAINER).forEach((cont, cid) => {
         let boxes = cont.children;
         Array.from(boxes).forEach((box, bid) => {
-          // console.log(box.children[0].getBoundingClientRect());
-          this.$set(
-            this.desks[cid].boxes[bid],
-            "DOMRect",
-            box.children[0].getBoundingClientRect()
-          );
-          // 是否被 dragover
+          // 内部 ndg-content-border
+          let contentRect = box.children[0].getBoundingClientRect();
+          // 外部 ndg-outer
+          let outerRect = box.getBoundingClientRect();
+          // 取最小的一条边长
+          // let minLen = Math.min(contentRect.width, contentRect.height);
+          // console.log(contentRect, "最小的边长", minLen);
+          // 宽度较长？ 那么减少宽度； 高度过高？ 那么减少高度，要按照百分比来进行设置
+          if (contentRect.width > contentRect.height) {
+            box.children[0].style.width = contentRect.height + "px";
+          } else if (contentRect.width < contentRect.height) {
+            box.children[0].style.height = contentRect.width + "px";
+          }
+          // 再次获取定位信息
+          contentRect = box.children[0].getBoundingClientRect();
+          this.$set(this.desks[cid].boxes[bid], "DOMRect", contentRect);
+          this.$set(this.desks[cid].boxes[bid], "outerDOMRect", outerRect);
           this.$set(this.desks[cid].boxes[bid], "covered", false);
-          // 悬停时长，判断当前BOX是否要被合并；至于是否换位（挤压），还要判断鼠标指针 和 BOX几何中心的距离
-          this.$set(this.desks[cid].boxes[bid], "suspendTime", 0);
+          // 在ndg-content-border之内的悬停时长
+          this.$set(this.desks[cid].boxes[bid], "innerSuspendTime", 0);
+          // 在ndg-outer和ndg-content-border之间的悬停时间
+          this.$set(this.desks[cid].boxes[bid], "outerSuspendTime", 0);
         });
         // 追加剩余空间的属性
         this.$set(
@@ -62,18 +69,32 @@ export default {
     relocateDOM() {
       document.querySelectorAll("." + CONTAINER).forEach((cont, cid) => {
         let boxes = cont.children;
-        Array.from(boxes).forEach((b, bid) => {
-          // console.log(box.children[0].getBoundingClientRect());
-          this.desks[cid].boxes[
-            bid
-          ].DOMRect = b.children[0].getBoundingClientRect();
+        Array.from(boxes).forEach((box, bid) => {
+          // 先复位填满 div.ndg-outer
+          box.children[0].style.width = this.boxInitSize.width;
+          box.children[0].style.height = this.boxInitSize.height;
+          // 内部 ndg-content-border
+          let contentRect = box.children[0].getBoundingClientRect();
+          // 外部 ndg-outer
+          let outerRect = box.getBoundingClientRect();
+          // 取最小的一条边长
+          // let minLen = Math.min(contentRect.width, contentRect.height);
+          // console.log(contentRect, "最小的边长", minLen);
+          if (contentRect.width > contentRect.height) {
+            box.children[0].style.width = contentRect.height + "px";
+          } else if (contentRect.width < contentRect.height) {
+            box.children[0].style.height = contentRect.width + "px";
+          }
+          // 再次获取定位信息
+          contentRect = box.children[0].getBoundingClientRect();
+          this.desks[cid].boxes[bid].DOMRect = contentRect;
+          this.desks[cid].boxes[bid].outerDOMRect = outerRect;
+          this.desks[cid].boxes[bid].covered = false;
+          this.desks[cid].boxes[bid].innerSuspendTime = 0;
+          this.desks[cid].boxes[bid].outerSuspendTime = 0;
+          box.children[0].style.transform = "";
         });
-        // 追加剩余空间的属性
-        this.$set(
-          this.desks[cid],
-          "restSpace",
-          this.calcRestSpace(cont, boxes)
-        );
+        this.desks[cid].restSpace = this.calcRestSpace(cont, boxes);
       });
     },
     // rect1(在下)是 最后flex全局剩余没有strech的部分， rect2(在上 靠右)是flex布局BOX没有填满的部分（小于N*M - N）
@@ -82,8 +103,8 @@ export default {
       let lastBoxRect = boxes[boxes.length - 1].getBoundingClientRect();
       let contRect = cont.getBoundingClientRect();
       let rect1, rect2;
-      let N = this.grid.col;
-      let M = this.grid.row;
+      let N = this.layout.col;
+      let M = this.layout.row;
 
       // 全部的Box，没有被每一行(N)整分，同时也满足没有满员的情况
       if (boxes.length % N != 0) {
@@ -111,7 +132,10 @@ export default {
         // 只剩最后一行的空间 只剩下rect2
         rect2 = undefined;
       }
-      return { rect1, rect2 };
+      return {
+        rect1,
+        rect2
+      };
     },
     switchUnit(orientation) {
       this.deskSwitching = true;
