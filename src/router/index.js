@@ -12,7 +12,6 @@ import Parent from "@/components/experience/model/Parent";
 import Stars from "@/components/experience/Stars";
 // Nested Drag Grid
 import NestedDragGrid from "@/components/ndg/NestedDragGrid";
-import NDG from "@/components/ndg/NDG";
 
 Vue.use(Router);
 
@@ -26,14 +25,6 @@ export default new Router({
       path: "/nestedDragGrid",
       name: "NestedDragGrid",
       component: NestedDragGrid,
-      meta: {
-        keepAlive: true // 需要被缓存
-      }
-    },
-    {
-      path: "/ndg",
-      name: "NDG",
-      component: NDG,
       meta: {
         keepAlive: true // 需要被缓存
       }

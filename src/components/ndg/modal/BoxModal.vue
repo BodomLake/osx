@@ -3,25 +3,22 @@
     <div class="ndg-modal-left"></div>
     <div class="ndg-modal-center">
       <div class="ndg-modal-header">
-        <div class="ndg-modal-desc" v-show="editable" @click="keepModal">
+        <div class="ndg-modal-desc" @click="keepModal">
           {{box.name}}
           <my-icon className="delete" v-show="editable"></my-icon>
         </div>
-        <!-- <slot name="header"></slot> -->
       </div>
       <transition name="modal">
         <div class="ndg-modal-content-border" @click="keepModal" v-show="modalInfo.show">
-          <shift-zone orientation="left" :flowOver="isDragging" @switchUnit="switchUnit" :delaySwitchTime="400"></shift-zone>
+          <ShiftZone orientation="left" :flowOver="isDragging" @switchUnit="switchUnit" :delaySwitchTime="400"></ShiftZone>
           <div class="ndg-modal-content">
-            <box v-model="box" :multipleSize="13" :showAppName='true' :draggable="true"></box>
+            <Box v-model="box" :multipleSize="13" :showAppName='true' :draggable="true"></Box>
           </div>
-          <shift-zone orientation="right" :flowOver="isDragging" @switchUnit="switchUnit" :delaySwitchTime="400"></shift-zone>
-          <indicator v-model="box"></indicator>
-          <!-- <slot name="content"></slot> -->
+          <ShiftZone orientation="right" :flowOver="isDragging" @switchUnit="switchUnit" :delaySwitchTime="400"></ShiftZone>
+          <Indicator v-model="box"></Indicator>
         </div>
       </transition>
       <div class="ndg-modal-footer">
-        <!-- <slot name="footer"></slot> -->
       </div>
     </div>
     <div class="ndg-modal-right"></div>
@@ -37,7 +34,7 @@
   export default {
     name: "box-modal",
     components: {
-      indicator: Indicator,
+      Indicator: Indicator,
       MyIcon: MyIcon,
       Box: Box,
       ShiftZone: ShiftZone
@@ -50,6 +47,7 @@
       };
     },
     computed: {
+      // 分组
       appGroups() {
         let groups = [];
         for (let i = 0; i < this.box.apps.length; ) {

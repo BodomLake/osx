@@ -36,7 +36,8 @@
       event: "changeBox"
     },
     data() {
-      return {};
+      return {
+      };
     },
     computed: {
       appGroups() {
@@ -47,7 +48,11 @@
         return groups;
       },
       gridMode() {
-        return this.box.apps.length > 1;
+        if (this.box.covered) {
+          return true;
+        } else{
+          return this.box.apps.length > 1;
+        }
       }
     },
     props: {
