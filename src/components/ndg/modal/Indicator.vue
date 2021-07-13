@@ -1,9 +1,9 @@
 <template>
   <div class="ndg-scroll-indicator">
-    <div class="ndg-scroll-zone">
-      <template v-for="(unit, ui) in desks">
-        <div :key="ui" class="ndg-unit-box" @click="scrollToAppGroup($event, ui)">
-          <div class="ndg-unit" :class="{'ndg-checked-unit': ui.displayNo == ui ,'moreItem': moreItem}">
+    <div class="ndg-scroll-zone" :style="[overLimitShowStyle]">
+      <template v-for="(unit, ui) in appGroups">
+        <div :key="ui" class="ndg-unit-box" @click="scrollToAppGroup($event, ui)" :style="[unitWidth]" v-if="appGroups.length >1">
+          <div class="ndg-unit" :class="{'ndg-checked-unit': box.displayNo == ui ,'moreItem': moreItem}">
           </div>
         </div>
       </template>
@@ -11,7 +11,7 @@
   </div>
 </template>
 <script>
-  // 桌面滑动指示器
+  // BOX内部滑动指示器
   export default {
     name: "indicator",
     data() {
@@ -21,11 +21,10 @@
       };
     },
     props: {
-      desks: {
-        type: Array,
-        required: true,
+      box: {
+        type: Object,
         default: () => {
-          return [];
+          return {};
         }
       },
       infiniteScroll: {
@@ -44,10 +43,28 @@
       }
     },
     model: {
-      prop: "desks",
-      event: "changeDesks"
+      prop: "box",
+      event: "changeBox"
     },
     computed: {
+      appGroups() {
+        let groups = [];
+        for (let i = 0; i < this.box.apps.length; ) {
+          groups.push(this.box.apps.slice(i, (i += this.box.groupAppLimit)));
+        }
+        return groups;
+      },
+      unitWidth() {
+        let val = 100 / this.displayMaxNum + "%";
+        return { "max-width": val, "min-width": val };
+      },
+      //    如果实际页面 大于等于规定上限，那么显示的手法就是靠左显示flex-start，另外一种就是小于上限：则居中center
+      overLimitShowStyle() {
+        return {
+          "justify-content":
+            this.appGroups.length < this.displayMaxNum ? "center" : "flex-start"
+        };
+      }
     },
     methods: {
       scrollToAppGroup($event, ui) {

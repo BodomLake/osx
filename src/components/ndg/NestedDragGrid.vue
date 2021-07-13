@@ -18,7 +18,7 @@
                   draggable="true" @resize="handleResize($event)" @drag="appBoxDrag" @dragenter="handleDragEnter($event,i,j)"
                   @dragleave="handleDragLeave($event,i,j)" @dragstart="boxStartDrag($event,i,j)" @dblclick="showModal($event, i,j)"
                   @touchstart="touchstart" @touchend="touchend" @touchmove="touchmove">
-                  <Box v-model="desk.boxes[j]" :multipleSize="4" :singleSize="12" :gridLayout="desk.boxes[j].length >1 || box.covered"></Box>
+                  <Box v-model="desk.boxes[j]" :multipleSize="4" :singleSize="12"></Box>
                 </div>
                 <div class="ndg-desc" style="animation:none" v-show="!toggleBox(i,j)">{{box.name | resolveAppName}}</div> <!-- {{box.name}}-->
               </div>
@@ -28,8 +28,9 @@
       </template>
     </div>
     <!-- 文件夹的模态框，要在确定了的情况下加以渲染，即同时满足当下的定位和双击事件-->
-    <BoxModal class="modal-show" v-model="desks[modal.index.desk].boxes[modal.index.box]" :modalInfo="modal" ref="modal">
+    <BoxModal class="modal-show" v-model="modalContent" :modalInfo="modal" ref="modal">
     </BoxModal>
+    <Indicator v-model="desks"></Indicator>
     <DockBar v-model="dockApps"></DockBar>
   </div>
 </template>
@@ -39,13 +40,14 @@
   // 并入，模态框拽出app，并入盒子，模态框消失在视野中，模糊度恢复到blur(0px);
   // TODO: 启用拖拽模式的时候，outerBox如果内部已经有9倍的盒子，就要让出DOM空间，给app放入，这样显得顺理成章，流畅；
   // ondragstart -> ondrag -> ondragenter -> ondragover -> ondragleave -> ondragend -> ondrop
-  import { CONTAINER, CONTENT_BORDER, APP, DELAY, DESKTOP } from "./common.js";
+  import { DESKTOP } from "./common.js";
   import MyIcon from "./MyIcon.vue";
   import ShiftZone from "./ShiftZone.vue";
   import BoxModal from "./modal/BoxModal.vue";
   import Box from "./Box.vue";
   import initMixin from "./mixins/initMixin.js";
   import DockBar from "./DockBar.vue";
+  import Indicator from "./Indicator.vue";
   export default {
     name: "nested-drag-grid",
     components: {
@@ -53,12 +55,14 @@
       BoxModal: BoxModal,
       Box: Box,
       ShiftZone: ShiftZone,
-      DockBar: DockBar
+      DockBar: DockBar,
+      Indicator: Indicator
     },
     mixins: [initMixin],
     mounted() {
       // 定位，格式化，初始化
       setTimeout(() => {
+        this.locateDOM(false);
         this.square();
         this.$forceUpdate();
       }, 300);
@@ -206,7 +210,7 @@
           },
           draggable: false
         },
-        // 启用拖拽？
+        // 启用拖拽？进入拖拽模式，桌面添加一个；BOX全部添加一组，并且滑动到最后一组（displayNo调节到最大）；对应的指示器也要添加一个圆点
         enableDrag: false,
         // 正在切换桌面
         deskSwitching: false,
@@ -245,6 +249,9 @@
       // 拖拽模式下的动画开关
       shakeAnimeFlag() {
         return this.enableDrag;
+      },
+      modalContent() {
+        return this.desks[this.modal.index.desk].boxes[this.modal.index.box];
       }
     },
     methods: {
@@ -311,29 +318,29 @@
         // 新一轮计时，重新获取目前时间
         this.deskDOTimer = Date.now();
         setTimeout(() => {
-          // console.log("dragOverContainer------");
-
+          // console.log("------dragOverContainer------");
           let rect1 = this.desks[this.currentDeskNo].restSpace.rect1;
           let rect2 = this.desks[this.currentDeskNo].restSpace.rect2;
           // console.log(rect1, rect2);
           // 判断是否包含在剩余空间（非BOX的container）范围内？
-          let includeFlag = rectRect => {
+          let includeFlag = restRect => {
+            if (restRect == undefined) {
+              return false;
+            }
             return (
-              rectRect.left < $event.clientX &&
-              rectRect.top < $event.clientY &&
-              rectRect.right > $event.clientX &&
-              rectRect.bottom > $event.clientY
+              restRect.left < $event.clientX &&
+              restRect.top < $event.clientY &&
+              restRect.right > $event.clientX &&
+              restRect.bottom > $event.clientY
             );
           };
-          if (rect1) {
-            if (includeFlag(rect1)) {
-              console.log("进入剩余区域1");
-            }
+          if (includeFlag(rect1)) {
+            this.locateDOM(true);
+            console.log("进入剩余区域1");
           }
-          if (rect2) {
-            if (includeFlag(rect2)) {
-              console.log("进入剩余区域2");
-            }
+          if (includeFlag(rect2)) {
+            this.locateDOM(true);
+            console.log("进入剩余区域2");
           }
           // this.showEvent($event);
         }, throttleTime);
@@ -375,22 +382,28 @@
             // 判断是否包含在OUTER-BOX的矩形范围内
             let outerIncludeFlag = judgeFlag(outerDomRect);
             // 重置某个桌面除了bid的其他BOX的cover以及悬停时长
-            let recoverOtherBox = (did, bid) => {
+            let recoverOtherBox = (did, boxId) => {
               this.desks[did].boxes.forEach((item, index) => {
-                if (index != bid) {
+                if (index != boxId) {
                   item.covered = false;
                   item.innerSuspendTime = 0;
                   item.outerSuspendTime = 0;
                 }
               });
+              // console.log(
+              //   "--recoverOtherBoxs--",
+              //   this.desks[did].boxes[boxId].covered ? "覆盖" : "未覆盖"
+              // );
             };
             if (selfCoverFlag && (outerIncludeFlag || innerIncludeFlag)) {
-              recoverOtherBox(this.currentDeskNo, bid);
-              // console.log("回到当前被拖拽的box");
+              recoverOtherBox(this.currentDeskNo, boxIndex);
+              console.log("回到当前被拖拽的box");
+              return;
             }
             // 在OUTER-BOX的矩形范围内，并且在content-border外部？
             if (outerIncludeFlag && !innerIncludeFlag && !selfCoverFlag) {
               recoverOtherBox(this.currentDeskNo, bid);
+              console.log("已定位：", "桌面", this.currentDeskNo, "BOX外部", bid);
               box.outerSuspendTime += throttleTime;
               console.log(
                 `第${bid}个outerSuspendTime悬停时间累计为`,
@@ -400,14 +413,13 @@
               if (box.outerSuspendTime > this.suspendJudgeLimit) {
                 this.boxAction(this.currentDeskNo, bid, "switch");
               }
-              // $event.stopPropagation();
               return;
             }
 
             // 定位到BOX的矩形范围内，得到具体的BOX下标，另外不能覆盖自己，不用和自己交换位子
             if (innerIncludeFlag && !selfCoverFlag) {
               recoverOtherBox(this.currentDeskNo, bid);
-              console.log("已定位：", "桌面", this.currentDeskNo, "盒子", bid);
+              console.log("已定位：", "桌面", this.currentDeskNo, "BOX内部", bid);
               // 追加悬停时间
               box.innerSuspendTime += throttleTime;
               // 修改覆盖标识 默认100ms判定
@@ -421,6 +433,10 @@
                 if (isApp) {
                   // 可以确认正在被拉拽物被覆盖,covered绑定了一部分动画做出相应动画
                   box.covered = true;
+                  console.log(
+                    `第${bid}：innerSuspendTime悬停时间：`,
+                    box.innerSuspendTime
+                  );
                 } else {
                   // 被拖拽的是APP集合
                 }
@@ -435,31 +451,30 @@
               }
 
               // 显示悬停时间
-              console.log(
-                `第${bid}个innerSuspendTime悬停时间累计为`,
-                box.innerSuspendTime,
-                "覆盖？",
-                box.covered
-              );
+
               return;
               // 禁止传播
               // $event.stopPropagation();
             }
           });
-          this.showEvent($event);
+          // this.showEvent($event);
         }, throttleTime);
       },
       // 延时一小段间隙，处理悬停时间
       handleDrop($event, deskIndex, boxIndex) {
         $event.preventDefault();
         // 节流100ms执行一次
-        const delayTime = 100;
+        const delayTime = 200;
         let box = this.desks[deskIndex].boxes[boxIndex];
         // 时间在 suspendJudgeLimit和dragIntoTimeLimit区间之中
         let dragIntoFlag =
           box.innerSuspendTime > this.suspendJudgeLimit &&
           box.innerSuspendTime < this.dragIntoTimeLimit;
-        console.log(dragIntoFlag, box.innerSuspendTime);
+        console.log(
+          dragIntoFlag ? "划入文件夹" : "不划入",
+          "===>>耗时总计：",
+          box.innerSuspendTime
+        );
         if (dragIntoFlag) {
           this.boxAction(deskIndex, boxIndex, "dragInto");
         }
@@ -491,7 +506,8 @@
             // }
             this.draggingDom.desk.index = targetDesktop;
             this.draggingDom.box.index = targetBox;
-            this.locateDOM(true);
+            // 刷新DOM定位，重置悬停状态
+            this.locateDOM(true, true);
           } else {
             // 切换到其他桌面
             let origin = this.desks[deskIndex].boxes[boxIndex];
@@ -501,10 +517,10 @@
             this.desks[deskIndex].boxes[boxIndex] = replaced;
             // TODO: 未完待续
             console.log(origin, replaced);
-
             this.draggingDom.desk.index = targetDesktop;
             this.draggingDom.box.index = targetBox;
-            this.locateDOM(true);
+            // 刷新DOM定位，重置悬停状态
+            this.locateDOM(true, true);
           }
         } else if (actionType == "dragInto") {
           // 拖入其中
@@ -514,11 +530,13 @@
             name: box.apps[0].name
           };
           this.desks[targetDesktop].boxes[targetBox].apps.push(draggedApp);
+          this.desks[targetDesktop].boxes[targetBox].covered = false;
           // 删掉整个盒子
           this.desks[deskIndex].boxes.splice(boxIndex, 1)[0];
-          // setTimeout(() => {
-          //   this.locateDOM(true);
-          // }, 300);
+          setTimeout(() => {
+            // 刷新DOM定位，重置悬停状态
+            // this.locateDOM(true, true);
+          }, 300);
         }
       },
       handleResize($event) {
@@ -717,6 +735,7 @@
 /* BOX相互置换的时候追加样式 */
 .ndg-outer-shift-move .ndg-content-border {
   border: 1px solid white;
+  transition: transform 0.5s ease-in-out;
 }
 .ndg-content-border {
   position: relative;

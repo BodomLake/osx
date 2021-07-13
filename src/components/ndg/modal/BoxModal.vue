@@ -29,7 +29,7 @@
   import MyIcon from "../MyIcon.vue";
   import Box from "../Box.vue";
   // 右键点击出现的模态框
-  import Indicator from "../Indicator.vue";
+  import Indicator from "./Indicator.vue";
   import ShiftZone from "../ShiftZone.vue";
   export default {
     name: "box-modal",

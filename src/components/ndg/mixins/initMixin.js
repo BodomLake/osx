@@ -10,7 +10,9 @@ export default {
       clearTimeout(this.updatedTimer);
     }
     this.updatedTimer = setTimeout(() => {
-      this.locateDOM(true);
+      // 重置所有
+      console.log("重定位DOM完毕, 不重置悬停状态");
+      this.locateDOM(true, false);
     }, 300);
   },
   data() {
@@ -40,7 +42,7 @@ export default {
   },
   watch: {},
   methods: {
-    locateDOM(refreshFlag) {
+    locateDOM(refreshFlag, resetSuspend) {
       document.querySelectorAll("." + CONTAINER).forEach((cont, cid) => {
         let boxes = cont.children;
         Array.from(boxes).forEach((box, bid) => {
@@ -60,9 +62,12 @@ export default {
             // 刷新状态
             this.desks[cid].boxes[bid].DOMRect = contentRect;
             this.desks[cid].boxes[bid].outerDOMRect = outerRect;
-            // this.desks[cid].boxes[bid].covered = false;
-            // this.desks[cid].boxes[bid].innerSuspendTime = 0;
-            // this.desks[cid].boxes[bid].outerSuspendTime = 0;
+          }
+          // 是否要重置悬停情况
+          if (resetSuspend == true || resetSuspend == undefined) {
+            this.desks[cid].boxes[bid].covered = false;
+            this.desks[cid].boxes[bid].innerSuspendTime = 0;
+            this.desks[cid].boxes[bid].outerSuspendTime = 0;
             box.children[0].style.transform = "";
           }
         });
@@ -73,7 +78,7 @@ export default {
             "restSpace",
             this.calcRestSpace(cont, boxes)
           );
-        } else {
+        } else if (refreshFlag == true) {
           this.desks[cid].restSpace = this.calcRestSpace(cont, boxes);
         }
       });
@@ -83,46 +88,46 @@ export default {
       document.querySelectorAll("." + CONTAINER).forEach((cont, cid) => {
         let boxes = cont.children;
         Array.from(boxes).forEach((box, bid) => {
+          box.children[0].style.transform = "";
           let contentRect = box.children[0].getBoundingClientRect();
-          let compare = Math.abs(contentRect.width - contentRect.height);
-          // 如果差距不大，就不需要修正
-          if (compare < 2) {
-            // console.log("如果差距不大，就不需要修正");
-            return;
-          }
-
-          // 初始化百分比宽度、高度
-          box.children[0].style.width = this.boxInitSize.width;
-          box.children[0].style.height = this.boxInitSize.height;
-          // 获取高宽（px单位）
-          contentRect = box.children[0].getBoundingClientRect();
           // 外部 ndg-outer
           let outerRect = box.getBoundingClientRect();
-          // 宽度较长？ 那么减少宽度； 高度过高？ 那么减少高度，要按照百分比来进行设置
-          if (contentRect.width > contentRect.height) {
-            let widthGradient = this.gradientSplit(
-              contentRect.width,
-              contentRect.height
-            );
-            widthGradient.forEach((number, nid) => {
-              setTimeout(() => {
-                box.children[0].style.width = number + "px";
-              }, nid * 5);
-            });
-            // box.children[0].style.width = contentRect.height + "px";
-          } else if (contentRect.width < contentRect.height) {
-            let heightGradient = this.gradientSplit(
-              contentRect.width,
-              contentRect.height
-            );
-            heightGradient.forEach((number, nid) => {
-              setTimeout(() => {
-                box.children[0].style.height = number + "px";
-              }, nid * 5);
-            });
+          let compare = Math.abs(contentRect.width - contentRect.height);
+          // 如果差距不大，就不需要修正
+          if (compare > 1) {
+            // console.log("如果差距大，就需要修正");
+            // 初始化百分比宽度、高度
+            box.children[0].style.width = this.boxInitSize.width;
+            box.children[0].style.height = this.boxInitSize.height;
+            // 获取高宽（px单位）
+            contentRect = box.children[0].getBoundingClientRect();
+
+            // 宽度较长？ 那么减少宽度； 高度过高？ 那么减少高度，要按照百分比来进行设置
+            if (contentRect.width > contentRect.height) {
+              let widthGradient = this.gradientSplit(
+                contentRect.width,
+                contentRect.height
+              );
+              widthGradient.forEach((number, nid) => {
+                setTimeout(() => {
+                  box.children[0].style.width = number + "px";
+                }, nid * 5);
+              });
+            } else if (contentRect.width < contentRect.height) {
+              let heightGradient = this.gradientSplit(
+                contentRect.width,
+                contentRect.height
+              );
+              heightGradient.forEach((number, nid) => {
+                setTimeout(() => {
+                  box.children[0].style.height = number + "px";
+                }, nid * 5);
+              });
+            }
           }
           this.desks[cid].boxes[bid].DOMRect = contentRect;
           this.desks[cid].boxes[bid].outerDOMRect = outerRect;
+
           // 再次获取定位信息
         });
       });
