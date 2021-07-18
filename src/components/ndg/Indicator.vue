@@ -2,7 +2,7 @@
   <div class="ndg-scroll-indicator">
     <div class="ndg-scroll-zone">
       <template v-for="(unit, ui) in desks">
-        <div :key="ui" class="ndg-unit-box" @click="scrollToAppGroup($event, ui)">
+        <div :key="ui" class="ndg-unit-box" @click="scrollToDestDesk($event, ui)">
           <div class="ndg-unit" :class="{'ndg-checked-unit': ui.displayNo == ui ,'moreItem': moreItem}">
           </div>
         </div>
@@ -47,12 +47,11 @@
       prop: "desks",
       event: "changeDesks"
     },
-    computed: {
-    },
+    computed: {},
     methods: {
-      scrollToAppGroup($event, ui) {
+      scrollToDestDesk($event, ui) {
         // 更新 v-model
-        this.box.displayNo = ui;
+        this.desks.displayNo = ui;
 
         // 平行移动游标指示器（向右）
         let transform = () => {
@@ -70,7 +69,7 @@
           this.offset--;
           transform();
         }
-        if (ui == displayEndNo && ui < this.appGroups.length - 1) {
+        if (ui == displayEndNo && ui < this.desks.length - 1) {
           // 如果点击了最后一个游标
           this.offset++;
           transform();

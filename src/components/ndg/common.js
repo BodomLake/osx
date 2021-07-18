@@ -3,5 +3,6 @@ export const BACKGROUND = PREFIX + "background";
 export const CONTAINER = PREFIX + "container";
 export const CONTENT_BORDER = PREFIX + "content-border";
 export const DESKTOP = PREFIX + 'desktop';
+export const GROUP = PREFIX + "ndg-app-group";
 export const APP = PREFIX + "app";
 // export const GROUPAPPLIMIT = 9;

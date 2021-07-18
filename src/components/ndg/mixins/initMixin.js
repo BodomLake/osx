@@ -1,9 +1,10 @@
-import { desks } from "../app.js";
-import { BACKGROUND, CONTAINER } from "../common.js";
+import {desks} from "../app.js";
+import {BACKGROUND, CONTAINER, DESKTOP} from "../common.js";
 
 export default {
   // 初始化 二维数组
-  beforeCreate() {},
+  beforeCreate() {
+  },
   updated() {
     console.log("渲染完毕");
     if (this.updatedTimer) {
@@ -11,8 +12,8 @@ export default {
     }
     this.updatedTimer = setTimeout(() => {
       // 重置所有
-      console.log("重定位DOM完毕, 不重置悬停状态");
-      this.locateDOM(true, false);
+      this.locateBOX();
+      console.log("重定位div.ndg-outer完毕, 不重置悬停状态");
     }, 300);
   },
   data() {
@@ -41,56 +42,80 @@ export default {
     }
   },
   watch: {},
+  //
   methods: {
-    locateDOM(refreshFlag, resetSuspend) {
-      document.querySelectorAll("." + CONTAINER).forEach((cont, cid) => {
+    // 初始化BOX的定位和尺寸
+    initBOX() {
+      let containers = document.querySelectorAll("." + CONTAINER)
+      containers.forEach((cont, cid) => {
         let boxes = cont.children;
         Array.from(boxes).forEach((box, bid) => {
           let contentRect = box.children[0].getBoundingClientRect();
           // 外部 ndg-outer
           let outerRect = box.getBoundingClientRect();
-          // 如果不是刷新 false undefined
-          if (!refreshFlag || refreshFlag == undefined) {
-            this.$set(this.desks[cid].boxes[bid], "DOMRect", contentRect);
-            this.$set(this.desks[cid].boxes[bid], "outerDOMRect", outerRect);
-            this.$set(this.desks[cid].boxes[bid], "covered", false);
-            // 在ndg-content-border之内的悬停时长
-            this.$set(this.desks[cid].boxes[bid], "innerSuspendTime", 0);
-            // 在ndg-outer和ndg-content-border之间的悬停时间
-            this.$set(this.desks[cid].boxes[bid], "outerSuspendTime", 0);
-          } else if (refreshFlag == true) {
-            // 刷新状态
-            this.desks[cid].boxes[bid].DOMRect = contentRect;
-            this.desks[cid].boxes[bid].outerDOMRect = outerRect;
-          }
-          // 是否要重置悬停情况
-          if (resetSuspend == true || resetSuspend == undefined) {
-            this.desks[cid].boxes[bid].covered = false;
-            this.desks[cid].boxes[bid].innerSuspendTime = 0;
-            this.desks[cid].boxes[bid].outerSuspendTime = 0;
-            box.children[0].style.transform = "";
-          }
+          this.$set(this.desks[cid].boxes[bid], "DOMRect", contentRect);
+          this.$set(this.desks[cid].boxes[bid], "outerDOMRect", outerRect);
+          // 是否以模态框的形式打开模态框
+          this.$set(this.desks[cid].boxes[bid], "showModal", false);
+          // 该BOX是否被拖拽物覆盖
+          this.$set(this.desks[cid].boxes[bid], "covered", false);
+          // 在ndg-content-border之内的悬停时长
+          this.$set(this.desks[cid].boxes[bid], "innerSuspendTime", 0);
+          // 在ndg-outer和ndg-content-border之间的悬停时间
+          this.$set(this.desks[cid].boxes[bid], "outerSuspendTime", 0);
         });
-        if (!refreshFlag || refreshFlag == undefined) {
-          // 追加剩余空间的属性
-          this.$set(
-            this.desks[cid],
-            "restSpace",
-            this.calcRestSpace(cont, boxes)
-          );
-        } else if (refreshFlag == true) {
-          this.desks[cid].restSpace = this.calcRestSpace(cont, boxes);
-        }
+        let restSpace = this.calcRestSpace(cont, boxes);
+        this.$set(this.desks[cid], "restSpace", restSpace);
       });
     },
-    // 让 ndg-content-border 正方形化
+    // 仅仅是定位BOX
+    // 疑难点：DOM刷新总是 滞后于 数据更新，所以要根据数据来（计算，定义，更新）DOM的新属性。（初始化的情况除外）
+    locateBOX() {
+      // 因为数据(this.data)的更新优先于DOM的更新，所以循环数据，然后在定位相应的DOM，进而获取DOM的相关信息
+      this.desks.forEach((desk, did) => {
+        desk.boxes.forEach((box, bid) => {
+          let boxDOM = document.querySelectorAll('.' + CONTAINER)[did].children[bid];
+          // 内部 ndg-outer-border
+          let contentRect = boxDOM.children[0].getBoundingClientRect();
+          // 外部 ndg-outer
+          let outerRect = boxDOM.getBoundingClientRect();
+          box.DOMRect = contentRect;
+          box.outerDOMRect = outerRect;
+        })
+        let contDOM = document.querySelectorAll('.' + CONTAINER)[did];
+        desk.restSpace = this.calcRestSpace(contDOM, contDOM.children);
+      })
+    },
+    // 重置BOX 高宽尺寸 以及所有的悬停状态
+    resetBOX() {
+      this.desks.forEach((desk, did) => {
+        desk.boxes.forEach((box, bid) => {
+          let boxDOM = document.querySelectorAll('.' + CONTAINER)[did].children[bid];
+          // 内部 ndg-outer-border
+          let contentRect = boxDOM.children[0].getBoundingClientRect();
+          // 外部 ndg-outer
+          let outerRect = boxDOM.getBoundingClientRect();
+          box.DOMRect = contentRect;
+          box.outerDOMRect = outerRect;
+          box.covered = false;
+          // box.showModal = false;
+          box.innerSuspendTime = 0;
+          box.outerSuspendTime = 0;
+          boxDOM.children[0].style.transform = "";
+        })
+        let contDOM = document.querySelectorAll('.' + CONTAINER)[did];
+        desk.restSpace = this.calcRestSpace(contDOM, contDOM.children);
+      })
+
+    },
+    // 让 ndg-content-border 正方形化，重新分配高宽
     square() {
-      document.querySelectorAll("." + CONTAINER).forEach((cont, cid) => {
+      let containers = document.querySelectorAll("." + CONTAINER)
+      containers.forEach((cont, cid) => {
         let boxes = cont.children;
         Array.from(boxes).forEach((box, bid) => {
           box.children[0].style.transform = "";
           let contentRect = box.children[0].getBoundingClientRect();
-          // 外部 ndg-outer
           let outerRect = box.getBoundingClientRect();
           let compare = Math.abs(contentRect.width - contentRect.height);
           // 如果差距不大，就不需要修正
@@ -121,14 +146,12 @@ export default {
               heightGradient.forEach((number, nid) => {
                 setTimeout(() => {
                   box.children[0].style.height = number + "px";
-                }, nid * 5);
+                }, nid * 10);
               });
             }
           }
           this.desks[cid].boxes[bid].DOMRect = contentRect;
           this.desks[cid].boxes[bid].outerDOMRect = outerRect;
-
-          // 再次获取定位信息
         });
       });
     },
@@ -180,10 +203,10 @@ export default {
         document.querySelector(
           "div." + BACKGROUND
         ).style.transform = `translateX(-${this.deskShiftOffset *
-          this.currentDeskNo}%)`;
+        this.currentDeskNo}%)`;
         // 切换桌面要500ms的时间，所以延时执行relcoateDOM
         setTimeout(() => {
-          this.locateDOM(true);
+          this.locateBOX();
           this.deskSwitching = false;
           console.log(this.deskSwitching, "切换桌面完毕！！！");
         }, this.switchDeskTime * 1000);

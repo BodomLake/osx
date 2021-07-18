@@ -1,8 +1,8 @@
 <template>
   <div class="ndg-scroll-indicator">
     <div class="ndg-scroll-zone" :style="[overLimitShowStyle]">
-      <template v-for="(unit, ui) in appGroups">
-        <div :key="ui" class="ndg-unit-box" @click="scrollToAppGroup($event, ui)" :style="[unitWidth]" v-if="appGroups.length >1">
+      <template v-for="(unit, ui) in box.appGroups">
+        <div :key="ui" class="ndg-unit-box" @click="scrollToAppGroup($event, ui)" :style="[unitWidth]" v-if="box.appGroups.length >1">
           <div class="ndg-unit" :class="{'ndg-checked-unit': box.displayNo == ui ,'moreItem': moreItem}">
           </div>
         </div>
@@ -47,13 +47,6 @@
       event: "changeBox"
     },
     computed: {
-      appGroups() {
-        let groups = [];
-        for (let i = 0; i < this.box.apps.length; ) {
-          groups.push(this.box.apps.slice(i, (i += this.box.groupAppLimit)));
-        }
-        return groups;
-      },
       unitWidth() {
         let val = 100 / this.displayMaxNum + "%";
         return { "max-width": val, "min-width": val };
@@ -62,7 +55,7 @@
       overLimitShowStyle() {
         return {
           "justify-content":
-            this.appGroups.length < this.displayMaxNum ? "center" : "flex-start"
+            this.box.appGroups.length < this.displayMaxNum ? "center" : "flex-start"
         };
       }
     },
@@ -87,7 +80,7 @@
           this.offset--;
           transform();
         }
-        if (ui == displayEndNo && ui < this.appGroups.length - 1) {
+        if (ui == displayEndNo && ui < this.box.appGroups.length - 1) {
           // 如果点击了最后一个游标
           this.offset++;
           transform();
