@@ -1,5 +1,5 @@
 <template>
-  <div class="ndg-modal hor-vet-center" v-show="box.showModal">
+  <div class="ndg-modal hor-vet-center" style="z-index: -10" id="ndg-modal">
     <div class="ndg-modal-left"></div>
     <div class="ndg-modal-center">
       <!-- app集合的描述 -->
@@ -10,7 +10,7 @@
         </div>
       </div>
       <!-- app集合的内容，加一个初始化的位置，然后移动到屏幕的中央 -->
-      <div class="ndg-modal-content-border-locator" @click="keepModal" style="visibility: hidden" ref="main">
+      <div class="ndg-modal-content-border-locator" style="visibility: hidden">
         `<!---->
       </div>
       <!-- 底部区域 -->
@@ -18,11 +18,13 @@
       </div>
     </div>
     <div class="ndg-modal-right"></div>
-    <div class="ndg-modal-content-border" :style="[initRect,destRect]" @click="keepModal">
+    <div id="ndg-modal-content-border" class="ndg-modal-content-border"
+         :style="[durationTime,initRect,destRect,scaleRatio]"
+         @click="($event)=>{$event.stopPropagation()}">
       <ShiftZone orientation="left" :flowOver="isDragging" @switchUnit="switchUnit"
                  :delaySwitchTime="400"></ShiftZone>
       <div class="ndg-modal-content">
-        <Box v-model="box" :enableDrag="enableDrag" :multipleSize="30" :showAppName='true'></Box>
+        <Box v-model="box" :enableDrag="enableDrag" :showAppName='true'></Box>
       </div>
       <ShiftZone orientation="right" :flowOver="isDragging" @switchUnit="switchUnit"
                  :delaySwitchTime="400"></ShiftZone>
@@ -64,7 +66,6 @@ export default {
           ],
           displayNo: 0,
           groupAppLimit: 9,
-          showModal: false,
           DOMRect: {
             width: 0,
             height: 0
@@ -86,68 +87,79 @@ export default {
       type: Boolean,
       default: false
     },
+    portrait: {
+      type: Boolean,
+      default: () => {
+        return window.innerHeight > window.innerWidth
+      }
+    },
+    modalSize: {
+      type: Object,
+      default: () => {
+        return window.innerHeight > window.innerWidth ? {
+          width: 80,
+          height: 80
+        } : {
+          width: 60,
+          height: 60
+        }
+      }
+    },
+    duration: {
+      type: Number,
+      default: 1000
+    }
   },
   model: {
     prop: "box",
     event: "changeBox"
   },
   watch: {
-    // 判断是否显示
-    "box.showModal": {
-      handler: function (newFlag, oldFlag) {
-        if (newFlag == true) {
-          // debugger;
-          // 处理距离
-          let modalRect = document.querySelector(".ndg-modal-content-border-locator").getBoundingClientRect();
-          console.log(modalRect)
-          this.destPos = modalRect;
-        }
-      },
-      deep: false,
-      immediate: true
+    "portrait": {
+      immediate: true,
+      handler: function (portrait, oldVal) {
+        this.destRect = this.calcModalRect(portrait)
+        console.log(this.modalSize, portrait ? '竖屏' : '横屏', this.destRect)
+      }
     }
   },
   data() {
     return {
-      editable: true,
+      // 正在进行拖拽
       isDragging: true,
       // 生命周期防抖器
       updatedTimer: 0,
-      destPos: {
-        left: 0,
-        top: 0,
-        width: 0,
-        height: 0,
-      }
-    };
+      // 模态目的地 几何信息
+      destRect: {},
+    showModal: false
+  }
+    ;
   },
-
   computed: {
+    // 初始化的位置和尺寸
     initRect() {
       return {
-        "--initWidth": this.box.DOMRect? this.box.DOMRect.width + 'px' : '0px',
-        "--initHeight": this.box.DOMRect? this.box.DOMRect.width + 'px' : + '0px',
-        "--initX": this.box.DOMRect? this.box.DOMRect.x + 'px' : + '0px',
-        "--initY": this.box.DOMRect? this.box.DOMRect.y + 'px' : + '0px',
+        "--initWidth": this.box.DOMRect ? this.box.DOMRect.width + 'px' : '0px',
+        "--initHeight": this.box.DOMRect ? this.box.DOMRect.width + 'px' : +'0px',
+        "--initX": this.box.DOMRect ? this.box.DOMRect.x + 'px' : +'0px',
+        "--initY": this.box.DOMRect ? this.box.DOMRect.y + 'px' : +'0px',
       }
     },
-    destRect() {
-      // return {
-      //   "--destWidth": this.destPos.width + 'px',
-      //   "--destHeight": this.destPos.height + 'px',
-      //   "--destX": this.destPos.left + 'px',
-      //   "--destY": this.destPos.top + 'px',
-      // }
+    scaleRatio() {
+      return this.calcRatio()
+    },
+    durationTime() {
       return {
-        "--destWidth": 432 + 'px',
-        "--destHeight": 432 + 'px',
-        "--destX": 361 + 'px',
-        "--destY": 144 + 'px',
+        '--duration-time': this.duration + 'ms'
       }
     }
   },
   mounted() {
-    // modal所占据的矩形区域
+    window.addEventListener('resize', ($event) => {
+      console.log('模态框重置destPos')
+      this.destRect = this.calcModalRect(this.portrait)
+      this.scaleRatio = this.calcRatio(this.portrait)
+    })
   },
   updated() {
     // 防抖 200ms
@@ -157,26 +169,52 @@ export default {
     }
     if (Date.now() - this.updatedTimer < debounceTime) {
       // 重置为当前时间
-      console.log(this.box.showModal);
+      console.log(this.showModal);
       this.updatedTimer = Date.now();
       return;
     }
     this.updatedTimer = setTimeout(() => {
-      // 重置所有
-      let modalSpace = document
-        .querySelector(".ndg-modal-content-border")
-        .getBoundingClientRect();
-      // console.log(modalSpace);
-      this.$set(this.box, "modalSpace", modalSpace);
-      1
-      // console.log("定位Modal完成, 不重置悬停状态");
+      console.log('模态框重置destPos')
+      this.destRect = this.calcModalRect(this.portrait)
     }, debounceTime);
   },
   methods: {
     keepModal($event) {
-      // console.log($event);
-      // 防止点击模态框的时候响应 window全局click关闭模态框
       $event.stopPropagation();
+    },
+    // 打开模态框
+    toggleModal() {
+      if (!this.showModal) {
+        // 模态框开启动画
+        document.querySelector('#ndg-modal').style.zIndex = 10;
+        let modalContent = document.querySelector("#ndg-modal-content-border")
+        modalContent.classList.add('popAnime');
+        modalContent.style.zIndex = 9999;
+        setTimeout(() => {
+          console.log(this.destRect)
+          modalContent.style.width = this.destRect['--destWidth'];
+          modalContent.style.height = this.destRect['--destHeight'];
+          modalContent.style.left = this.destRect['--destX'];
+          modalContent.style.top = this.destRect['--destY'];
+          // modalContent.style.transform = this.destRect['--ratio'];
+          modalContent.classList.remove('popAnime');
+        }, this.duration)
+      } else {
+        // 模态框关闭动画
+        let modalContent = document.querySelector("#ndg-modal-content-border")
+        modalContent.classList.add('closeAnime');
+        setTimeout(() => {
+          console.log(this.initRect)
+          modalContent.style.width = this.initRect['--initWidth'];
+          modalContent.style.height = this.initRect['--initHeight'];
+          modalContent.style.left = this.initRect['--initX'];
+          modalContent.style.top = this.initRect['--initY'];
+          // modalContent.style.transform = this.destRect['--ratio'];
+          modalContent.classList.remove('closeAnime');
+          document.querySelector('#ndg-modal').style.zIndex = -10;
+        }, this.duration)
+      }
+      this.showModal = !this.showModal;
     },
     scrollToAppGroup(ui) {
       // console.log("scrollToAppGroup", ui);
@@ -189,6 +227,31 @@ export default {
       } else if (orientation == "left" && this.box.displayNo > 0) {
         this.box.displayNo--;
       }
+    },
+    calcModalRect(portrait) {
+      let vmin = Math.min(window.innerHeight, window.innerWidth) / 100;
+      let vmax = Math.max(window.innerHeight, window.innerWidth) / 100;
+      let clientX = portrait ? ((100 - this.modalSize.width) / 2 * vmin) : (50 * vmax - this.modalSize.width / 2 * vmin)
+      let clientY = portrait ? (50 * vmax - (this.modalSize.height / 2) * vmin) : ((100 - this.modalSize.height) / 2 * vmin)
+      return {
+        "--destWidth": this.modalSize.width * vmin + 'px',
+        "--destHeight": this.modalSize.height * vmin + 'px',
+        "--destX": clientX + 'px',
+        "--destY": clientY + 'px',
+      }
+    },
+    calcRatio() {
+      let vmin = Math.min(window.innerHeight, window.innerWidth) / 100;
+      let vmax = Math.max(window.innerHeight, window.innerWidth) / 100;
+      let destWidth = this.modalSize.width * vmin;
+      let destHeight = this.modalSize.height * vmin;
+      let initWidth = this.box.DOMRect ? this.box.DOMRect.width : 0
+      let initHeight = this.box.DOMRect ? this.box.DOMRect.height : 0
+      console.log(destWidth / initWidth, destHeight / initHeight)
+      return {
+        "--ratioX": destWidth / initWidth,
+        "--ratioY": destHeight / initHeight,
+      }
     }
   }
 };
@@ -196,8 +259,9 @@ export default {
 <!-- 模态框css样式 -->
 <style scoped>
 * {
-  --duration-time: 0.5s
+  --duration-time: var(--duration-time)
 }
+
 .ndg-modal {
   position: fixed;
   width: 100vw;
@@ -222,8 +286,6 @@ export default {
 .ndg-modal-center {
   display: flex;
   flex-direction: column;
-  /* 以下css属性都要被动态class重置 */
-  /* position: fixed; */
   height: 100vmin;
   max-width: 60vmax;
   min-width: 60vmax;
@@ -251,36 +313,64 @@ export default {
   position: relative;
   align-self: center;
 }
-@keyframes expandToCenter {
+
+@keyframes popAnime {
   0% {
     left: var(--initX);
     top: var(--initY);
     width: var(--initWidth);
     height: var(--initHeight);
+    /*  transform: scale(1, 1); z-index: -1;*/
+    opacity: 0.5;
   }
   100% {
     left: var(--destX);
     top: var(--destY);
     width: var(--destWidth);
     height: var(--destHeight);
+/*  transform: scale(var(--ratioX), var(--ratioYz)); */
+    z-index: 10;
+    opacity: 1;
   }
 }
+
+@keyframes closeAnime {
+  0% {
+    left: var(--destX);
+    top: var(--destY);
+    width: var(--destWidth);
+    height: var(--destHeight);
+    z-index: 10;
+    opacity: 1;
+  }
+  100% {
+    left: var(--initX);
+    top: var(--initY);
+    width: var(--initWidth);
+    height: var(--initHeight);
+    z-index: -1;
+    opacity: 0.5;
+  }
+}
+
 .ndg-modal-content-border {
-  //width: var(--initWidth);
-  //max-width: var(--initWidth);
+  left: var(--initX);
+  top: var(--initY);
   min-width: var(--initWidth);
-  //height: var(--initWeight);
-  //max-height: var(--initHeight);
   min-height: var(--initHeight);
   background-color: rgba(255, 255, 255, 0.5);
   border-radius: 10%;
   overflow: hidden;
   position: fixed;
   align-self: center;
-  left: 0;
-  top: 0;
-  animation: expandToCenter var(--duration-time) forwards;
-  //transform: scale(0.2);
+}
+
+.popAnime {
+  animation: popAnime var(--duration-time) forwards;
+}
+
+.closeAnime {
+  animation: closeAnime var(--duration-time) forwards;
 }
 
 .ndg-modal-content-border > :nth-child(2) {
@@ -350,11 +440,13 @@ export default {
 .ndg-modal-right {
   height: 100%;
   width: 20vmax;
+  opacity: 0;
 }
 
 .ndg-modal-left {
   height: 100%;
   width: 20vmax;
+  opacity: 0;
 }
 </style>
 <style scoped>
@@ -365,12 +457,12 @@ export default {
 
   .ndg-modal-right {
     height: 100%;
-    min-width: calc(calc(1 - var(--portrait-main-ratio)) *50vmin);
+    min-width: calc(calc(1 - var(--portrait-main-ratio)) * 50vmin);
   }
 
   .ndg-modal-left {
     height: 100%;
-    min-width: calc(calc(1 - var(--portrait-main-ratio)) *50vmin);
+    min-width: calc(calc(1 - var(--portrait-main-ratio)) * 50vmin);
   }
 
   .ndg-modal-center {
@@ -378,13 +470,6 @@ export default {
     max-width: 80vmin;
     min-width: 80vmin;
     z-index: 10;
-  }
-
-  .ndg-modal-content-border {
-    max-height: calc(var(--portrait-main-ratio) * 100vmin);
-    min-height: calc(var(--portrait-main-ratio) * 100vmin);
-    max-width: calc(var(--portrait-main-ratio) * 100vmin);
-    min-width: calc(var(--portrait-main-ratio) * 100vmin);
   }
 }
 </style>

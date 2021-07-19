@@ -10,7 +10,7 @@
           <div class="ndg-app" :key="app.id" :name="app.name" :data-group="gid" :id="app.id" :draggable="enableDrag"
                :class="{'shakeAnime': enableDrag && gid == box.displayNo}"
                @dragover="handleDragOver($event, gid, aid)" @dragstart="handleDragStart($event, gid, aid)">
-            <my-icon :className="app.name" v-if="app.name!==''" :size="multipleSize"></my-icon>
+            <my-icon :className="app.name" v-if="app.name!==''" ></my-icon>
             <div class="ndg-app-desc" v-if="showAppName">
               {{ app.name }}
             </div>
@@ -20,7 +20,7 @@
     </template>
     <!-- 不开启宫格模式 -->
     <div v-if="!gridMode" :class="{'shakeAnime': enableDrag}" style="width: 100%;height: 100%">
-      <my-icon :className="box.appGroups[0][0].name" :size="singleSize"></my-icon>
+      <my-icon :className="box.appGroups[0][0].name"></my-icon>
     </div>
   </div>
 </template>
@@ -84,16 +84,6 @@ export default {
     box: {
       type: Object,
       default: {}
-    },
-    // 单个app时候的尺寸大小
-    singleSize: {
-      type: Number,
-      default: 12
-    },
-    // 多个app时候的尺寸大小
-    multipleSize: {
-      type: Number,
-      default: 3
     },
     showAppName: {
       type: Boolean,

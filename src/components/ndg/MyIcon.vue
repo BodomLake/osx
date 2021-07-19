@@ -1,7 +1,7 @@
 <template>
   <div class="my-icon">
     <!-- <remote-js :src="src"></remote-js> -->
-    <svg class="icon svg-icon" :style="{'width':`${size}px`,'height':`${size}px`}" aria-hidden="true" width="100%"
+    <svg class="icon svg-icon"  aria-hidden="true" width="100%"
          height="100%" preserveAspectRatio="none">
       <use :xlink:href="'#icon-' + className"></use>
     </svg>
@@ -38,12 +38,6 @@ export default {
         return "";
       }
     },
-    singleBox: {
-      type: Boolean,
-      default: () => {
-        return false;
-      }
-    },
     size: {
       type: Number,
       default: () => {
@@ -58,20 +52,21 @@ export default {
 <style scoped>
 .my-icon {
   display: inline;
-  /* margin: 0.05rem; */
+  height: 80%;
+  width: 80%;
   position: absolute;
-  top: 52%;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   -webkit-transform: translate(-50%, -50%);
   -moz-transform: translate(-50%, -50%);
   -ms-transform: translate(-50%, -50%);
-  z-index: 2;
+  z-index: 3;
 }
 
 .icon {
-  width: 5vmin;
-  height: 5vmin;
+  min-width: 1vmin;
+  minheight: 1vmin;
   fill: currentColor;
   overflow: hidden;
 }

@@ -15,17 +15,17 @@
                             tag="div" :draggable="false">
             <template v-for="(box, j) in desk.boxes">
               <div class="ndg-outer" :style="[gridSize]" :key="box.id" @dragover="boxDragOver($event)"
-                   @drop="handleDrop($event,i,j)">
+                   @drop="handleDrop($event,i,j)" @click="($event)=>{$event.stopPropagation()}">
                 <div class="ndg-content-border" :class="{'ndg-box-covered': box.covered}"
-                     :style="[boxSize, {'opacity': !toggleBox(i,j)? 1:0 }]" :key="box.id" :id="box.id"
+                     :style="[boxSize, {'opacity': !checkedBOX(i,j)? 1 : 0 }]" :key="box.id" :id="box.id"
                      :name="box.name" :draggable="enableDrag" @resize="handleResize($event)" @drag="appBoxDrag"
                      @dragenter="handleDragEnter($event,i,j)" @dragleave="handleDragLeave($event,i,j)"
                      @dragstart="boxStartDrag($event,i,j)"
                      @dblclick="showModal($event, i,j)"
                      @touchstart="touchstart" @touchend="touchend" @touchmove="touchmove">
-                  <Box v-model="desk.boxes[j]" :enableDrag="enableDrag" :multipleSize="30" :singleSize="100"></Box>
+                  <Box v-model="desk.boxes[j]" :enableDrag="enableDrag"></Box>
                 </div>
-                <div class="ndg-desc" style="animation:none" :style="{'opacity': !toggleBox(i,j)? 1:0 }">
+                <div class="ndg-desc" style="animation:none" :style="{'opacity': !checkedBOX(i,j)? 1:0 }">
                   {{ box.name | resolveAppName }}
                 </div> <!-- {{box.name}}-->
               </div>
@@ -35,7 +35,8 @@
       </template>
     </div>
     <!-- 文件夹的模态框，要在确定了的情况下加以渲染，即同时满足当下的定位和双击事件-->
-    <BoxModal v-model="checkedModal" :modalInfo="modal" :enableDrag="enableDrag" ref="modal"></BoxModal>
+    <BoxModal v-model="checkedModal" :modalInfo="modal" :portrait="portrait" :enableDrag="enableDrag"
+              ref="modal"></BoxModal>
     <Indicator v-model="desks"></Indicator>
     <DockBar v-model="dockApps"></DockBar>
   </div>
@@ -102,16 +103,18 @@ export default {
         case "ArrowDown":
           break;
         case "Escape":
-          this.checkedModal.showModal = false;
+          this.$refs['modal'].toggleModal();
         default:
       }
     });
     window.addEventListener("click", $event => {
       // 需要获取modal的主体范围 判断是否在其中？决定是否关闭
-      if (this.checkedModal.showModal == true) this.checkedModal.showModal = false;
+      console.log('窗体click', this.$refs['modal'].showModal)
+      if (this.$refs['modal'].showModal)
+        this.$refs['modal'].toggleModal();
     });
     window.addEventListener("touchend", $event => {
-      if (this.checkedModal.showModal == true) this.checkedModal.showModal = false;
+      this.$refs['modal'].toggleModal();
     });
     // 初始化长按状态
     window.addEventListener("mousedown", $event => {
@@ -284,15 +287,15 @@ export default {
         "--boxinitWidth": this.boxInitSize.width,
         "--boxinitHeight": this.boxInitSize.height
       },
-      // 设备摆放方向 默认 landscape
-      // orientation:  'portrait'
-      portrait: false
+      // 设备摆放方向 默认 landscape 所以是false
+      portrait: window.innerHeight > window.innerWidth
     };
   },
   computed: {
     // 拖拽模式下的动画开关
     // 把当前的BOX信息传入模态框
     checkedModal() {
+      // this.$set(this.desks[this.modal.index.desk].boxes[this.modal.index.box], 'showModal', false)
       return this.desks[this.modal.index.desk].boxes[this.modal.index.box]
     }
   },
@@ -309,8 +312,8 @@ export default {
       console.log("touchmove", $event);
     },
     touchend($event) {
-      if (this.checkedModal.showModal == false) this.checkedModal.showModal = true;
       $event.stopPropagation();
+      if (this.$refs['modal'].showModal == false) this.$refs['modal'].toggleModal();
       console.log("touchend", $event);
     },
     appBoxDrag($event) {
@@ -495,7 +498,7 @@ export default {
               // 不需要scale 放大
               box.covered = false;
               // 如果没有显示模态框，就打开模态框
-              if (!this.$refs['modal'].showFlag) {
+              if (!this.$refs['modal'].showModal) {
                 this.showModal($event, this.currentDeskNo, bid);
               }
             }
@@ -648,15 +651,13 @@ export default {
         // 指定具体要显示的 modal内容
         this.modal.index.desk = deskIndex;
         this.modal.index.box = boxIndex;
-        // let boxDOM = document.querySelectorAll("." + CONTAINER)[deskIndex].children[boxIndex].children[0];
-        // console.log(boxDOM.getBoundingClientRect());
-        this.checkedModal.showModal = !this.checkedModal.showModal;
+        this.$refs['modal'].toggleModal();
       }
     },
     // 被点击的BOX会弹出模态框，同时BOX消失
-    toggleBox(deskIndex, boxIndex) {
+    checkedBOX(deskIndex, boxIndex) {
       return (
-        this.checkedModal.showModal &&
+        (this.$refs['modal'] == undefined ? false : this.$refs['modal'].showModal) &&
         this.modal.index.desk == deskIndex &&
         this.modal.index.box == boxIndex
       );
