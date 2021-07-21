@@ -1,9 +1,9 @@
 <template>
   <div class="ndg-scroll-indicator">
-    <div class="ndg-scroll-zone">
+    <div class="ndg-scroll-zone"  id="ndg-scroll-zone-forDesk" :style="[overLimitShowStyle]">
       <template v-for="(unit, ui) in desks">
-        <div :key="ui" class="ndg-unit-box" @click="scrollToDestDesk($event, ui)">
-          <div class="ndg-unit" :class="{'ndg-checked-unit': ui.displayNo == ui ,'moreItem': moreItem}">
+        <div :key="ui" class="ndg-unit-box" @click="scrollToDestDesk($event, ui)" :style="[unitWidth]">
+          <div class="ndg-unit" :class="{'ndg-checked-unit': displayNo == ui ,'moreItem': moreItem}">
           </div>
         </div>
       </template>
@@ -41,24 +41,43 @@
       displayMaxNum: {
         type: Number,
         default: 5
+      },
+      displayNo: {
+        type: Number,
+        default: 0
       }
     },
     model: {
       prop: "desks",
       event: "changeDesks"
     },
-    computed: {},
+    computed: {
+      unitWidth() {
+        let val = 100 / this.displayMaxNum + "%";
+        return { "max-width": val, "min-width": val };
+      },
+      // 如果实际页面 大于等于规定上限，那么显示的手法就是靠左显示flex-start，另外一种就是小于上限：则居中center
+      overLimitShowStyle() {
+        return {
+          "justify-content":
+            this.desks.length < this.displayMaxNum ? "center" : "flex-start"
+        };
+      }
+    },
     methods: {
       scrollToDestDesk($event, ui) {
         // 更新 v-model
-        this.desks.displayNo = ui;
-
+        $event.stopPropagation();
+        let destDeskNo = this.$parent.currentDeskNo
+        console.log(ui, destDeskNo,'桌面')
+        let orientation = (ui == destDeskNo)?  undefined : ui > destDeskNo ? 'right' : 'left'
+        this.$emit('scrollToDestDesk', orientation)
         // 平行移动游标指示器（向右）
         let transform = () => {
           // 平移数 * 每次平移的量
           let offsetScale = (this.offset * 100) / this.displayMaxNum;
           document.querySelector(
-            ".ndg-scroll-zone"
+            "#ndg-scroll-zone-forDesk"
           ).style.transform = `translateX(-${offsetScale}%)`;
         };
         // debugger;
@@ -84,13 +103,14 @@
   --bgColor: antiquewhite;
 }
 .ndg-scroll-indicator {
-  /* position: absolute; */
-  margin: 0px auto;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   text-align: center;
-  border-radius: 5%;
   overflow-x: scroll;
-  width: 30%;
+  width: 10%;
   height: 5%;
+  bottom: 15vh;
 }
 .ndg-scroll-zone {
   /* background-color: var(--bgColor); */

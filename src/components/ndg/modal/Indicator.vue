@@ -51,11 +51,13 @@
         let val = 100 / this.displayMaxNum + "%";
         return { "max-width": val, "min-width": val };
       },
-      //    如果实际页面 大于等于规定上限，那么显示的手法就是靠左显示flex-start，另外一种就是小于上限：则居中center
+      // 如果实际页面 大于等于规定上限，那么显示的手法就是靠左显示flex-start，另外一种就是小于上限：则居中center
       overLimitShowStyle() {
         return {
           "justify-content":
-            this.box.appGroups.length < this.displayMaxNum ? "center" : "flex-start"
+            this.box.appGroups.length < this.displayMaxNum
+              ? "center"
+              : "flex-start"
         };
       }
     },
@@ -95,10 +97,9 @@
   --bgColor: antiquewhite;
 }
 .ndg-scroll-indicator {
-  /* position: absolute; */
-  margin: 0px auto;
+  left: 50%;
+  transform: translateX(-50%);
   text-align: center;
-  border-radius: 5%;
   overflow-x: scroll;
   width: 30%;
   height: 5%;
@@ -127,16 +128,16 @@
 .ndg-unit {
   position: absolute;
   background-color: rgba(255, 255, 255, 0.5);
-  box-shadow: inset 0 0 rgba(0, 0, 0, 0.9);
+  box-shadow:  0 0 0.2px 0.2px rgba(0, 0, 0, 0.9) inset;
   border-radius: 50%;
-  width: 2vmin;
-  height: 2vmin;
+  width: 1.5vmin;
+  height: 1.5vmin;
   top: 50%;
   left: 50%;
   transform: translateX(-50%) translateY(-50%);
 }
 .ndg-checked-unit {
   background-color: rgba(255, 255, 255, 1);
-  box-shadow: inset 0 0 rgba(0, 0, 0, 0.9);
+  box-shadow:  0px 0px 0.5px 0.5px rgba(0, 0, 0, 0.2) inset;
 }
 </style>

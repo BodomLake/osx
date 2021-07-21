@@ -1,10 +1,9 @@
-import {desks} from "../app.js";
-import {BACKGROUND, CONTAINER, DESKTOP} from "../common.js";
+import { desks } from "../app.js";
+import { BACKGROUND, CONTAINER, DESKTOP } from "../common.js";
 
 export default {
   // 初始化 二维数组
-  beforeCreate() {
-  },
+  beforeCreate() {},
   updated() {
     console.log("渲染完毕");
     if (this.updatedTimer) {
@@ -24,7 +23,7 @@ export default {
       // 每个BOX每页限制显示数量的上限
       // groupAppLimit: GROUPAPPLIMIT,
       // 切换桌面所需要的时间（transition动画时间）
-      switchDeskTime: 0.5,
+      switchDeskTime: 500,
       updatedTimer: {}
     };
   },
@@ -46,7 +45,7 @@ export default {
   methods: {
     // 初始化BOX的定位和尺寸
     initBOX() {
-      let containers = document.querySelectorAll("." + CONTAINER)
+      let containers = document.querySelectorAll("." + CONTAINER);
       containers.forEach((cont, cid) => {
         let boxes = cont.children;
         Array.from(boxes).forEach((box, bid) => {
@@ -55,6 +54,8 @@ export default {
           let outerRect = box.getBoundingClientRect();
           this.$set(this.desks[cid].boxes[bid], "DOMRect", contentRect);
           this.$set(this.desks[cid].boxes[bid], "outerDOMRect", outerRect);
+          // 该盒子显示的
+          this.$set(this.desks[cid].boxes[bid], "displayNo", 0);
           // 是否以模态框的形式打开模态框
           this.$set(this.desks[cid].boxes[bid], "showModal", false);
           // 该BOX是否被拖拽物覆盖
@@ -74,23 +75,27 @@ export default {
       // 因为数据(this.data)的更新优先于DOM的更新，所以循环数据，然后在定位相应的DOM，进而获取DOM的相关信息
       this.desks.forEach((desk, did) => {
         desk.boxes.forEach((box, bid) => {
-          let boxDOM = document.querySelectorAll('.' + CONTAINER)[did].children[bid];
+          let boxDOM = document.querySelectorAll("." + CONTAINER)[did].children[
+            bid
+          ];
           // 内部 ndg-outer-border
           let contentRect = boxDOM.children[0].getBoundingClientRect();
           // 外部 ndg-outer
           let outerRect = boxDOM.getBoundingClientRect();
           box.DOMRect = contentRect;
           box.outerDOMRect = outerRect;
-        })
-        let contDOM = document.querySelectorAll('.' + CONTAINER)[did];
+        });
+        let contDOM = document.querySelectorAll("." + CONTAINER)[did];
         desk.restSpace = this.calcRestSpace(contDOM, contDOM.children);
-      })
+      });
     },
     // 重置BOX 高宽尺寸 以及所有的悬停状态
     resetBOX() {
       this.desks.forEach((desk, did) => {
         desk.boxes.forEach((box, bid) => {
-          let boxDOM = document.querySelectorAll('.' + CONTAINER)[did].children[bid];
+          let boxDOM = document.querySelectorAll("." + CONTAINER)[did].children[
+            bid
+          ];
           // 内部 ndg-outer-border
           let contentRect = boxDOM.children[0].getBoundingClientRect();
           // 外部 ndg-outer
@@ -101,16 +106,16 @@ export default {
           // box.showModal = false;
           box.innerSuspendTime = 0;
           box.outerSuspendTime = 0;
+          box.displayNo = 0;
           boxDOM.children[0].style.transform = "";
-        })
-        let contDOM = document.querySelectorAll('.' + CONTAINER)[did];
+        });
+        let contDOM = document.querySelectorAll("." + CONTAINER)[did];
         desk.restSpace = this.calcRestSpace(contDOM, contDOM.children);
-      })
-
+      });
     },
     // 让 ndg-content-border 正方形化，重新分配高宽
     square() {
-      let containers = document.querySelectorAll("." + CONTAINER)
+      let containers = document.querySelectorAll("." + CONTAINER);
       containers.forEach((cont, cid) => {
         let boxes = cont.children;
         Array.from(boxes).forEach((box, bid) => {
@@ -195,39 +200,7 @@ export default {
         rect2
       };
     },
-    switchUnit(orientation) {
-      this.deskSwitching = true;
-      console.log(this.deskSwitching, "正在切换桌面！！！");
-      // 切换桌面
-      let transform = () => {
-        document.querySelector(
-          "div." + BACKGROUND
-        ).style.transform = `translateX(-${this.deskShiftOffset *
-        this.currentDeskNo}%)`;
-        // 切换桌面要500ms的时间，所以延时执行relcoateDOM
-        setTimeout(() => {
-          this.locateBOX();
-          this.deskSwitching = false;
-          console.log(this.deskSwitching, "切换桌面完毕！！！");
-        }, this.switchDeskTime * 1000);
-      };
-      switch (orientation) {
-        case "right":
-          if (this.currentDeskNo + 1 < this.desks.length) {
-            this.currentDeskNo++;
-            transform();
-          }
-          break;
-        case "left":
-          if (this.currentDeskNo > 0) {
-            this.currentDeskNo--;
-            transform();
-          }
-          break;
-        default:
-          console.log("what the keycode that you pressed just now");
-      }
-    },
+    
     swapArray(arr, i1, i2) {
       // 从下标arr[i2]自身开始向后删除，填充(...item)也就是arr[i1]，以数组形式返回被删掉的元素
       arr[i1] = arr.splice(i2, 1, arr[i1])[0];

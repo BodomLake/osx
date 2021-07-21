@@ -4,7 +4,7 @@
     <shift-zone orientation="left" :flowOver="isDragging" @switchUnit="switchUnit" :size="3"></shift-zone>
     <shift-zone orientation="right" :flowOver="isDragging" @switchUnit="switchUnit" :size="3"></shift-zone>
     <!-- 不要用高斯模糊 否则动画会卡顿 'filter': modal.show? 'blur(4px)':'blur(0px)' -->
-    <div class="ndg-background" :style="{'width': deskWidth,'transition': `${switchDeskTime}s all ease-in-out`}"
+    <div class="ndg-background" :style="{'width': deskWidth,'transition': `${switchDeskTime}ms all ease-in-out`}"
          @mousedown="mousedown($event)"
          @mousemove="mousemove($event)">
       <!-- 多个桌面 -->
@@ -27,7 +27,7 @@
                 </div>
                 <div class="ndg-desc" style="animation:none" :style="{'opacity': !checkedBOX(i,j)? 1:0 }">
                   {{ box.name | resolveAppName }}
-                </div> <!-- {{box.name}}-->
+                </div>
               </div>
             </template>
           </transition-group>
@@ -37,8 +37,9 @@
     <!-- 文件夹的模态框，要在确定了的情况下加以渲染，即同时满足当下的定位和双击事件-->
     <BoxModal v-model="checkedModal" :modalInfo="modal" :portrait="portrait" :enableDrag="enableDrag"
               ref="modal"></BoxModal>
-    <Indicator v-model="desks"></Indicator>
+    <Indicator v-model="desks" @scrollToDestDesk="switchUnit" :displayNo="currentDeskNo"></Indicator>
     <DockBar v-model="dockApps"></DockBar>
+    <canvas id="canvas" style="display:none"></canvas>
   </div>
 </template>
 
@@ -47,7 +48,7 @@
 // 并入，模态框拽出app，并入盒子，模态框消失在视野中，模糊度恢复到blur(0px);
 // TODO: 启用拖拽模式的时候，outerBox如果内部已经有9倍的盒子，就要让出DOM空间，给app放入，这样显得顺理成章，流畅；
 // ondragstart -> ondrag -> ondragenter -> ondragover -> ondragleave -> ondragend -> ondrop
-import {CONTAINER, DESKTOP} from "./common.js";
+import {BACKGROUND, DESKTOP} from "./common.js";
 import MyIcon from "./MyIcon.vue";
 import ShiftZone from "./ShiftZone.vue";
 import BoxModal from "./modal/BoxModal.vue";
@@ -81,7 +82,7 @@ export default {
       }
       this.resizeTimer = setTimeout(() => {
         console.log("resize...");
-        this.locateBOX(true);
+        this.locateBOX();
         this.square();
         this.portrait = window.innerHeight > window.innerWidth;
       }, 100);
@@ -103,13 +104,14 @@ export default {
         case "ArrowDown":
           break;
         case "Escape":
-          this.$refs['modal'].toggleModal();
+          if (this.$refs['modal'].showModal)
+            this.$refs['modal'].toggleModal();
         default:
       }
     });
     window.addEventListener("click", $event => {
       // 需要获取modal的主体范围 判断是否在其中？决定是否关闭
-      console.log('窗体click', this.$refs['modal'].showModal)
+      // console.log('窗体click', this.$refs['modal'].showModal)
       if (this.$refs['modal'].showModal)
         this.$refs['modal'].toggleModal();
     });
@@ -148,7 +150,7 @@ export default {
         console.log(delta / 1000, "秒");
         console.log("不算触发长按");
       } else {
-        console.log(this.longPress.moveFlag ? "已经移动了" : "鼠标未移动");
+        // console.log(this.longPress.moveFlag ? "已经移动了" : "鼠标未移动");
       }
     });
     // 双击退出拉拽模式
@@ -295,7 +297,6 @@ export default {
     // 拖拽模式下的动画开关
     // 把当前的BOX信息传入模态框
     checkedModal() {
-      // this.$set(this.desks[this.modal.index.desk].boxes[this.modal.index.box], 'showModal', false)
       return this.desks[this.modal.index.desk].boxes[this.modal.index.box]
     }
   },
@@ -358,7 +359,7 @@ export default {
       }
     },
     deskDragOver($event) {
-      return;
+      // return;
       const throttleTime = this.throttleTime;
       // 节流100ms执行一次
       if (Date.now() - this.deskDOTimer < throttleTime || !this.isDragging) {
@@ -385,11 +386,11 @@ export default {
           );
         };
         if (includeFlag(rect1)) {
-          this.locateBOX();
+          this.resetBOX();
           console.log("进入剩余区域1");
         }
         if (includeFlag(rect2)) {
-          this.locateBOX();
+          this.resetBOX();
           console.log("进入剩余区域2");
         }
         // this.showEvent($event);
@@ -676,7 +677,40 @@ export default {
       setTimeout(() => {
         this.mouseMoveFlag = true;
       }, 200);
-    }
+    },
+    switchUnit(orientation) {
+      this.deskSwitching = true;
+      console.log(this.deskSwitching, "正在切换桌面！！！");
+      // 切换桌面
+      let transform = () => {
+        document.querySelector(
+          "div." + BACKGROUND
+        ).style.transform = `translateX(-${this.deskShiftOffset *
+          this.currentDeskNo}%)`;
+        // 切换桌面要500ms的时间，所以延时执行relcoateDOM
+        setTimeout(() => {
+          this.locateBOX();
+          this.deskSwitching = false;
+          console.log(this.deskSwitching, "切换桌面完毕！！！");
+        }, this.switchDeskTime );
+      };
+      switch (orientation) {
+        case "right":
+          if (this.currentDeskNo + 1 < this.desks.length) {
+            this.currentDeskNo++;
+            transform();
+          }
+          break;
+        case "left":
+          if (this.currentDeskNo > 0) {
+            this.currentDeskNo--;
+            transform();
+          }
+          break;
+        default:
+          console.log("what the keycode that you pressed just now");
+      }
+    },
   },
   filters: {
     resolveAppName(appName) {
@@ -805,7 +839,8 @@ export default {
   border-radius: 5%;
   box-shadow: 1px 1px 5px 1px rgb(0 0 0 / 60%);
   overflow: hidden;
-  transition: opacity 0.25s ease-in-out;
+  transition: opacity 0.5s ease-in-out;
+  animation-fill-mode: backwards;
 }
 
 .ndg-desc {
@@ -816,6 +851,9 @@ export default {
   color: whitesmoke;
   font-weight: 400;
   align-self: center;
+  user-select: none;
+  transition: opacity 0.5s ease-in-out;
+  animation-fill-mode: backwards;
 }
 
 

@@ -75,7 +75,7 @@ export var desks = [
             }
           ]
         ],
-        displayNo: 0,
+
         groupAppLimit: 9
       },
       {
@@ -89,7 +89,7 @@ export var desks = [
             }
           ]
         ],
-        displayNo: 0,
+
         groupAppLimit: 9
       },
       {
@@ -103,7 +103,7 @@ export var desks = [
             }
           ]
         ],
-        displayNo: 0,
+
         groupAppLimit: 9
       },
       {
@@ -121,7 +121,7 @@ export var desks = [
             }
           ]
         ],
-        displayNo: 0,
+
         groupAppLimit: 9
       },
       {
@@ -135,7 +135,7 @@ export var desks = [
             }
           ]
         ],
-        displayNo: 0,
+
         groupAppLimit: 9
       },
       {
@@ -149,7 +149,7 @@ export var desks = [
             }
           ]
         ],
-        displayNo: 0,
+
         groupAppLimit: 9
       },
       {
@@ -163,7 +163,7 @@ export var desks = [
             }
           ]
         ],
-        displayNo: 0,
+
         groupAppLimit: 9
       },
       {
@@ -177,7 +177,7 @@ export var desks = [
             }
           ]
         ],
-        displayNo: 0,
+
         groupAppLimit: 9
       },
       {
@@ -191,7 +191,7 @@ export var desks = [
             }
           ]
         ],
-        displayNo: 0,
+
         groupAppLimit: 9
       },
       {
@@ -205,7 +205,7 @@ export var desks = [
             }
           ]
         ],
-        displayNo: 0,
+
         groupAppLimit: 9
       },
       {
@@ -219,7 +219,7 @@ export var desks = [
             }
           ]
         ],
-        displayNo: 0,
+
         groupAppLimit: 9
       },
       {
@@ -233,7 +233,7 @@ export var desks = [
             }
           ]
         ],
-        displayNo: 0,
+
         groupAppLimit: 9
       },
       {
@@ -247,7 +247,7 @@ export var desks = [
             }
           ]
         ],
-        displayNo: 0,
+
         groupAppLimit: 9
       },
       {
@@ -261,7 +261,7 @@ export var desks = [
             }
           ]
         ],
-        displayNo: 0,
+
         groupAppLimit: 9
       },
       {
@@ -275,7 +275,7 @@ export var desks = [
             }
           ]
         ],
-        displayNo: 0,
+
         groupAppLimit: 9
       },
       {
@@ -289,7 +289,7 @@ export var desks = [
             }
           ]
         ],
-        displayNo: 0,
+
         groupAppLimit: 9
       }
     ],
@@ -311,7 +311,7 @@ export var desks = [
             }
           ]
         ],
-        displayNo: 0,
+
         groupAppLimit: 9
       },
       {
@@ -325,7 +325,7 @@ export var desks = [
             }
           ]
         ],
-        displayNo: 0,
+
         groupAppLimit: 9
       },
       {
@@ -339,7 +339,7 @@ export var desks = [
             }
           ]
         ],
-        displayNo: 0,
+
         groupAppLimit: 9
       },
       {
@@ -353,7 +353,7 @@ export var desks = [
             }
           ]
         ],
-        displayNo: 0,
+
         groupAppLimit: 9
       },
       {
@@ -367,7 +367,7 @@ export var desks = [
             }
           ]
         ],
-        displayNo: 0,
+
         groupAppLimit: 9
       },
       {
@@ -381,7 +381,7 @@ export var desks = [
             }
           ]
         ],
-        displayNo: 0,
+
         groupAppLimit: 9
       },
       {
@@ -395,7 +395,7 @@ export var desks = [
             }
           ]
         ],
-        displayNo: 0,
+
         groupAppLimit: 9
       },
       {
@@ -409,7 +409,7 @@ export var desks = [
             }
           ]
         ],
-        displayNo: 0,
+
         groupAppLimit: 9
       },
       {
@@ -423,7 +423,7 @@ export var desks = [
             }
           ]
         ],
-        displayNo: 0,
+
         groupAppLimit: 9
       },
       {
@@ -437,7 +437,7 @@ export var desks = [
             }
           ]
         ],
-        displayNo: 0,
+
         groupAppLimit: 9
       }
       //  {
