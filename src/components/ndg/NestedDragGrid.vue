@@ -13,12 +13,12 @@
           <transition-group class="ndg-container" name="ndg-outer-shift" :duration="switchDuration" tag="div" :draggable="false">
             <template v-for="(box, j) in desk.boxes">
               <div class="ndg-outer" :style="[gridSize]" :key="box.id" @dragover="boxDragOver($event)" @drop="handleDrop($event,i,j)"
-                @click="($event)=>{$event.stopPropagation()}">
+                @click="($event)=>{$event.stopPropagation()}" @mouseenter="mouseenter($event, i, j)">
                 <div class="ndg-content-border" :class="{'ndg-box-covered': box.covered}" :style="[boxSize, {'opacity': !checkedBOX(i,j)? 1 : 0 }]"
-                  :key="box.id" :id="box.id" :name="box.name" :draggable="enableDrag" @resize="handleResize($event)" @drag="appBoxDrag"
-                  @dragenter="handleDragEnter($event,i,j)" @dragleave="handleDragLeave($event,i,j)" @dragstart="boxStartDrag($event,i,j)"
-                  @dblclick="showModal($event, i,j)" @touchstart="touchstart" @touchend="touchend" @touchmove="touchmove">
-                  <Box v-model="desk.boxes[j]" :enableDrag="enableDrag"></Box>
+                  :key="box.id" :draggable="enableDrag" @resize="handleResize($event)" @drag="appBoxDrag" @dragenter="handleDragEnter($event,i,j)"
+                  @dragleave="handleDragLeave($event,i,j)" @dragstart="boxStartDrag($event,i,j)" @dblclick="showModal($event, i,j)"
+                  @touchstart="touchstart" @touchend="touchend" @touchmove="touchmove">
+                  <Box v-model="desk.boxes[j]" :id="box.id" :name="box.name" :enableDrag="enableDrag"></Box>
                 </div>
                 <div class="ndg-desc" style="animation:none" :style="{'opacity': !checkedBOX(i,j)? 1:0 }">
                   {{ box.name | resolveAppName }}
@@ -30,7 +30,7 @@
       </template>
     </div>
     <!-- 文件夹的模态框，要在确定了的情况下加以渲染，即同时满足当下的定位和双击事件-->
-    <BoxModal v-model="checkedModal" :modalInfo="modal" :portrait="portrait" :enableDrag="enableDrag" ref="modal"></BoxModal>
+    <BoxModal v-model="checkedModal" :portrait="portrait" :enableDrag="enableDrag" ref="modal"></BoxModal>
     <Indicator v-model="desks" @scrollToDestDesk="switchUnit" :displayNo="currentDeskNo"></Indicator>
     <DockBar v-model="dockApps"></DockBar>
     <canvas id="canvas" style="display:none"></canvas>
@@ -303,11 +303,25 @@
     computed: {
       // 拖拽模式下的动画开关
       // 把当前的BOX信息传入模态框
-      checkedModal() {
-        return this.desks[this.modal.index.desk].boxes[this.modal.index.box];
+      checkedModal: {
+        cache: false,
+        get() {
+          return this.desks[this.modal.index.desk].boxes[this.modal.index.box];
+        }
       }
     },
     methods: {
+      mouseenter($event, deskIndex, boxIndex) {
+        let appGroups = this.desks[deskIndex].boxes[boxIndex].appGroups;
+        let appCount = appGroups.reduce((count, cur) => {
+          return count + cur.length;
+        }, 0);
+        let isApp = appGroups.length == 1 && appCount == 1;
+        if (!this.$refs["modal"].showModal && !isApp) {
+          this.modal.index.desk = deskIndex;
+          this.modal.index.box = boxIndex;
+        }
+      },
       outerMove($event) {
         console.log("外部box dom切换", $event);
       },
@@ -661,9 +675,11 @@
         console.log(destBox.appGroups, appCount);
         if (appCount > 1) {
           // 指定具体要显示的 modal内容
-          this.modal.index.desk = deskIndex;
-          this.modal.index.box = boxIndex;
-          this.$refs["modal"].toggleModal();
+          // this.modal.index.desk = deskIndex;
+          // this.modal.index.box = boxIndex;
+          setTimeout(() => {
+            this.$refs["modal"].toggleModal();
+          }, 10);
         }
       },
       // 被点击的BOX会弹出模态框，同时BOX消失
@@ -756,17 +772,18 @@
       quitDragMode() {
         // 如果没有加入任何app就移除该桌面
         let deskArray = Array.from(this.desks);
-        // 先删除不要的
+        // 先删除不要的桌面
         deskArray.forEach((desk, did) => {
           if (desk.boxes && desk.boxes.length == 0) {
             this.desks.splice(did, 1);
           }
         });
-        Array.from(this.desks).forEach((desk, did) => {
+        this.desks.forEach((desk, did) => {
           desk.boxes.forEach((box, bid) => {
+            // 替换上的数组
+            let newGroups = [];
             // 二维数组
             let groups = Array.from(box.appGroups);
-            let newGroups = [];
             groups.forEach((group, gid) => {
               // 如果没有加入任何app就移除该组
               if (group.length > 0) {
@@ -775,9 +792,9 @@
             });
             box.appGroups = newGroups;
             // 如果原来的显示组超过了组数，就锁定到最后一组显示
-            if (box.displayNo > box.appGroups.length - 1) {
-              box.displayNo = box.appGroups.length - 1;
-            }
+            // if (box.displayNo > box.appGroups.length - 1) {
+            box.displayNo = 0;
+            // }
           });
         });
       }

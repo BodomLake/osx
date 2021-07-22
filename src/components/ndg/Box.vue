@@ -1,11 +1,11 @@
 <template>
-  <div class="ndg-scroll-box" :style="{'width': calcBoxWidth(box.appGroups),
-                   'transform': calcBoxOffsetX(box.appGroups, box.displayNo)}">
+  <div class="ndg-scroll-box" :style="{'width': calcBoxWidth, 'transform': calcBoxOffsetX}">
     <!-- 属于文件夹，默认九宫格模式，分割为9个一组，每一组作为一个大方格，含有9个或者以下的方格 -->
     <template v-for="(group, gid) in box.appGroups">
-      <div class="ndg-app-group" :key="gid" v-if="gridMode" :style="{'visibility': box.displayNo != gid ? 'hidden': ''}" >
+      <div class="ndg-app-group" :key="gid" v-if="gridMode" :style="{'visibility': box.displayNo != gid ? 'hidden': ''}">
         <transition-group class="ndg-app-container" name="ndg-app-shift" :duration="switchDuration" tag="div" :draggable="false" ref="group">
-          <template v-for="(app, aid) in group">         <!-- 默认九个app一组 -->
+          <template v-for="(app, aid) in group">
+            <!-- 默认九个app一组 -->
             <div class="ndg-app" :key="app.id" :name="app.name" :data-group="gid" :id="app.id" :draggable="enableDrag"
               :class="{'shakeAnime': enableDrag && gid == box.displayNo}" @dragover="handleDragOver($event, gid, aid)"
               @dragstart="handleDragStart($event, gid, aid)">
@@ -60,7 +60,7 @@
       }
       setTimeout(() => {
         // 重置所有
-        this.locateApps(true);
+        this.locateApps();
         // console.log("定位BOX完成, 不重置悬停状态");
       }, debounceTime);
     },
@@ -76,6 +76,19 @@
           // console.log("app计数", appCount);
           // 无论是总数大于1
           return appCount > 1;
+        }
+      },
+      calcBoxOffsetX(arr, displayNo) {
+        // (box.appGroups, box.displayNo)
+        let len = this.box.appGroups.length;
+        return `translateX(-${this.box.displayNo * (100 / len)}%)`;
+      },
+      calcBoxWidth() {
+        let arr = this.box.appGroups;
+        if (arr && arr.length > 0) {
+          return 100 * arr.length + "%";
+        } else {
+          return "100%";
         }
       }
     },
@@ -102,36 +115,24 @@
       }
     },
     methods: {
-      calcBoxWidth(arr) {
-        if (arr && arr.length > 0) {
-          return 100 * arr.length + "%";
-        } else {
-          return "100%";
+      locateApps() {
+        let groups = document.getElementById(this.box.id).children;
+        if (!groups) {
+          groups = this.$$refs.group;
+          console.log(this.$refs.group ? this.$refs["group"] : "没有宫格");
         }
-      },
-      calcBoxOffsetX(arr, displayNo) {
-        let len = arr.length;
-        return `translateX(-${displayNo * (100 / len)}%)`;
-      },
-      locateApps(refreshFlag) {
-        // console.log(this.$refs.group ? this.$refs["group"] : "没有宫格");
-        let groups = this.$refs["group"];
         // 如果没有分组或者没有进入宫格模式
         if (!groups || !this.gridMode) {
           return;
         }
         Array.from(groups).forEach((group, gid) => {
-          let apps = group.$el.children;
+          let apps = group.children;
           Array.from(apps).forEach((app, aid) => {
             // 获取当前app的坐标和尺寸
             let appRect = app.getBoundingClientRect();
-            if (!refreshFlag || refreshFlag == undefined) {
+            if (this.box.appGroups && this.box.appGroups[gid].length > 0) {
               this.$set(this.box.appGroups[gid][aid], "DOMRect", appRect);
               this.$set(this.box.appGroups[gid][aid], "suspendTime", 0);
-            } else {
-              // 刷新定位状态
-              this.box.appGroups[gid][aid].DOMRect = appRect;
-              this.box.appGroups[gid][aid].suspendTime = 0;
             }
           });
         });
@@ -159,7 +160,7 @@
   flex-direction: row;
   height: 100%;
   position: relative;
-  transition: 0.5s all ease-in-out;
+  transition: 0.25s all ease-in-out;
   /* transform: translateX(0%); */
 }
 

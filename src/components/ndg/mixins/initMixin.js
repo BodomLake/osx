@@ -7,11 +7,12 @@ export default {
   updated() {
     console.log("渲染完毕");
     if (this.updatedTimer) {
+      console.log(this.updatedTimer)
       clearTimeout(this.updatedTimer);
     }
     this.updatedTimer = setTimeout(() => {
       // 重置所有
-      // this.locateBOX();
+      this.locateBOX();
       console.log("重定位div.ndg-outer完毕, 不重置悬停状态");
     }, 300);
   },

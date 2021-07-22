@@ -1,10 +1,10 @@
 <template>
-  <div class="ndg-modal hor-vet-center" style="z-index: -10" id="ndg-modal">
+  <div class="ndg-modal hor-vet-center" style="z-index: -1" id="ndg-modal">
     <div class="ndg-modal-left"></div>
     <div class="ndg-modal-center">
       <!-- app集合的描述 -->
       <div class="ndg-modal-header">
-        <div class="ndg-modal-desc" @click="keepModal">
+        <div class="ndg-modal-desc" @click="($event)=>{$event.stopPropagation()}" :style="{'opacity': showModal? 1:0 }">
           {{ box.name }}
           <my-icon className="delete" v-show="enableDrag"></my-icon>
         </div>
@@ -49,6 +49,7 @@
     props: {
       box: {
         type: Object,
+        require: true,
         default: () => {
           return {
             id: "",
@@ -111,7 +112,7 @@
     },
     model: {
       prop: "box",
-      event: "changeBox"
+      event: "change"
     },
     watch: {
       portrait: {
@@ -174,11 +175,9 @@
       }, debounceTime);
     },
     methods: {
-      keepModal($event) {
-        $event.stopPropagation();
-      },
       // 打开模态框
       toggleModal() {
+        this.$forceUpdate();
         if (!this.showModal) {
           // 模态框开启动画
           document.querySelector("#ndg-modal").style.zIndex = 10;
@@ -207,7 +206,7 @@
             modalContent.style.top = this.initRect["--initY"];
             // modalContent.style.transform = this.destRect['--ratio'];
             modalContent.classList.remove("closeAnime");
-            document.querySelector("#ndg-modal").style.zIndex = -10;
+            document.querySelector("#ndg-modal").style.zIndex = -1;
           }, this.duration);
         }
         this.showModal = !this.showModal;
@@ -216,13 +215,11 @@
         // console.log("scrollToAppGroup", ui);
         this.box.displayNo = ui;
       },
-      switchUnit(orientation) {
+      switchUnit(offset) {
         let len = this.box.appGroups.length;
-        if (orientation == "right" && this.box.displayNo < len - 1) {
-          this.box.displayNo++;
-        } else if (orientation == "left" && this.box.displayNo > 0) {
-          this.box.displayNo--;
-        }
+        if (this.box.displayNo > 0 && this.box.displayNo < len - 1) {
+          this.box.displayNo += offset;
+        } 
       },
       calcModalRect(portrait) {
         let vmin = Math.min(window.innerHeight, window.innerWidth) / 100;
@@ -268,6 +265,7 @@
   height: 100vh;
   display: flex;
   flex-direction: row;
+  transition: all var(--duration-time) ease-in-out;
 }
 
 .ndg-modal::before {
@@ -321,7 +319,7 @@
     width: var(--initWidth);
     height: var(--initHeight);
     /*  transform: scale(1, 1); z-index: -1;*/
-    opacity: 0.5;
+    opacity: 0.2;
   }
   100% {
     left: var(--destX);
@@ -411,10 +409,12 @@
   transform: translateX(-50%) translateY(-50%);
   width: 100%;
   height: 30%;
+  transition: all var(--duration-time) ease-in-out;
   /* border: 1px solid brown; */
   border-radius: 3%;
   background-color: rgba(0, 0, 0, 0.35);
   animation: fadeIn var(--duration-time) forwards;
+  z-index: 10;
 }
 
 @keyframes fadeIn {
