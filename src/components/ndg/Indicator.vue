@@ -1,6 +1,6 @@
 <template>
   <div class="ndg-scroll-indicator">
-    <div class="ndg-scroll-zone"  id="ndg-scroll-zone-forDesk" :style="[overLimitShowStyle]">
+    <div class="ndg-scroll-zone" id="ndg-scroll-zone-forDesk" :style="[overLimitShowStyle]">
       <template v-for="(unit, ui) in desks">
         <div :key="ui" class="ndg-unit-box" @click="scrollToDestDesk($event, ui)" :style="[unitWidth]">
           <div class="ndg-unit" :class="{'ndg-checked-unit': displayNo == ui ,'moreItem': moreItem}">
@@ -68,14 +68,15 @@
       scrollToDestDesk($event, ui) {
         // 更新 v-model
         $event.stopPropagation();
-        let destDeskNo = this.$parent.currentDeskNo
-        console.log(ui, destDeskNo,'桌面')
-        let orientation = (ui == destDeskNo)?  undefined : ui > destDeskNo ? 'right' : 'left'
-        this.$emit('scrollToDestDesk', orientation)
+        let destDeskNo = this.$parent.currentDeskNo;
+        console.log(ui, destDeskNo, "桌面");
+        let deskOffset = ui- destDeskNo
+        // 向父组件发送 事件，移动桌面 
+        this.$emit("scrollToDestDesk" , deskOffset);
         // 平行移动游标指示器（向右）
         let transform = () => {
           // 平移数 * 每次平移的量
-          let offsetScale = (this.offset * 100) / this.displayMaxNum;
+          let offsetScale = this.offset * (100 / this.displayMaxNum);
           document.querySelector(
             "#ndg-scroll-zone-forDesk"
           ).style.transform = `translateX(-${offsetScale}%)`;
@@ -109,7 +110,7 @@
   text-align: center;
   overflow-x: scroll;
   width: 10%;
-  height: 5%;
+  height: 3.5%;
   bottom: 15vh;
 }
 .ndg-scroll-zone {
@@ -147,5 +148,19 @@
 .ndg-checked-unit {
   background-color: rgba(255, 255, 255, 1);
   box-shadow: inset 0 0 rgba(0, 0, 0, 0.9);
+}
+</style>
+<style scoped>
+@media screen and (orientation: portrait) {
+  .ndg-scroll-indicator {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    overflow-x: scroll;
+    width: 20%;
+    height: 3%;
+    bottom: 9vh;
+  }
 }
 </style>

@@ -59,7 +59,13 @@
         shiftDOM.style.backgroundImage = `linear-gradient(to ${this.orientation}, ${colorStart}, ${colorEnd})`;
         // 切换桌面
         this.intentToSwitch = setTimeout(() => {
-          this.$emit("switchUnit", this.orientation);
+          let offset = 0;
+          if (this.orientation == "right") {
+            offset = 1;
+          } else if (this.orientation == "left") {
+            offset = -1;
+          }
+          this.$emit("switchUnit", offset);
         }, this.delaySwitchTime);
       },
       intentDiscardDrag($event) {
@@ -67,7 +73,7 @@
         // 放弃切换桌面，把背景模糊颜色消除
         let shiftDOM = $event.target;
         shiftDOM.style.backgroundImage = "";
-        clearTimeout(this.intentToSwitch)
+        clearTimeout(this.intentToSwitch);
       }
     }
   };

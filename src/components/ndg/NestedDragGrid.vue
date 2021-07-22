@@ -4,25 +4,20 @@
     <shift-zone orientation="left" :flowOver="isDragging" @switchUnit="switchUnit" :size="3"></shift-zone>
     <shift-zone orientation="right" :flowOver="isDragging" @switchUnit="switchUnit" :size="3"></shift-zone>
     <!-- 不要用高斯模糊 否则动画会卡顿 'filter': modal.show? 'blur(4px)':'blur(0px)' -->
-    <div class="ndg-background" :style="{'width': deskWidth,'transition': `${switchDeskTime}ms all ease-in-out`}"
-         @mousedown="mousedown($event)"
-         @mousemove="mousemove($event)">
+    <div class="ndg-background" :style="{'width': deskWidth,'transition': `${switchDeskTime}ms all ease-in-out`}" @mousedown="mousedown($event)"
+      @mousemove="mousemove($event)">
       <!-- 多个桌面 -->
       <template v-for="(desk, i) in desks">
         <!-- // TODO: 拖入桌面的情况 要重新考虑，判断剩余桌面空间和剩余的方格数 -->
         <div class="ndg-desktop" :key="desk.id" :id="desk.id" @dragover="deskDragOver($event)">
-          <transition-group class="ndg-container" name="ndg-outer-shift" :duration="switchDuration"
-                            tag="div" :draggable="false">
+          <transition-group class="ndg-container" name="ndg-outer-shift" :duration="switchDuration" tag="div" :draggable="false">
             <template v-for="(box, j) in desk.boxes">
-              <div class="ndg-outer" :style="[gridSize]" :key="box.id" @dragover="boxDragOver($event)"
-                   @drop="handleDrop($event,i,j)" @click="($event)=>{$event.stopPropagation()}">
-                <div class="ndg-content-border" :class="{'ndg-box-covered': box.covered}"
-                     :style="[boxSize, {'opacity': !checkedBOX(i,j)? 1 : 0 }]" :key="box.id" :id="box.id"
-                     :name="box.name" :draggable="enableDrag" @resize="handleResize($event)" @drag="appBoxDrag"
-                     @dragenter="handleDragEnter($event,i,j)" @dragleave="handleDragLeave($event,i,j)"
-                     @dragstart="boxStartDrag($event,i,j)"
-                     @dblclick="showModal($event, i,j)"
-                     @touchstart="touchstart" @touchend="touchend" @touchmove="touchmove">
+              <div class="ndg-outer" :style="[gridSize]" :key="box.id" @dragover="boxDragOver($event)" @drop="handleDrop($event,i,j)"
+                @click="($event)=>{$event.stopPropagation()}">
+                <div class="ndg-content-border" :class="{'ndg-box-covered': box.covered}" :style="[boxSize, {'opacity': !checkedBOX(i,j)? 1 : 0 }]"
+                  :key="box.id" :id="box.id" :name="box.name" :draggable="enableDrag" @resize="handleResize($event)" @drag="appBoxDrag"
+                  @dragenter="handleDragEnter($event,i,j)" @dragleave="handleDragLeave($event,i,j)" @dragstart="boxStartDrag($event,i,j)"
+                  @dblclick="showModal($event, i,j)" @touchstart="touchstart" @touchend="touchend" @touchmove="touchmove">
                   <Box v-model="desk.boxes[j]" :enableDrag="enableDrag"></Box>
                 </div>
                 <div class="ndg-desc" style="animation:none" :style="{'opacity': !checkedBOX(i,j)? 1:0 }">
@@ -35,8 +30,7 @@
       </template>
     </div>
     <!-- 文件夹的模态框，要在确定了的情况下加以渲染，即同时满足当下的定位和双击事件-->
-    <BoxModal v-model="checkedModal" :modalInfo="modal" :portrait="portrait" :enableDrag="enableDrag"
-              ref="modal"></BoxModal>
+    <BoxModal v-model="checkedModal" :modalInfo="modal" :portrait="portrait" :enableDrag="enableDrag" ref="modal"></BoxModal>
     <Indicator v-model="desks" @scrollToDestDesk="switchUnit" :displayNo="currentDeskNo"></Indicator>
     <DockBar v-model="dockApps"></DockBar>
     <canvas id="canvas" style="display:none"></canvas>
@@ -44,684 +38,760 @@
 </template>
 
 <script>
-// TODO: 还要做的事情有很多：模态框；通过悬停时间长短，决定是否放入还是换位；换位/并入的 动画 要做出来；
-// 并入，模态框拽出app，并入盒子，模态框消失在视野中，模糊度恢复到blur(0px);
-// TODO: 启用拖拽模式的时候，outerBox如果内部已经有9倍的盒子，就要让出DOM空间，给app放入，这样显得顺理成章，流畅；
-// ondragstart -> ondrag -> ondragenter -> ondragover -> ondragleave -> ondragend -> ondrop
-import {BACKGROUND, DESKTOP} from "./common.js";
-import MyIcon from "./MyIcon.vue";
-import ShiftZone from "./ShiftZone.vue";
-import BoxModal from "./modal/BoxModal.vue";
-import Box from "./Box.vue";
-import initMixin from "./mixins/initMixin.js";
-import DockBar from "./DockBar.vue";
-import Indicator from "./Indicator.vue";
-
-export default {
-  name: "nested-drag-grid",
-  components: {
-    MyIcon: MyIcon,
-    BoxModal: BoxModal,
-    Box: Box,
-    ShiftZone: ShiftZone,
-    DockBar: DockBar,
-    Indicator: Indicator
-  },
-  mixins: [initMixin],
-  mounted() {
-    // 定位，格式化，初始化
-    // setTimeout(() => {
-    this.initBOX();
-    this.square();
-    this.$forceUpdate();
-    // }, 300);
-    window.addEventListener("resize", $event => {
-      // 防抖 100ms 延时执行
-      if (this.resizeTimer) {
-        clearTimeout(this.resizeTimer);
-      }
-      this.resizeTimer = setTimeout(() => {
-        console.log("resize...");
-        this.locateBOX();
-        this.square();
-        this.portrait = window.innerHeight > window.innerWidth;
-      }, 100);
-    });
-    window.addEventListener("keydown", $event => {
-      let keyCode = $event.key;
-      // debugger;
-      switch (keyCode) {
-        case "ArrowLeft":
-          this.switchUnit("left");
-          $event.preventDefault();
-          break;
-        case "ArrowRight":
-          this.switchUnit("right");
-          $event.preventDefault();
-          break;
-        case "ArrowUp":
-          break;
-        case "ArrowDown":
-          break;
-        case "Escape":
-          if (this.$refs['modal'].showModal)
-            this.$refs['modal'].toggleModal();
-        default:
-      }
-    });
-    window.addEventListener("click", $event => {
-      // 需要获取modal的主体范围 判断是否在其中？决定是否关闭
-      // console.log('窗体click', this.$refs['modal'].showModal)
-      if (this.$refs['modal'].showModal)
-        this.$refs['modal'].toggleModal();
-    });
-    window.addEventListener("touchend", $event => {
-      this.$refs['modal'].toggleModal();
-    });
-    // 初始化长按状态
-    window.addEventListener("mousedown", $event => {
-      this.longPress.timer = Date.now();
-      this.longPress.moveFlag = false;
-      this.longPress.flag = false;
-      this.longPress.startPos.x = $event.clientX;
-      this.longPress.startPos.y = $event.clientY;
-    });
-    // 判断是否进入长按，长按就意味着要使用拖拽模式
-    window.addEventListener("mouseup", $event => {
-      this.longPress.endPos.x = $event.clientX;
-      this.longPress.endPos.y = $event.clientY;
-      let delta = Date.now() - this.longPress.timer;
-      let offsetX = Math.abs(
-        this.longPress.endPos.x - this.longPress.startPos.x
-      );
-      let offsetY = Math.abs(
-        this.longPress.endPos.y - this.longPress.startPos.y
-      );
-      // 只要移动距离没有超出5px的原型就算是没有移动，可以计入静止的长按
-      this.longPress.moveFlag = offsetX > 5 && offsetY > 5;
-      // 时间长度大于1000毫秒，并且鼠标中途没有移动
-      if (delta > 500 && !this.longPress.moveFlag) {
-        console.log(delta / 1000, "秒");
-        console.log("触发长按");
-        this.longPress.flag = true;
-        // 启用拉拽模式
-        this.enableDrag = true;
-      } else if (delta < 500 && delta > 200) {
-        console.log(delta / 1000, "秒");
-        console.log("不算触发长按");
-      } else {
-        // console.log(this.longPress.moveFlag ? "已经移动了" : "鼠标未移动");
-      }
-    });
-    // 双击退出拉拽模式
-    window.addEventListener("dblclick", $event => {
-      this.longPress.flag = false;
-      this.longPress.moveFlag = false;
-      this.enableDrag = false;
-      this.locateBOX();
-    });
-  },
-  props: {
-    layout: {
-      type: Object,
-      default: () => {
-        return {
-          col: 5,
-          row: 4
-        };
-      }
+  // TODO: 还要做的事情有很多：模态框；通过悬停时间长短，决定是否放入还是换位；换位/并入的 动画 要做出来；
+  // 并入，模态框拽出app，并入盒子，模态框消失在视野中，模糊度恢复到blur(0px);
+  // TODO: 启用拖拽模式的时候，outerBox如果内部已经有9倍的盒子，就要让出DOM空间，给app放入，这样显得顺理成章，流畅；
+  // ondragstart -> ondrag -> ondragenter -> ondragover -> ondragleave -> ondragend -> ondrop
+  import { BACKGROUND, DESKTOP } from "./common.js";
+  import MyIcon from "./MyIcon.vue";
+  import ShiftZone from "./ShiftZone.vue";
+  import BoxModal from "./modal/BoxModal.vue";
+  import Box from "./Box.vue";
+  import initMixin from "./mixins/initMixin.js";
+  import DockBar from "./DockBar.vue";
+  import Indicator from "./Indicator.vue";
+  import { v4 as uuidv4 } from "uuid";
+  export default {
+    name: "nested-drag-grid",
+    components: {
+      MyIcon: MyIcon,
+      BoxModal: BoxModal,
+      Box: Box,
+      ShiftZone: ShiftZone,
+      DockBar: DockBar,
+      Indicator: Indicator
     },
-    // 悬停判定时间上限
-    suspendJudgeLimit: {
-      type: Number,
-      default: 150
-    },
-    // 拖入app集合内的判定时间
-    dragIntoTimeLimit: {
-      type: Number,
-      default: 450
-    },
-    boxInitSize: {
-      type: Object,
-      default: () => {
-        return {
-          width: "80%",
-          height: "80%"
-        };
-      }
-    },
-    switchDuration: {
-      type: Number,
-      default: 200
-    },
-    // 判定区域伸缩
-    threshold: {
-      type: Object,
-      default: () => {
-        return {
-          horizontal: 1,
-          vertical: 1
-        };
-      }
-    },
-    throttleTime: {
-      type: Number,
-      default: 20
-    }
-  },
-  data() {
-    return {
-      dockApps: {
-        usually: [],
-        running: []
-      },
-      isDragging: false,
-      // 被拖拽的DOM
-      draggingDom: {
-        desk: {
-          body: {},
-          index: undefined
-        },
-        box: {
-          body: {},
-          index: undefined
-        },
-      },
-      // 被置换的DOM
-      replacedDom: {
-        desk: {
-          body: {},
-          index: undefined
-        },
-        box: {
-          body: {},
-          index: undefined
-        },
-      },
-      // 模态框的数据
-      modal: {
-        index: {
-          desk: 0,
-          box: 0
-        },
-      },
-      // 启用拖拽？进入拖拽模式，桌面添加一个；BOX全部添加一组，并且滑动到最后一组（displayNo调节到最大）；对应的指示器也要添加一个圆点
-      enableDrag: false,
-      // 正在切换桌面
-      deskSwitching: false,
-      // box之间拖拽跨过-节流计时器
-      boxDOTimer: 0,
-      // desk之间拖拽跨入
-      deskDOTimer: 0,
-      // 重置尺寸计时器
-      resizeTimer: null,
-      // 长按情况
-      longPress: {
-        timer: 0,
-        moveFlag: false,
-        flag: false,
-        startPos: {
-          x: 0,
-          y: 0
-        },
-        endPos: {
-          x: 0,
-          y: 0
+    mixins: [initMixin],
+    mounted() {
+      // 定位，格式化，初始化
+      // setTimeout(() => {
+      this.initBOX();
+      this.square();
+      this.$forceUpdate();
+      // }, 300);
+      window.addEventListener("resize", $event => {
+        // 防抖 100ms 延时执行
+        if (this.resizeTimer) {
+          clearTimeout(this.resizeTimer);
         }
-      },
-      // 鼠标移动计时器
-      mouseMoveFlag: true,
-      mouse: {
-        x: 0,
-        y: 0,
-        toMove: false,
-        orientation: {
-          hor: "",
-          vet: ""
+        this.resizeTimer = setTimeout(() => {
+          console.log("resize...");
+          this.locateBOX();
+          this.square();
+          this.portrait = window.innerHeight > window.innerWidth;
+        }, 100);
+      });
+      window.addEventListener("keydown", $event => {
+        let keyCode = $event.key;
+        // debugger;
+        switch (keyCode) {
+          case "ArrowLeft":
+            this.switchUnit(-1);
+            $event.preventDefault();
+            break;
+          case "ArrowRight":
+            this.switchUnit(1);
+            $event.preventDefault();
+            break;
+          case "ArrowUp":
+            break;
+          case "ArrowDown":
+            break;
+          case "Escape":
+            if (this.$refs["modal"].showModal) this.$refs["modal"].toggleModal();
+          default:
         }
-      },
-      // 方格尺寸
-      gridSize: {
-        "--gw": 100 / this.layout.col + "%",
-        "--gh": 100 / this.layout.row + "%"
-      },
-      boxSize: {
-        "--boxinitWidth": this.boxInitSize.width,
-        "--boxinitHeight": this.boxInitSize.height
-      },
-      // 设备摆放方向 默认 landscape 所以是false
-      portrait: window.innerHeight > window.innerWidth
-    };
-  },
-  computed: {
-    // 拖拽模式下的动画开关
-    // 把当前的BOX信息传入模态框
-    checkedModal() {
-      return this.desks[this.modal.index.desk].boxes[this.modal.index.box]
-    }
-  },
-  methods: {
-    outerMove($event) {
-      console.log("外部box dom切换", $event);
-    },
-    // 移动端适配 事件
-    touchstart($event) {
-      console.log("touchstart", $event);
-      $event.preventDefault();
-    },
-    touchmove($event) {
-      console.log("touchmove", $event);
-    },
-    touchend($event) {
-      $event.stopPropagation();
-      if (this.$refs['modal'].showModal == false) this.$refs['modal'].toggleModal();
-      console.log("touchend", $event);
-    },
-    appBoxDrag($event) {
-      // console.log("内部", $event);
-    },
-    appGroupOnDrag($event) {
-      // console.log("外部", $event);
-    },
-    appGroupDragStart($event, appIndex) {
-      $event.stopPropagation();
-      // 确定拖拽的是哪个dom
-      this.isDragging = true;
-      console.log("%c开始拖拽", "color:red");
-      let xpath = $event.path;
-    },
-    boxStartDrag($event, deskIndex, boxIndex) {
-      // 设置状态
-      // if (!this.enableDrag) {
-      //   console.log("奇怪，没有进去拖拽模式也会这样？");
-      // }
-      this.isDragging = true;
-      console.log("%c开始拖拽", "color:blue", deskIndex, boxIndex);
-      $event.stopPropagation();
-      // 获取下标
-      this.draggingDom.desk.index = deskIndex;
-      this.draggingDom.box.index = boxIndex;
-      let boxDisplayNo = this.desks[deskIndex].boxes[boxIndex].displayNo;
-      // 找到被拖拽的元素
-      let dragShowElement = document.getElementsByClassName(DESKTOP)[deskIndex]
-        .children[0].children[boxIndex].children[0].children[0].children[
-        boxDisplayNo
-        ];
-      // 设置好拖拽鼠标指示的内容
-      $event.dataTransfer.effectAllowed = "link";
-      // console.log(dragShowElement.clientHeight,dragShowElement.clientWidth)
-      if (dragShowElement) {
-        $event.dataTransfer.setDragImage(
-          dragShowElement,
-          dragShowElement.clientWidth / 2 + 43,
-          dragShowElement.clientHeight / 2 + 36
+      });
+      window.addEventListener("click", $event => {
+        // 需要获取modal的主体范围 判断是否在其中？决定是否关闭
+        if (this.$refs["modal"].showModal) this.$refs["modal"].toggleModal();
+      });
+      window.addEventListener("touchend", $event => {
+        if (this.$refs["modal"].showModal) this.$refs["modal"].toggleModal();
+      });
+      // 初始化长按状态
+      window.addEventListener("mousedown", $event => {
+        this.longPress.timer = Date.now();
+        this.longPress.moveFlag = false;
+        this.longPress.flag = false;
+        this.longPress.startPos.x = $event.clientX;
+        this.longPress.startPos.y = $event.clientY;
+      });
+      // 判断是否进入长按，长按就意味着要使用拖拽模式
+      window.addEventListener("mouseup", $event => {
+        this.longPress.endPos.x = $event.clientX;
+        this.longPress.endPos.y = $event.clientY;
+        let delta = Date.now() - this.longPress.timer;
+        let offsetX = Math.abs(
+          this.longPress.endPos.x - this.longPress.startPos.x
         );
+        let offsetY = Math.abs(
+          this.longPress.endPos.y - this.longPress.startPos.y
+        );
+        // 只要移动距离没有超出5px的原型就算是没有移动，可以计入静止的长按
+        this.longPress.moveFlag = offsetX > 5 && offsetY > 5;
+        // 时间长度大于1000毫秒，并且鼠标中途没有移动，并且没有处于长按模式
+        if (
+          delta > 500 &&
+          this.longPress.moveFlag == false &&
+          this.longPress.flag == false
+        ) {
+          console.log(delta / 1000, "秒");
+          console.log("触发长按");
+          this.longPress.flag = true;
+          // 启用拉拽模式
+          this.enableDrag = true;
+        } else if (delta < 500 && delta > 200) {
+          console.log(delta / 1000, "秒");
+          console.log("不算触发长按");
+        } else {
+          // console.log(this.longPress.moveFlag ? "已经移动了" : "鼠标未移动");
+        }
+      });
+      // 双击退出拉拽模式
+      window.addEventListener("dblclick", $event => {
+        this.longPress.flag = false;
+        this.longPress.moveFlag = false;
+        this.enableDrag = false;
+        this.locateBOX();
+      });
+    },
+    props: {
+      layout: {
+        type: Object,
+        default: () => {
+          return {
+            col: 5,
+            row: 4
+          };
+        }
+      },
+      // 悬停判定时间上限
+      suspendJudgeLimit: {
+        type: Number,
+        default: 150
+      },
+      // 拖入app集合内的判定时间
+      dragIntoTimeLimit: {
+        type: Number,
+        default: 450
+      },
+      boxInitSize: {
+        type: Object,
+        default: () => {
+          return {
+            width: "80%",
+            height: "80%"
+          };
+        }
+      },
+      switchDuration: {
+        type: Number,
+        default: 200
+      },
+      // 判定区域伸缩
+      threshold: {
+        type: Object,
+        default: () => {
+          return {
+            horizontal: 1,
+            vertical: 1
+          };
+        }
+      },
+      throttleTime: {
+        type: Number,
+        default: 20
       }
     },
-    deskDragOver($event) {
-      // return;
-      const throttleTime = this.throttleTime;
-      // 节流100ms执行一次
-      if (Date.now() - this.deskDOTimer < throttleTime || !this.isDragging) {
-        return;
-      }
-      // 新一轮计时，重新获取目前时间
-      this.deskDOTimer = Date.now();
-      setTimeout(() => {
-        console.log("------deskDragOver------");
-        console.log(this.draggingDom.box.index);
-        let rect1 = this.desks[this.currentDeskNo].restSpace.rect1;
-        let rect2 = this.desks[this.currentDeskNo].restSpace.rect2;
-        // console.log(rect1, rect2);
-        // 判断是否包含在剩余空间（非BOX的container）范围内？
-        let includeFlag = restRect => {
-          if (restRect == undefined) {
-            return false;
+    data() {
+      return {
+        dockApps: {
+          usually: [],
+          running: []
+        },
+        isDragging: false,
+        // 被拖拽的DOM
+        draggingDom: {
+          desk: {
+            body: {},
+            index: undefined
+          },
+          box: {
+            body: {},
+            index: undefined
           }
-          return (
-            restRect.left < $event.clientX &&
-            restRect.top < $event.clientY &&
-            restRect.right > $event.clientX &&
-            restRect.bottom > $event.clientY
-          );
-        };
-        if (includeFlag(rect1)) {
-          this.resetBOX();
-          console.log("进入剩余区域1");
-        }
-        if (includeFlag(rect2)) {
-          this.resetBOX();
-          console.log("进入剩余区域2");
-        }
-        // this.showEvent($event);
-      }, throttleTime);
+        },
+        // 被置换的DOM
+        replacedDom: {
+          desk: {
+            body: {},
+            index: undefined
+          },
+          box: {
+            body: {},
+            index: undefined
+          }
+        },
+        // 模态框的数据
+        modal: {
+          index: {
+            desk: 0,
+            box: 0
+          }
+        },
+        // 启用拖拽？进入拖拽模式，桌面添加一个；BOX全部添加一组，并且滑动到最后一组（displayNo调节到最大）；对应的指示器也要添加一个圆点
+        enableDrag: false,
+        // 正在切换桌面
+        deskSwitching: false,
+        // box之间拖拽跨过-节流计时器
+        boxDOTimer: 0,
+        // desk之间拖拽跨入
+        deskDOTimer: 0,
+        // 重置尺寸计时器
+        resizeTimer: null,
+        // 长按情况
+        longPress: {
+          timer: 0,
+          moveFlag: false,
+          flag: false,
+          startPos: {
+            x: 0,
+            y: 0
+          },
+          endPos: {
+            x: 0,
+            y: 0
+          }
+        },
+        // 鼠标移动计时器
+        mouseMoveFlag: true,
+        mouse: {
+          x: 0,
+          y: 0,
+          toMove: false,
+          orientation: {
+            hor: "",
+            vet: ""
+          }
+        },
+        // 方格尺寸
+        gridSize: {
+          "--gw": 100 / this.layout.col + "%",
+          "--gh": 100 / this.layout.row + "%"
+        },
+        boxSize: {
+          "--boxinitWidth": this.boxInitSize.width,
+          "--boxinitHeight": this.boxInitSize.height
+        },
+        // 设备摆放方向 默认 landscape 所以是false
+        portrait: window.innerHeight > window.innerWidth
+      };
     },
-    // 处理动画 N*M宫格
-    // TODO: 单个APP拖入集合，判断，集合拖向单个仅仅是置换；
-    boxDragOver($event) {
-      $event.preventDefault();
-      // 节流100ms执行一次
-      const throttleTime = this.throttleTime;
-      if (Date.now() - this.boxDOTimer < throttleTime || !this.isDragging) {
-        return;
+    watch: {
+      enableDrag: {
+        handler: function(enableDrag, oldVal) {
+          if (enableDrag) {
+            this.enterDragMode();
+          } else {
+            this.quitDragMode();
+          }
+        },
+        immediate: false
       }
-      // 新一轮计时，重新获取目前时间
-      this.boxDOTimer = Date.now();
-      setTimeout(() => {
-        // 从draggingDOM的原始位置为参照物，判断鼠标移动方向
-        this.deterMouseMove($event);
-        // 判定是否在rect范围之内
-        let judgeFlag = rect => {
-          return (
-            rect.left < $event.clientX &&
-            rect.top < $event.clientY &&
-            rect.right > $event.clientX &&
-            rect.bottom > $event.clientY
+    },
+    computed: {
+      // 拖拽模式下的动画开关
+      // 把当前的BOX信息传入模态框
+      checkedModal() {
+        return this.desks[this.modal.index.desk].boxes[this.modal.index.box];
+      }
+    },
+    methods: {
+      outerMove($event) {
+        console.log("外部box dom切换", $event);
+      },
+      // 移动端适配 事件
+      touchstart($event) {
+        console.log("touchstart", $event);
+        $event.preventDefault();
+      },
+      touchmove($event) {
+        console.log("touchmove", $event);
+      },
+      touchend($event) {
+        $event.stopPropagation();
+        if (this.$refs["modal"].showModal == false)
+          this.$refs["modal"].toggleModal();
+        console.log("touchend", $event);
+      },
+      appBoxDrag($event) {
+        // console.log("内部", $event);
+      },
+      appGroupOnDrag($event) {
+        // console.log("外部", $event);
+      },
+      appGroupDragStart($event, appIndex) {
+        $event.stopPropagation();
+        // 确定拖拽的是哪个dom
+        this.isDragging = true;
+        console.log("%c开始拖拽", "color:red");
+        let xpath = $event.path;
+      },
+      boxStartDrag($event, deskIndex, boxIndex) {
+        // 设置状态
+        // if (!this.enableDrag) {
+        //   console.log("奇怪，没有进去拖拽模式也会这样？");
+        // }
+        this.isDragging = true;
+        console.log("%c开始拖拽", "color:blue", deskIndex, boxIndex);
+        $event.stopPropagation();
+        // 获取下标
+        this.draggingDom.desk.index = deskIndex;
+        this.draggingDom.box.index = boxIndex;
+        let boxDisplayNo = this.desks[deskIndex].boxes[boxIndex].displayNo;
+        // 找到被拖拽的元素
+        let dragShowElement = document.getElementsByClassName(DESKTOP)[deskIndex]
+          .children[0].children[boxIndex].children[0].children[0].children[
+          boxDisplayNo
+        ];
+        // 设置好拖拽鼠标指示的内容
+        $event.dataTransfer.effectAllowed = "link";
+        // console.log(dragShowElement.clientHeight,dragShowElement.clientWidth)
+        if (dragShowElement) {
+          $event.dataTransfer.setDragImage(
+            dragShowElement,
+            dragShowElement.clientWidth / 2 + 43,
+            dragShowElement.clientHeight / 2 + 36
           );
-        };
-        let deskIndex = this.draggingDom.desk.index;
+        }
+      },
+      deskDragOver($event) {
+        // return;
+        const throttleTime = this.throttleTime;
+        // 节流100ms执行一次
+        if (Date.now() - this.deskDOTimer < throttleTime || !this.isDragging) {
+          return;
+        }
+        // 新一轮计时，重新获取目前时间
+        this.deskDOTimer = Date.now();
+        setTimeout(() => {
+          console.log("------deskDragOver------");
+          console.log(this.draggingDom.box.index);
+          let rect1 = this.desks[this.currentDeskNo].restSpace.rect1;
+          let rect2 = this.desks[this.currentDeskNo].restSpace.rect2;
+          // console.log(rect1, rect2);
+          // 判断是否包含在剩余空间（非BOX的container）范围内？
+          let includeFlag = restRect => {
+            if (restRect == undefined) {
+              return false;
+            }
+            return (
+              restRect.left < $event.clientX &&
+              restRect.top < $event.clientY &&
+              restRect.right > $event.clientX &&
+              restRect.bottom > $event.clientY
+            );
+          };
+          if (includeFlag(rect1)) {
+            this.resetBOX();
+            console.log("进入剩余区域1");
+          }
+          if (includeFlag(rect2)) {
+            this.resetBOX();
+            console.log("进入剩余区域2");
+          }
+          // this.showEvent($event);
+        }, throttleTime);
+      },
+      // 处理动画 N*M宫格
+      // TODO: 单个APP拖入集合，判断，集合拖向单个仅仅是置换；
+      boxDragOver($event) {
+        $event.preventDefault();
+        // 节流100ms执行一次
+        const throttleTime = this.throttleTime;
+        if (Date.now() - this.boxDOTimer < throttleTime || !this.isDragging) {
+          return;
+        }
+        // 新一轮计时，重新获取目前时间
+        this.boxDOTimer = Date.now();
+        setTimeout(() => {
+          // 从draggingDOM的原始位置为参照物，判断鼠标移动方向
+          this.deterMouseMove($event);
+          // 判定是否在rect范围之内
+          let judgeFlag = rect => {
+            return (
+              rect.left < $event.clientX &&
+              rect.top < $event.clientY &&
+              rect.right > $event.clientX &&
+              rect.bottom > $event.clientY
+            );
+          };
+          let deskIndex = this.draggingDom.desk.index;
+          let boxIndex = this.draggingDom.box.index;
+          // 循环当前所有的box的坐标
+          this.desks[this.currentDeskNo].boxes.forEach((box, bid) => {
+            let innerDomRect = box.DOMRect;
+            let outerDomRect = box.outerDOMRect;
+            // 自我覆盖标志（自我==被拖拽的BOX)
+            let selfCoverFlag =
+              deskIndex == this.currentDeskNo && boxIndex == bid;
+            // 判断是否包含在BOX的矩形范围内？
+            let innerIncludeFlag = judgeFlag(innerDomRect);
+            // 判断是否包含在OUTER-BOX的矩形范围内
+            let outerIncludeFlag = judgeFlag(outerDomRect);
+            // 重置某个桌面除了bid的其他BOX的cover以及悬停时长
+            let recoverOtherBox = (did, boxId) => {
+              this.desks[did].boxes.forEach((item, index) => {
+                if (index != boxId) {
+                  item.covered = false;
+                  item.innerSuspendTime = 0;
+                  item.outerSuspendTime = 0;
+                }
+              });
+            };
+            if (selfCoverFlag && (outerIncludeFlag || innerIncludeFlag)) {
+              recoverOtherBox(this.currentDeskNo, boxIndex);
+              console.log("回到当前被拖拽的box");
+              return;
+            }
+            // 在OUTER-BOX的矩形范围内，并且在content-border外部？
+            if (outerIncludeFlag && !innerIncludeFlag && !selfCoverFlag) {
+              recoverOtherBox(this.currentDeskNo, bid);
+              console.log("已定位：", "桌面", this.currentDeskNo, "BOX外部", bid);
+              box.outerSuspendTime += throttleTime;
+              console.log(
+                `第${bid}个outerSuspendTime悬停时间累计为`,
+                box.outerSuspendTime
+              );
+              // 在外部的时间足够，只有交换位置这一选择
+              if (box.outerSuspendTime > this.suspendJudgeLimit) {
+                this.boxAction(this.currentDeskNo, bid, "switch");
+              }
+              return;
+            }
+
+            // 定位到BOX的矩形范围内，得到具体的BOX下标，另外不能覆盖自己，不用和自己交换位子
+            if (innerIncludeFlag && !selfCoverFlag) {
+              recoverOtherBox(this.currentDeskNo, bid);
+              console.log("已定位：", "桌面", this.currentDeskNo, "BOX内部", bid);
+              // 追加悬停时间
+              box.innerSuspendTime += throttleTime;
+              // 修改覆盖标识 默认100ms判定
+              let directDropFlag =
+                box.innerSuspendTime > this.suspendJudgeLimit &&
+                box.innerSuspendTime < this.dragIntoTimeLimit;
+              if (directDropFlag) {
+                // 被拖拽的是单独的APP
+                let appGroups = this.desks[deskIndex].boxes[boxIndex].appGroups;
+                let appCount = appGroups.reduce((count, cur) => {
+                  return count + cur.length;
+                }, 0);
+                let isApp = appGroups.length == 1 && appCount == 1;
+                if (isApp) {
+                  // 可以确认正在被拉拽物被覆盖,covered绑定了一部分动画做出相应动画
+                  if (!box.covered) {
+                    box.covered = true;
+                  }
+                  console.log(
+                    `第${bid}：innerSuspendTime悬停时间：`,
+                    box.innerSuspendTime
+                  );
+                } else {
+                  // 被拖拽的是APP集合
+                  // 什么也不发生？还是交换位置？
+                  this.boxAction(this.currentDeskNo, bid, "switch");
+                  return;
+                }
+                // TODO: 加入内部盒子
+              }
+              // 默认450ms判定
+              if (box.innerSuspendTime > this.dragIntoTimeLimit) {
+                // 不需要scale 放大
+                box.covered = false;
+                // 如果没有显示模态框，就打开模态框
+                if (!this.$refs["modal"].showModal) {
+                  this.showModal($event, this.currentDeskNo, bid);
+                }
+              }
+              return;
+            }
+          });
+          // this.showEvent($event);
+        }, throttleTime);
+        if (!this.enableDrag) {
+          $event.stopPropagation();
+        }
+      },
+      // 延时一小段间隙，处理悬停时间
+      handleDrop($event, deskIndex, boxIndex) {
+        $event.preventDefault();
+        // 节流100ms执行一次
+        const delayTime = 200;
+        let box = this.desks[deskIndex].boxes[boxIndex];
+        // 时间在 suspendJudgeLimit和dragIntoTimeLimit区间之中
+        let dragIntoFlag =
+          box.innerSuspendTime > this.suspendJudgeLimit &&
+          box.innerSuspendTime < this.dragIntoTimeLimit;
+        console.log(
+          dragIntoFlag ? "划入文件夹" : "不划入",
+          "===>>耗时总计：",
+          box.innerSuspendTime
+        );
+        if (dragIntoFlag) {
+          this.boxAction(deskIndex, boxIndex, "dragInto");
+        }
+        setTimeout(() => {
+          // drop事件发生，悬停时间，全部归零
+          this.desks[this.currentDeskNo].boxes.forEach((item, index) => {
+            item.innerSuspendTime = 0;
+            item.outerSuspendTime = 0;
+            item.covered = false;
+          });
+          console.log("已经清空悬停时间");
+        }, delayTime);
+      },
+      // 让 draggingDOM和tragetBox交换位子
+      // targetDesktop 目标桌面序号 targetBox目标盒子序号
+      boxAction(targetDesktop, targetBox, actionType) {
         let boxIndex = this.draggingDom.box.index;
-        // 循环当前所有的box的坐标
-        this.desks[this.currentDeskNo].boxes.forEach((box, bid) => {
-          let innerDomRect = box.DOMRect;
-          let outerDomRect = box.outerDOMRect;
-          // 自我覆盖标志（自我==被拖拽的BOX)
-          let selfCoverFlag =
-            deskIndex == this.currentDeskNo && boxIndex == bid;
-          // 判断是否包含在BOX的矩形范围内？
-          let innerIncludeFlag = judgeFlag(innerDomRect);
-          // 判断是否包含在OUTER-BOX的矩形范围内
-          let outerIncludeFlag = judgeFlag(outerDomRect);
-          // 重置某个桌面除了bid的其他BOX的cover以及悬停时长
-          let recoverOtherBox = (did, boxId) => {
-            this.desks[did].boxes.forEach((item, index) => {
-              if (index != boxId) {
-                item.covered = false;
-                item.innerSuspendTime = 0;
-                item.outerSuspendTime = 0;
+        let deskIndex = this.draggingDom.desk.index;
+        // 置换后腰修改draggingDom所在的定位
+        if (actionType == "switch") {
+          // 同一个桌面
+          if (targetDesktop == this.draggingDom.desk.index) {
+            // 交换
+            this.desks[targetDesktop].boxes = this.swapArray(
+              this.desks[targetDesktop].boxes,
+              boxIndex,
+              targetBox
+            );
+            // }
+            this.draggingDom.desk.index = targetDesktop;
+            this.draggingDom.box.index = targetBox;
+            // 刷新DOM定位，重置悬停状态
+            this.locateBOX();
+          } else {
+            // 切换到其他桌面
+            let origin = this.desks[deskIndex].boxes[boxIndex];
+            let replaced = this.desks[targetDesktop].boxes[boxIndex];
+            // 删除，加入
+            this.desks[targetDesktop].boxes[targetBox] = origin;
+            this.desks[deskIndex].boxes[boxIndex] = replaced;
+            // TODO: 未完待续
+            console.log(origin, replaced);
+            this.draggingDom.desk.index = targetDesktop;
+            this.draggingDom.box.index = targetBox;
+            // 刷新DOM定位，重置悬停状态
+            this.locateBOX();
+          }
+        } else if (actionType == "dragInto") {
+          // 拖入其中
+          let box = this.desks[deskIndex].boxes.slice(boxIndex, boxIndex + 1)[0];
+          let draggedApp = {
+            id: box.appGroups[0][0].id,
+            name: box.appGroups[0][0].name
+          };
+          let targetDisplayNo = this.desks[targetDesktop].boxes[targetBox]
+            .displayNo;
+          this.desks[targetDesktop].boxes[targetBox].appGroups[
+            targetDisplayNo
+          ].push(draggedApp);
+          this.desks[targetDesktop].boxes[targetBox].covered = false;
+          // 删掉整个盒子
+          this.desks[deskIndex].boxes.splice(boxIndex, 1)[0];
+          this.draggingDom.desk.index = targetDesktop;
+          this.draggingDom.box.index = targetBox;
+          this.locateBOX();
+        }
+      },
+      handleResize($event) {
+        //
+      },
+      // 处理拖入 suspendTime计时判断，悬停位置最后的offset 相关动画，行为（并入）
+      handleDragEnter($event, deskIndex, boxIndex) {
+        //
+      },
+      // 处理拖出
+      handleDragLeave($event, deskIndex, boxIndex) {
+        //
+      },
+      // 决定鼠标动向
+      deterMouseMove($event) {
+        let changeX = $event.clientX - this.mouse.x;
+        let changeY = $event.clientY - this.mouse.y;
+
+        if (changeX > 0) {
+          this.mouse.orientation.hor = "right";
+        } else if (changeX < 0) {
+          this.mouse.orientation.hor = "left";
+        }
+        if (changeY < 0) {
+          this.mouse.orientation.vet = "up";
+        } else if (changeY > 0) {
+          this.mouse.orientation.vet = "down";
+        }
+        // console.log(
+        //   "和初始位置作比较",
+        //   changeX,
+        //   changeY,
+        //   this.mouse.orientation.hor,
+        //   this.mouse.orientation.vet
+        // );
+      },
+      // 打开该文件筐的模态窗
+      showModal($event, deskIndex, boxIndex) {
+        $event.stopPropagation();
+        // 只有多应用才能打开模态框
+        console.log("showModal", {
+          offsetX: $event.offsetX,
+          offsetY: $event.offsetY,
+          x: $event.x,
+          y: $event.y,
+          clientX: $event.clientX,
+          clientY: $event.clientY,
+          pageX: $event.pageX,
+          pageY: $event.pageY
+        });
+        // 目标盒子
+        let destBox = this.desks[deskIndex].boxes[boxIndex];
+        let appCount = destBox.appGroups.reduce((count, cur) => {
+          return count + cur.length;
+        }, 0);
+        console.log(destBox.appGroups, appCount);
+        if (appCount > 1) {
+          // 指定具体要显示的 modal内容
+          this.modal.index.desk = deskIndex;
+          this.modal.index.box = boxIndex;
+          this.$refs["modal"].toggleModal();
+        }
+      },
+      // 被点击的BOX会弹出模态框，同时BOX消失
+      checkedBOX(deskIndex, boxIndex) {
+        return (
+          (this.$refs["modal"] == undefined
+            ? false
+            : this.$refs["modal"].showModal) &&
+          this.modal.index.desk == deskIndex &&
+          this.modal.index.box == boxIndex
+        );
+      },
+      // 鼠标按下定位好点击地址
+      mousedown($event) {
+        this.mouse.x = $event.clientX;
+        this.mouse.y = $event.clientY;
+      },
+      // 鼠标移动 节流
+      mousemove($event) {
+        if (!this.mouseMoveFlag) {
+          return;
+        }
+        this.mouseMoveFlag = false;
+        setTimeout(() => {
+          this.mouseMoveFlag = true;
+        }, 200);
+      },
+      switchUnit(offset) {
+        this.deskSwitching = true;
+        console.log(this.deskSwitching, "正在切换桌面！！！", offset);
+        // 切换桌面
+        let transform = () => {
+          let totalOffset = this.deskShiftOffset * this.currentDeskNo;
+          document.querySelector(
+            "div." + BACKGROUND
+          ).style.transform = `translateX(-${totalOffset}%)`;
+          // 切换桌面要500ms的时间，所以延时执行relcoateDOM
+          setTimeout(() => {
+            // 重新定位BOX
+            this.locateBOX();
+            // 已经没有在切换桌面了
+            this.deskSwitching = false;
+            console.log("切换桌面完毕！！！");
+          }, this.switchDeskTime + 1);
+        };
+
+        // 按照第二个参数进行桌面移动
+        this.currentDeskNo += offset;
+        // 如果有位移就移动，没有就不执行
+        if (offset != 0 && !isNaN(offset)) {
+          transform();
+        }
+        console.log(
+          this.currentDeskNo,
+          "what the keycode that you pressed just now"
+        );
+      },
+      enterDragMode() {
+        let tempDesk = {
+          order: this.desks.length + 1,
+          boxes: [],
+          name: `第${this.desks.length + 1}个桌面`,
+          id: uuidv4()
+        };
+
+        // 临时添加的组
+        let tempBoxGroup = [];
+        this.desks.push(tempDesk);
+        console.log(
+          tempDesk,
+          "进入编辑模式,添加新桌面，",
+          "给每一个BOX添加一个新组，并且滑动到新组"
+        );
+        let deskArray = Array.from(this.desks);
+        deskArray.forEach((desk, did) => {
+          let boxes = Array.from(desk.boxes);
+          boxes.forEach((box, bid) => {
+            // 加一个临时组
+            let appCount = box.appGroups.reduce((count, cur) => {
+              return count + cur.length;
+            }, 0);
+            // 必须要总数大于1，才需要添加组
+            if (appCount > 1) {
+              box.appGroups.push(tempBoxGroup);
+            }
+            box.displayNo = box.appGroups.length - 1;
+          });
+        });
+      },
+      quitDragMode() {
+        // 如果没有加入任何app就移除该桌面
+        let deskArray = Array.from(this.desks);
+        // 先删除不要的
+        deskArray.forEach((desk, did) => {
+          if (desk.boxes && desk.boxes.length == 0) {
+            this.desks.splice(did, 1);
+          }
+        });
+        Array.from(this.desks).forEach((desk, did) => {
+          desk.boxes.forEach((box, bid) => {
+            // 二维数组
+            let groups = Array.from(box.appGroups);
+            let newGroups = [];
+            groups.forEach((group, gid) => {
+              // 如果没有加入任何app就移除该组
+              if (group.length > 0) {
+                newGroups.push(group);
               }
             });
-          };
-          if (selfCoverFlag && (outerIncludeFlag || innerIncludeFlag)) {
-            recoverOtherBox(this.currentDeskNo, boxIndex);
-            console.log("回到当前被拖拽的box");
-            return;
-          }
-          // 在OUTER-BOX的矩形范围内，并且在content-border外部？
-          if (outerIncludeFlag && !innerIncludeFlag && !selfCoverFlag) {
-            recoverOtherBox(this.currentDeskNo, bid);
-            console.log("已定位：", "桌面", this.currentDeskNo, "BOX外部", bid);
-            box.outerSuspendTime += throttleTime;
-            console.log(
-              `第${bid}个outerSuspendTime悬停时间累计为`,
-              box.outerSuspendTime
-            );
-            // 在外部的时间足够，只有交换位置这一选择
-            if (box.outerSuspendTime > this.suspendJudgeLimit) {
-              this.boxAction(this.currentDeskNo, bid, "switch");
+            box.appGroups = newGroups;
+            // 如果原来的显示组超过了组数，就锁定到最后一组显示
+            if (box.displayNo > box.appGroups.length - 1) {
+              box.displayNo = box.appGroups.length - 1;
             }
-            return;
-          }
-
-          // 定位到BOX的矩形范围内，得到具体的BOX下标，另外不能覆盖自己，不用和自己交换位子
-          if (innerIncludeFlag && !selfCoverFlag) {
-            recoverOtherBox(this.currentDeskNo, bid);
-            console.log("已定位：", "桌面", this.currentDeskNo, "BOX内部", bid);
-            // 追加悬停时间
-            box.innerSuspendTime += throttleTime;
-            // 修改覆盖标识 默认100ms判定
-            let directDropFlag =
-              box.innerSuspendTime > this.suspendJudgeLimit &&
-              box.innerSuspendTime < this.dragIntoTimeLimit;
-            if (directDropFlag) {
-              // 被拖拽的是单独的APP
-              let appGroups = this.desks[deskIndex].boxes[boxIndex].appGroups;
-              let appCount = appGroups.reduce((count, cur) => {
-                return count + cur.length;
-              }, 0);
-              let isApp = appGroups.length == 1 && appCount == 1;
-              if (isApp) {
-                // 可以确认正在被拉拽物被覆盖,covered绑定了一部分动画做出相应动画
-                if (!box.covered) {
-                  box.covered = true;
-                }
-                console.log(`第${bid}：innerSuspendTime悬停时间：`, box.innerSuspendTime);
-              } else {
-                // 被拖拽的是APP集合
-                // 什么也不发生？还是交换位置？
-                this.boxAction(this.currentDeskNo, bid, "switch");
-                return;
-              }
-              // TODO: 加入内部盒子
-            }
-            // 默认450ms判定
-            if (box.innerSuspendTime > this.dragIntoTimeLimit) {
-              // 不需要scale 放大
-              box.covered = false;
-              // 如果没有显示模态框，就打开模态框
-              if (!this.$refs['modal'].showModal) {
-                this.showModal($event, this.currentDeskNo, bid);
-              }
-            }
-            return;
-          }
+          });
         });
-        // this.showEvent($event);
-      }, throttleTime);
-      if (!this.enableDrag) {
-        $event.stopPropagation();
       }
     },
-    // 延时一小段间隙，处理悬停时间
-    handleDrop($event, deskIndex, boxIndex) {
-      $event.preventDefault();
-      // 节流100ms执行一次
-      const delayTime = 200;
-      let box = this.desks[deskIndex].boxes[boxIndex];
-      // 时间在 suspendJudgeLimit和dragIntoTimeLimit区间之中
-      let dragIntoFlag =
-        box.innerSuspendTime > this.suspendJudgeLimit &&
-        box.innerSuspendTime < this.dragIntoTimeLimit;
-      console.log(
-        dragIntoFlag ? "划入文件夹" : "不划入",
-        "===>>耗时总计：",
-        box.innerSuspendTime
-      );
-      if (dragIntoFlag) {
-        this.boxAction(deskIndex, boxIndex, "dragInto");
-      }
-      setTimeout(() => {
-        // drop事件发生，悬停时间，全部归零
-        this.desks[this.currentDeskNo].boxes.forEach((item, index) => {
-          item.innerSuspendTime = 0;
-          item.outerSuspendTime = 0;
-          item.covered = false;
-        });
-        console.log("已经清空悬停时间");
-      }, delayTime);
-    },
-    // 让 draggingDOM和tragetBox交换位子
-    // targetDesktop 目标桌面序号 targetBox目标盒子序号
-    boxAction(targetDesktop, targetBox, actionType) {
-      let boxIndex = this.draggingDom.box.index;
-      let deskIndex = this.draggingDom.desk.index;
-      // 置换后腰修改draggingDom所在的定位
-      if (actionType == "switch") {
-        // 同一个桌面
-        if (targetDesktop == this.draggingDom.desk.index) {
-          // 交换
-          this.desks[targetDesktop].boxes = this.swapArray(
-            this.desks[targetDesktop].boxes,
-            boxIndex,
-            targetBox
-          );
-          // }
-          this.draggingDom.desk.index = targetDesktop;
-          this.draggingDom.box.index = targetBox;
-          // 刷新DOM定位，重置悬停状态
-          this.locateBOX();
+    filters: {
+      resolveAppName(appName) {
+        if (appName || appName != "") {
+          return appName;
         } else {
-          // 切换到其他桌面
-          let origin = this.desks[deskIndex].boxes[boxIndex];
-          let replaced = this.desks[targetDesktop].boxes[boxIndex];
-          // 删除，加入
-          this.desks[targetDesktop].boxes[targetBox] = origin;
-          this.desks[deskIndex].boxes[boxIndex] = replaced;
-          // TODO: 未完待续
-          console.log(origin, replaced);
-          this.draggingDom.desk.index = targetDesktop;
-          this.draggingDom.box.index = targetBox;
-          // 刷新DOM定位，重置悬停状态
-          this.locateBOX();
+          return "app-box";
         }
-      } else if (actionType == "dragInto") {
-        // 拖入其中
-        let box = this.desks[deskIndex].boxes.slice(boxIndex, boxIndex + 1)[0];
-        let draggedApp = {
-          id: box.appGroups[0][0].id,
-          name: box.appGroups[0][0].name
-        };
-        let targetDisplayNo = this.desks[targetDesktop].boxes[targetBox]
-          .displayNo;
-        this.desks[targetDesktop].boxes[targetBox].appGroups[
-          targetDisplayNo
-          ].push(draggedApp);
-        this.desks[targetDesktop].boxes[targetBox].covered = false;
-        // 删掉整个盒子
-        this.desks[deskIndex].boxes.splice(boxIndex, 1)[0];
-        this.draggingDom.desk.index = targetDesktop;
-        this.draggingDom.box.index = targetBox;
-        this.locateBOX();
-      }
-    },
-    handleResize($event) {
-      //
-    },
-    // 处理拖入 suspendTime计时判断，悬停位置最后的offset 相关动画，行为（并入）
-    handleDragEnter($event, deskIndex, boxIndex) {
-      //
-    },
-    // 处理拖出
-    handleDragLeave($event, deskIndex, boxIndex) {
-      //
-    },
-    // 决定鼠标动向
-    deterMouseMove($event) {
-      let changeX = $event.clientX - this.mouse.x;
-      let changeY = $event.clientY - this.mouse.y;
-
-      if (changeX > 0) {
-        this.mouse.orientation.hor = "right";
-      } else if (changeX < 0) {
-        this.mouse.orientation.hor = "left";
-      }
-      if (changeY < 0) {
-        this.mouse.orientation.vet = "up";
-      } else if (changeY > 0) {
-        this.mouse.orientation.vet = "down";
-      }
-      // console.log(
-      //   "和初始位置作比较",
-      //   changeX,
-      //   changeY,
-      //   this.mouse.orientation.hor,
-      //   this.mouse.orientation.vet
-      // );
-    },
-    // 打开该文件筐的模态窗
-    showModal($event, deskIndex, boxIndex) {
-      $event.stopPropagation();
-      // 只有多应用才能打开模态框
-      console.log("showModal", {
-        offsetX: $event.offsetX,
-        offsetY: $event.offsetY,
-        x: $event.x,
-        y: $event.y,
-        clientX: $event.clientX,
-        clientY: $event.clientY,
-        pageX: $event.pageX,
-        pageY: $event.pageY
-      });
-      // 目标盒子
-      let destBox = this.desks[deskIndex].boxes[boxIndex];
-      let appCount = destBox.appGroups.reduce((count, cur) => {
-        return count + cur.length;
-      }, 0);
-      console.log(destBox.appGroups, appCount);
-      if (appCount > 1) {
-        // 指定具体要显示的 modal内容
-        this.modal.index.desk = deskIndex;
-        this.modal.index.box = boxIndex;
-        this.$refs['modal'].toggleModal();
-      }
-    },
-    // 被点击的BOX会弹出模态框，同时BOX消失
-    checkedBOX(deskIndex, boxIndex) {
-      return (
-        (this.$refs['modal'] == undefined ? false : this.$refs['modal'].showModal) &&
-        this.modal.index.desk == deskIndex &&
-        this.modal.index.box == boxIndex
-      );
-    },
-    // 鼠标按下定位好点击地址
-    mousedown($event) {
-      this.mouse.x = $event.clientX;
-      this.mouse.y = $event.clientY;
-    },
-    // 鼠标移动 节流
-    mousemove($event) {
-      if (!this.mouseMoveFlag) {
-        return;
-      }
-      this.mouseMoveFlag = false;
-      setTimeout(() => {
-        this.mouseMoveFlag = true;
-      }, 200);
-    },
-    switchUnit(orientation) {
-      this.deskSwitching = true;
-      console.log(this.deskSwitching, "正在切换桌面！！！");
-      // 切换桌面
-      let transform = () => {
-        document.querySelector(
-          "div." + BACKGROUND
-        ).style.transform = `translateX(-${this.deskShiftOffset *
-          this.currentDeskNo}%)`;
-        // 切换桌面要500ms的时间，所以延时执行relcoateDOM
-        setTimeout(() => {
-          this.locateBOX();
-          this.deskSwitching = false;
-          console.log(this.deskSwitching, "切换桌面完毕！！！");
-        }, this.switchDeskTime );
-      };
-      switch (orientation) {
-        case "right":
-          if (this.currentDeskNo + 1 < this.desks.length) {
-            this.currentDeskNo++;
-            transform();
-          }
-          break;
-        case "left":
-          if (this.currentDeskNo > 0) {
-            this.currentDeskNo--;
-            transform();
-          }
-          break;
-        default:
-          console.log("what the keycode that you pressed just now");
-      }
-    },
-  },
-  filters: {
-    resolveAppName(appName) {
-      if (appName || appName != "") {
-        return appName;
-      } else {
-        return "app-box";
       }
     }
-  }
-};
+  };
 </script>
 <!-- 盒子布局样式，内部app显示样式 -->
 <style scoped>
@@ -846,7 +916,7 @@ export default {
 .ndg-desc {
   font-size: 12px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-  Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   bottom: 0rem;
   color: whitesmoke;
   font-weight: 400;
@@ -855,7 +925,6 @@ export default {
   transition: opacity 0.5s ease-in-out;
   animation-fill-mode: backwards;
 }
-
 
 /* 被覆盖，放大BOX */
 .ndg-box-covered {

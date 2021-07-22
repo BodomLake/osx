@@ -66,7 +66,7 @@ export default {
 
 .icon {
   min-width: 1vmin;
-  minheight: 1vmin;
+  min-height: 1vmin;
   fill: currentColor;
   overflow: hidden;
 }

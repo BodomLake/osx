@@ -118,7 +118,6 @@
         immediate: true,
         handler: function(portrait, oldVal) {
           this.destRect = this.calcModalRect(portrait);
-          console.log(this.modalSize, portrait ? "竖屏" : "横屏", this.destRect);
         }
       }
     },
@@ -139,9 +138,7 @@
       initRect() {
         return {
           "--initWidth": this.box.DOMRect ? this.box.DOMRect.width + "px" : "0px",
-          "--initHeight": this.box.DOMRect
-            ? this.box.DOMRect.width + "px"
-            : +"0px",
+          "--initHeight": this.box.DOMRect ? this.box.DOMRect.width + "px" : +"0px",
           "--initX": this.box.DOMRect ? this.box.DOMRect.x + "px" : +"0px",
           "--initY": this.box.DOMRect ? this.box.DOMRect.y + "px" : +"0px"
         };
@@ -250,7 +247,7 @@
         let destHeight = this.modalSize.height * vmin;
         let initWidth = this.box.DOMRect ? this.box.DOMRect.width : 0;
         let initHeight = this.box.DOMRect ? this.box.DOMRect.height : 0;
-        console.log(destWidth / initWidth, destHeight / initHeight);
+        // console.log(destWidth / initWidth, destHeight / initHeight);
         return {
           "--ratioX": destWidth / initWidth,
           "--ratioY": destHeight / initHeight

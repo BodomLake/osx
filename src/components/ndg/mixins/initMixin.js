@@ -11,7 +11,7 @@ export default {
     }
     this.updatedTimer = setTimeout(() => {
       // 重置所有
-      this.locateBOX();
+      // this.locateBOX();
       console.log("重定位div.ndg-outer完毕, 不重置悬停状态");
     }, 300);
   },
@@ -106,7 +106,7 @@ export default {
           // box.showModal = false;
           box.innerSuspendTime = 0;
           box.outerSuspendTime = 0;
-          box.displayNo = 0;
+          // box.displayNo = 0;
           boxDOM.children[0].style.transform = "";
         });
         let contDOM = document.querySelectorAll("." + CONTAINER)[did];
@@ -163,9 +163,16 @@ export default {
     // rect1(在下)是 最后flex全局剩余没有strech的部分， rect2(在上 靠右)是flex布局BOX没有填满的部分（小于N*M - N）
     calcRestSpace(cont, boxes) {
       // debugger
+      let rect1, rect2;
+      if (boxes[boxes.length - 1] == undefined) {
+        return {
+          rect1: {},
+          rect2: {}
+        };
+      }
       let lastBoxRect = boxes[boxes.length - 1].getBoundingClientRect();
       let contRect = cont.getBoundingClientRect();
-      let rect1, rect2;
+
       let N = this.layout.col;
       let M = this.layout.row;
 
@@ -200,7 +207,7 @@ export default {
         rect2
       };
     },
-    
+
     swapArray(arr, i1, i2) {
       // 从下标arr[i2]自身开始向后删除，填充(...item)也就是arr[i1]，以数组形式返回被删掉的元素
       arr[i1] = arr.splice(i2, 1, arr[i1])[0];

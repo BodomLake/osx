@@ -69,7 +69,7 @@
         // 平行移动游标指示器（向右）
         let transform = () => {
           // 平移数 * 每次平移的量
-          let offsetScale = (this.offset * 100) / this.displayMaxNum;
+          let offsetScale = this.offset * (100 / this.displayMaxNum);
           document.querySelector(
             ".ndg-scroll-zone"
           ).style.transform = `translateX(-${offsetScale}%)`;
