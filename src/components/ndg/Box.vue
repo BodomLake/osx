@@ -46,6 +46,24 @@
         appDOTimer: 0
       };
     },
+    watch: {
+      box: {
+        handler: function(newBOX, oldBOX) {
+          // let appCount = arr => {
+          //   return arr.reduce((count, cur) => {
+          //     return count + cur.length;
+          //   }, 0);
+          // };
+          // // 如果app的数量变化了，就重新定位
+          // if (appCount(newBOX) != appCount(oldBOX)) {
+          //   this.locateApps();
+          // }
+          this.locateApps();
+        },
+        immediate: false,
+        depp: true
+      }
+    },
     mounted() {
       // 立刻执行
       this.locateApps();

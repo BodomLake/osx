@@ -75,7 +75,7 @@
           clearTimeout(this.resizeTimer);
         }
         this.resizeTimer = setTimeout(() => {
-          console.log("resize...");
+          console.log("全局 resize...");
           this.locateBOX();
           this.square();
           this.portrait = window.innerHeight > window.innerWidth;
@@ -136,14 +136,12 @@
           this.longPress.moveFlag == false &&
           this.longPress.flag == false
         ) {
-          console.log(delta / 1000, "秒");
-          console.log("触发长按");
           this.longPress.flag = true;
+          console.log(delta / 1000, "秒", "触发长按", this.longPress.flag);
           // 启用拉拽模式
           this.enableDrag = true;
         } else if (delta < 500 && delta > 200) {
-          console.log(delta / 1000, "秒");
-          console.log("不算触发长按");
+          console.log(delta / 1000, "秒", "不算触发长按");
         } else {
           // console.log(this.longPress.moveFlag ? "已经移动了" : "鼠标未移动");
         }
@@ -201,7 +199,7 @@
       },
       throttleTime: {
         type: Number,
-        default: 20
+        default: 10
       }
     },
     data() {
@@ -498,9 +496,7 @@
               if (directDropFlag) {
                 // 被拖拽的是单独的APP
                 let appGroups = this.desks[deskIndex].boxes[boxIndex].appGroups;
-                let appCount = appGroups.reduce((count, cur) => {
-                  return count + cur.length;
-                }, 0);
+                let appCount = appGroups.flat().length;
                 let isApp = appGroups.length == 1 && appCount == 1;
                 if (isApp) {
                   // 可以确认正在被拉拽物被覆盖,covered绑定了一部分动画做出相应动画
@@ -580,7 +576,6 @@
               boxIndex,
               targetBox
             );
-            // }
             this.draggingDom.desk.index = targetDesktop;
             this.draggingDom.box.index = targetBox;
             // 刷新DOM定位，重置悬停状态
@@ -602,20 +597,29 @@
         } else if (actionType == "dragInto") {
           // 拖入其中
           let box = this.desks[deskIndex].boxes.slice(boxIndex, boxIndex + 1)[0];
-          let draggedApp = {
-            id: box.appGroups[0][0].id,
-            name: box.appGroups[0][0].name
+          console.log("执行 boxAction, 别拖拽的BOX：", box.appGroups);
+          let app = box.appGroups[0][0];
+          let draggedApp = Object.create(null);
+          draggedApp = {
+            id: app.id,
+            name: app.name
           };
-          let targetDisplayNo = this.desks[targetDesktop].boxes[targetBox]
-            .displayNo;
-          this.desks[targetDesktop].boxes[targetBox].appGroups[
-            targetDisplayNo
-          ].push(draggedApp);
+          let target = this.desks[targetDesktop].boxes[targetBox];
+          let targetDisplayNo = target.displayNo;
+          if(target.appGroups[targetDisplayNo].length == 9){
+            // 添加一个新组
+            this.desks[targetDesktop].boxes[targetBox].appGroups.push([]);
+            // 滑动到新组
+            this.desks[targetDesktop].boxes[targetBox].displayNo  = ++targetDisplayNo;
+          }
+          // 添加到当前组
+          this.desks[targetDesktop].boxes[targetBox].appGroups[targetDisplayNo].push(draggedApp);
+          console.log("push之后第一个桌面", this.desks[targetDesktop].boxes[targetBox].appGroups[targetDisplayNo]);
           this.desks[targetDesktop].boxes[targetBox].covered = false;
           // 删掉整个盒子
-          this.desks[deskIndex].boxes.splice(boxIndex, 1)[0];
-          this.draggingDom.desk.index = targetDesktop;
-          this.draggingDom.box.index = targetBox;
+          this.desks[deskIndex].boxes.splice(boxIndex, 1);
+          // this.draggingDom.desk.index = targetDesktop;
+          // this.draggingDom.box.index = targetBox;
           this.locateBOX();
         }
       },
@@ -669,9 +673,7 @@
         });
         // 目标盒子
         let destBox = this.desks[deskIndex].boxes[boxIndex];
-        let appCount = destBox.appGroups.reduce((count, cur) => {
-          return count + cur.length;
-        }, 0);
+        let appCount = destBox.appGroups.flat().length;
         console.log(destBox.appGroups, appCount);
         if (appCount > 1) {
           // 指定具体要显示的 modal内容
@@ -744,23 +746,17 @@
           name: `第${this.desks.length + 1}个桌面`,
           id: uuidv4()
         };
-
         // 临时添加的组
         let tempBoxGroup = [];
         this.desks.push(tempDesk);
-        console.log(
-          tempDesk,
-          "进入编辑模式,添加新桌面，",
-          "给每一个BOX添加一个新组，并且滑动到新组"
-        );
+        this.$set(this.desk[this.desk.length-1], 'boxes', []);
+
         let deskArray = Array.from(this.desks);
         deskArray.forEach((desk, did) => {
           let boxes = Array.from(desk.boxes);
           boxes.forEach((box, bid) => {
             // 加一个临时组
-            let appCount = box.appGroups.reduce((count, cur) => {
-              return count + cur.length;
-            }, 0);
+            let appCount = box.appGroups.flat().length;
             // 必须要总数大于1，才需要添加组
             if (appCount > 1) {
               box.appGroups.push(tempBoxGroup);

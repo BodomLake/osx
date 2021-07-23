@@ -5,15 +5,14 @@ export default {
   // 初始化 二维数组
   beforeCreate() {},
   updated() {
-    console.log("渲染完毕");
+    console.log("updated--渲染完毕");
     if (this.updatedTimer) {
-      console.log(this.updatedTimer)
       clearTimeout(this.updatedTimer);
     }
     this.updatedTimer = setTimeout(() => {
       // 重置所有
       this.locateBOX();
-      console.log("重定位div.ndg-outer完毕, 不重置悬停状态");
+      // console.log("重定位div.ndg-outer完毕, 不重置悬停状态");
     }, 300);
   },
   data() {
@@ -208,7 +207,6 @@ export default {
         rect2
       };
     },
-
     swapArray(arr, i1, i2) {
       // 从下标arr[i2]自身开始向后删除，填充(...item)也就是arr[i1]，以数组形式返回被删掉的元素
       arr[i1] = arr.splice(i2, 1, arr[i1])[0];

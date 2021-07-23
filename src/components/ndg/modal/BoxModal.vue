@@ -131,7 +131,9 @@
         // 模态目的地 几何信息
         destRect: {},
         showModal: false,
-        scaleRatio: this.calcRatio()
+        scaleRatio: this.calcRatio(),
+        // 重置尺寸计时器
+        resizeTimer: null
       };
     },
     computed: {
@@ -139,7 +141,9 @@
       initRect() {
         return {
           "--initWidth": this.box.DOMRect ? this.box.DOMRect.width + "px" : "0px",
-          "--initHeight": this.box.DOMRect ? this.box.DOMRect.width + "px" : +"0px",
+          "--initHeight": this.box.DOMRect
+            ? this.box.DOMRect.width + "px"
+            : +"0px",
           "--initX": this.box.DOMRect ? this.box.DOMRect.x + "px" : +"0px",
           "--initY": this.box.DOMRect ? this.box.DOMRect.y + "px" : +"0px"
         };
@@ -152,9 +156,14 @@
     },
     mounted() {
       window.addEventListener("resize", $event => {
-        console.log("模态框重置destPos");
-        this.destRect = this.calcModalRect(this.portrait);
-        this.scaleRatio = this.calcRatio(this.portrait);
+        if (this.resizeTimer) {
+          clearTimeout(this.resizeTimer);
+        }
+        this.resizeTimer = setTimeout(() => {
+          // console.log("模态框重置destPos");
+          this.destRect = this.calcModalRect(this.portrait);
+          this.scaleRatio = this.calcRatio(this.portrait);
+        },200);
       });
     },
     updated() {
@@ -219,7 +228,7 @@
         let len = this.box.appGroups.length;
         if (this.box.displayNo > 0 && this.box.displayNo < len - 1) {
           this.box.displayNo += offset;
-        } 
+        }
       },
       calcModalRect(portrait) {
         let vmin = Math.min(window.innerHeight, window.innerWidth) / 100;
