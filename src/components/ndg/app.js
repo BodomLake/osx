@@ -3,75 +3,75 @@ export var desks = [
     order: 1,
     boxes: [
       {
-        id: "5a4d297c-d628-4d37-9571-a865d1318b82",
+        id: "5a4d297cd6284d379571a865d1318b82",
         name: "第1个盒子",
         appGroups: [
           [
             {
               name: "edge",
-              id: "5b380a47-651d-4bc6-92b3-d993f92fb57f"
+              id: "5b380a47651d4bc692b3d993f92fb57f"
             },
             {
               name: "chrome",
-              id: "a43909d4-ac54-4dab-8fa8-c26915f03efc"
+              id: "a43909d4ac544dab8fa8c26915f03efc"
             },
             {
               name: "Safari",
-              id: "6e272b33-e19b-4f17-a080-50f93267e812"
+              id: "6e272b33e19b4f17a08050f93267e812"
             },
             {
               name: "jiangxi",
-              id: "7e1aa906-fa1c-4de6-a98d-5ab5d2044b63"
+              id: "7e1aa906fa1c4de6a98d5ab5d2044b63"
             },
             {
               name: "QQyouxiang",
-              id: "b5e74770-d6d8-4470-9b9e-6935bb4961bd"
+              id: "b5e74770d6d844709b9e6935bb4961bd"
             },
             {
               name: "xinlang",
-              id: "3338f78b-7356-4341-b50f-229358c516d1"
+              id: "3338f78b73564341b50f229358c516d1"
             },
             {
               name: "taobao",
-              id: "54de2d1d-cae6-4e04-94fe-387f420dfe24"
+              id: "54de2d1dcae64e0494fe387f420dfe24"
             },
             {
               name: "app-store",
-              id: "df71f19d-44a2-408e-98e4-3366080119b0"
+              id: "df71f19d44a2408e98e43366080119b0"
             },
             {
               name: "xunlei_nomarl",
-              id: "cbe91ea8-c837-4f6f-b238-274ad3daee79"
+              id: "cbe91ea8c8374f6fb238274ad3daee79"
             }
           ],
           [
             {
               name: "Bosszhipin",
-              id: "0435e9e1-5654-413f-8a78-b540568c68e0"
+              id: "0435e9e15654413f8a78b540568c68e0"
             },
             {
               name: "wangyiyun",
-              id: "518a970f-a45d-45bb-8a5f-2db3b8498206"
+              id: "518a970fa45d45bb8a5f2db3b8498206"
             },
             {
               name: "sougoup",
-              id: "3b82e493-5e65-4de8-aa37-01f68803231d"
+              id: "3b82e4935e654de8aa3701f68803231d"
             },
             {
               name: "wangyiyun",
-              id: "44b49ad6-3b19-4c45-8970-aa95127262d8"
+              id: "44b49ad63b194c458970aa95127262d8"
             },
             {
               name: "douyin",
-              id: "9b3b7c3d-5775-4575-bcbd-c37ddd35cb93"
+              id: "9b3b7c3d57754575bcbdc37ddd35cb93"
             },
             {
               name: "shezhi",
-              id: "ab5b7dd6-330a-47ea-87da-ad4e6a4e8a51"
+              id: "ab5b7dd6330a47ea87daad4e6a4e8a51"
             },
             {
               name: "tianmao",
-              id: "f97bcca4-a15c-44dd-a0e6-d430e4710060"
+              id: "f97bcca4a15c44dda0e6d430e4710060"
             }
           ]
         ],
@@ -79,13 +79,13 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "8c28ff13-1afc-4a80-9db6-fa7c1f9888ba",
+        id: "8c28ff131afc4a809db6fa7c1f9888ba",
         name: "第2个盒子",
         appGroups: [
           [
             {
               name: "QQ",
-              id: "e6c53e8a-2e21-410e-9e9a-b5f9775c2a14"
+              id: "e6c53e8a2e21410e9e9ab5f9775c2a14"
             }
           ]
         ],
@@ -93,13 +93,13 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "834684d7-db3d-40f0-9838-a8b78e78fa1d",
+        id: "834684d7db3d40f09838a8b78e78fa1d",
         name: "第3个盒子",
         appGroups: [
           [
             {
               name: "we-chat",
-              id: "d63bc5f8-2e6d-4b80-965a-e1fc401c9b38"
+              id: "d63bc5f82e6d4b80965ae1fc401c9b38"
             }
           ]
         ],
@@ -107,17 +107,17 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "f6184918-8832-4603-9947-d0520e73ab0b",
+        id: "f6184918883246039947d0520e73ab0b",
         name: "第4个盒子",
         appGroups: [
           [
             {
               name: "pdd",
-              id: "6a16fd19-bc5e-41cb-ae82-8d43a5304951"
+              id: "6a16fd19bc5e41cbae828d43a5304951"
             },
             {
               name: "51job",
-              id: "7840f0ad-8236-4eff-95f5-f6bb8eff301b"
+              id: "7840f0ad82364eff95f5f6bb8eff301b"
             }
           ]
         ],
@@ -125,13 +125,13 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "b7daa12e-83a1-4230-b6c1-9bdacafc4c42",
+        id: "b7daa12e83a14230b6c19bdacafc4c42",
         name: "第5个盒子",
         appGroups: [
           [
             {
               name: "amap",
-              id: "9d24556f-1edc-48a7-810e-9d0d96a24469"
+              id: "9d24556f1edc48a7810e9d0d96a24469"
             }
           ]
         ],
@@ -139,13 +139,13 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "7e96a648-423a-4b80-9cce-4166b55a370f",
+        id: "7e96a648423a4b809cce4166b55a370f",
         name: "第6个盒子",
         appGroups: [
           [
             {
               name: "zhihu",
-              id: "a892b7e8-efce-420a-a8bf-d23871822c42"
+              id: "a892b7e8efce420aa8bfd23871822c42"
             }
           ]
         ],
@@ -153,13 +153,13 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "3b6d51ea-1127-4374-bdc1-7a475658ae76",
+        id: "3b6d51ea11274374bdc17a475658ae76",
         name: "第7个盒子",
         appGroups: [
           [
             {
               name: "dingding",
-              id: "eb350df2-85b5-4a9f-9b6a-01049b1833df"
+              id: "eb350df285b54a9f9b6a01049b1833df"
             }
           ]
         ],
@@ -167,13 +167,13 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "1617791e-1ab6-4568-a924-33f3a686cbd4",
+        id: "1617791e1ab64568a92433f3a686cbd4",
         name: "第8个盒子",
         appGroups: [
           [
             {
               name: "sougoup",
-              id: "51680290-780b-412d-801a-3b5893ef5a1c"
+              id: "51680290780b412d801a3b5893ef5a1c"
             }
           ]
         ],
@@ -181,13 +181,13 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "971c84fd-0aae-4d40-816f-170841498ee2",
+        id: "971c84fd0aae4d40816f170841498ee2",
         name: "第9个盒子",
         appGroups: [
           [
             {
               name: "eliaomo",
-              id: "621bba22-a93c-4a15-9089-f27ae0101db7"
+              id: "621bba22a93c4a159089f27ae0101db7"
             }
           ]
         ],
@@ -195,13 +195,13 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "42883f8f-1f10-4162-aae7-c7adb2fcd710",
+        id: "42883f8f1f104162aae7c7adb2fcd710",
         name: "第10个盒子",
         appGroups: [
           [
             {
               name: "bilibili",
-              id: "479f1296-dad8-4d5f-842f-adb4c11cc39e"
+              id: "479f1296dad84d5f842fadb4c11cc39e"
             }
           ]
         ],
@@ -209,13 +209,13 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "d1990732-d1df-4666-adaa-7636b41be54f",
+        id: "d1990732d1df4666adaa7636b41be54f",
         name: "第11个盒子",
         appGroups: [
           [
             {
               name: "souhu",
-              id: "4f2aa476-e4cd-4137-838a-030f592049d2"
+              id: "4f2aa476e4cd4137838a030f592049d2"
             }
           ]
         ],
@@ -223,13 +223,13 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "bae1ea10-6770-4bfa-812a-7921c12e8e19",
+        id: "bae1ea1067704bfa812a7921c12e8e19",
         name: "第12个盒子",
         appGroups: [
           [
             {
               name: "zhongguodianxin",
-              id: "34c3d7e6-1428-400e-8267-912cde06a18c"
+              id: "34c3d7e61428400e8267912cde06a18c"
             }
           ]
         ],
@@ -237,13 +237,13 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "929d4fe2-ce56-44b1-b1f1-d755ab69e750",
+        id: "929d4fe2ce5644b1b1f1d755ab69e750",
         name: "第13个盒子",
         appGroups: [
           [
             {
               name: "zhongguoliantong",
-              id: "a6838d14-aa54-4f12-9a1a-000d7a9f1e40"
+              id: "a6838d14aa544f129a1a000d7a9f1e40"
             }
           ]
         ],
@@ -251,13 +251,13 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "58b3215c-fc74-4f25-92a6-f6ff6bd69992",
+        id: "58b3215cfc744f2592a6f6ff6bd69992",
         name: "第14个盒子",
         appGroups: [
           [
             {
               name: "guotaijunan",
-              id: "d3d126b0-96eb-4396-b3e2-11abd6b9fb1b"
+              id: "d3d126b096eb4396b3e211abd6b9fb1b"
             }
           ]
         ],
@@ -265,13 +265,13 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "f05bde14-1cda-4f11-832e-d415fa6e4ebe",
+        id: "f05bde141cda4f11832ed415fa6e4ebe",
         name: "第15个盒子",
         appGroups: [
           [
             {
               name: "nongyeyinhang",
-              id: "4fac11a6-570e-4875-b480-36b12ddecc9b"
+              id: "4fac11a6570e4875b48036b12ddecc9b"
             }
           ]
         ],
@@ -279,13 +279,13 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "cf012f21-4861-4a9d-81cc-f08915b04912",
+        id: "cf012f2148614a9d81ccf08915b04912",
         name: "第16个盒子",
         appGroups: [
           [
             {
               name: "ziyuan102",
-              id: "331b9e90-a776-4779-87f3-a290568b3c3c"
+              id: "331b9e90a776477987f3a290568b3c3c"
             }
           ]
         ],
@@ -294,20 +294,20 @@ export var desks = [
       }
     ],
     name: "第1个桌面",
-    id: "1f03352d-f43f-42c0-b66b-255af2e545b9"
+    id: "1f03352df43f42c0b66b255af2e545b9"
   },
   // 第二个桌面
   {
     order: 2,
     boxes: [
       {
-        id: "77599f87-63da-4a40-8180-67f887eb951e",
+        id: "77599f8763da4a40818067f887eb951e",
         name: "第1个盒子",
         appGroups: [
           [
             {
               name: "jingdong",
-              id: "862960ea-35da-4d43-9261-ff817dc30656"
+              id: "862960ea35da4d439261ff817dc30656"
             }
           ]
         ],
@@ -315,13 +315,13 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "d959625c-7d3a-4265-9710-e9a80a7a660f",
+        id: "d959625c7d3a42659710e9a80a7a660f",
         name: "第2个盒子",
         appGroups: [
           [
             {
               name: "xueqiu",
-              id: "40cb75ce-1490-485b-8300-c397fa630dfc"
+              id: "40cb75ce1490485b8300c397fa630dfc"
             }
           ]
         ],
@@ -329,13 +329,13 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "520745bf-61aa-4be4-b66f-7b6f9159cea0",
+        id: "520745bf61aa4be4b66f7b6f9159cea0",
         name: "第3个盒子",
         appGroups: [
           [
             {
               name: "git1",
-              id: "81216033-be9e-4808-bf80-ecdbb489bb88"
+              id: "81216033be9e4808bf80ecdbb489bb88"
             }
           ]
         ],
@@ -343,13 +343,13 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "e88b8ffd-b5e5-4326-a912-3f169004e808",
+        id: "e88b8ffdb5e54326a9123f169004e808",
         name: "第4个盒子",
         appGroups: [
           [
             {
               name: "gongshangyinhang",
-              id: "fc7f5b1e-97ae-4bfd-ad0a-c05e835aedb6"
+              id: "fc7f5b1e97ae4bfdad0ac05e835aedb6"
             }
           ]
         ],
@@ -357,13 +357,13 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "385c82d7-42e1-4535-95cc-5adb181c3952",
+        id: "385c82d742e1453595cc5adb181c3952",
         name: "第5个盒子",
         appGroups: [
           [
             {
               name: "jiansheyinhang",
-              id: "2fbed798-5b3e-4b76-a61e-385acb9ddc33"
+              id: "2fbed7985b3e4b76a61e385acb9ddc33"
             }
           ]
         ],
@@ -371,13 +371,13 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "94100926-be47-45ae-a575-d2d01854e4bf",
+        id: "94100926be4745aea575d2d01854e4bf",
         name: "第6个盒子",
         appGroups: [
           [
             {
               name: "zhongguoyinhang",
-              id: "794f51d7-553c-4945-b176-d9e1dc1a2395"
+              id: "794f51d7553c4945b176d9e1dc1a2395"
             }
           ]
         ],
@@ -385,13 +385,13 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "af7fd5a1-fa8e-4439-9fce-a3255330263b",
+        id: "af7fd5a1fa8e44399fcea3255330263b",
         name: "第7个盒子",
         appGroups: [
           [
             {
               name: "beijingyinhang",
-              id: "d11bf07d-e494-4eb8-bb09-246b62a76709"
+              id: "d11bf07de4944eb8bb09246b62a76709"
             }
           ]
         ],
@@ -399,13 +399,13 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "a9195052-f5d0-4080-9f3f-69313eb4c781",
+        id: "a9195052f5d040809f3f69313eb4c781",
         name: "第8个盒子",
         appGroups: [
           [
             {
               name: "zhifubao",
-              id: "d9240137-c36d-42fe-8905-a4c5e19387df"
+              id: "d9240137c36d42fe8905a4c5e19387df"
             }
           ]
         ],
@@ -413,13 +413,13 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "cf8de61b-e900-41d6-a69a-aa5bde01b22a",
+        id: "cf8de61be90041d6a69aaa5bde01b22a",
         name: "第9个盒子",
         appGroups: [
           [
             {
               name: "jisuanqi",
-              id: "f4f1a266-043f-4c48-b4b9-a55704fb51bc"
+              id: "f4f1a266043f4c48b4b9a55704fb51bc"
             }
           ]
         ],
@@ -427,13 +427,13 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "bbafeca7-ae2f-4823-ad20-23aa6396fd4e",
+        id: "bbafeca7ae2f4823ad2023aa6396fd4e",
         name: "第10个盒子",
         appGroups: [
           [
             {
               name: "dongfangcaifuwang",
-              id: "d126d93d-cc77-4f5c-8fc3-a96d8d68da55"
+              id: "d126d93dcc774f5c8fc3a96d8d68da55"
             }
           ]
         ],
@@ -441,12 +441,12 @@ export var desks = [
         groupAppLimit: 9
       }
       //  {
-      //    id: "98820344-0c8c-466a-9faa-c310556f5f42",
+      //    id: "988203440c8c466a9faac310556f5f42",
       //    name: "第11个盒子",
       //    appGroups: [
       //      [{
       //        name: "tonghuashun",
-      //        id: "092b4fcc-1a77-4f43-8729-24be5f1042e0"
+      //        id: "092b4fcc1a774f43872924be5f1042e0"
       //      }]
       //    ],
       //    displayNo: 0,
@@ -454,7 +454,7 @@ export var desks = [
       //  }
     ],
     name: "第2个桌面",
-    id: "7e6473d2-fcda-4e27-bb52-72ebdccdaa6a"
+    id: "7e6473d2fcda4e27bb5272ebdccdaa6a"
   }
 ];
 class Desk {

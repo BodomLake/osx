@@ -40,7 +40,19 @@ export default {
       return 100 / desks.length;
     }
   },
-  watch: {},
+  watch: {
+    desks: {
+      handler: function(desks, oldDesks) {
+        let count1 = desks[0].boxes[0].appGroups.flat(2).length;
+        let count2 = oldDesks[0].boxes[0].appGroups.flat(2).length;
+        if (count1 != count2) {
+          console.log(count1, count2, "desks变化了");
+        }
+      },
+      immediate: false,
+      deep: true
+    }
+  },
   //
   methods: {
     // 初始化BOX的定位和尺寸
@@ -151,7 +163,7 @@ export default {
               heightGradient.forEach((number, nid) => {
                 setTimeout(() => {
                   box.children[0].style.height = number + "px";
-                }, nid * 10);
+                }, nid * 5);
               });
             }
           }
@@ -212,14 +224,21 @@ export default {
       arr[i1] = arr.splice(i2, 1, arr[i1])[0];
       return arr;
     },
-    gradientSplit(a, b) {
+    dragIntoBox(desk, d1, b1, d2, b2) {
+      // desk[d1].boxes[b1].appGroups[]
+      return desk;
+    },
+    gradientSplit(a, b, step) {
       let min = Math.min(a, b);
       let max = Math.max(a, b);
       let arr = [];
       arr.push(max);
       let start = Math.ceil(min);
       let end = Math.floor(max);
-      for (let i = end; i > start; i--) {
+      if (!step) {
+        step = 2;
+      }
+      for (let i = end; i > start; i = i - step) {
         arr.push(i);
       }
       arr.push(min);
