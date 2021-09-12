@@ -4,7 +4,7 @@ export var desks = [
     boxes: [
       {
         id: "5a4d297cd6284d379571a865d1318b82",
-        name: "第1个盒子",
+        name: "0-0",
         appGroups: [
           [
             {
@@ -80,7 +80,7 @@ export var desks = [
       },
       {
         id: "8c28ff131afc4a809db6fa7c1f9888ba",
-        name: "第2个盒子",
+        name: "0-1",
         appGroups: [
           [
             {
@@ -94,7 +94,7 @@ export var desks = [
       },
       {
         id: "834684d7db3d40f09838a8b78e78fa1d",
-        name: "第3个盒子",
+        name: "0-2",
         appGroups: [
           [
             {
@@ -108,7 +108,7 @@ export var desks = [
       },
       {
         id: "f6184918883246039947d0520e73ab0b",
-        name: "第4个盒子",
+        name: "0-3",
         appGroups: [
           [
             {
@@ -126,7 +126,7 @@ export var desks = [
       },
       {
         id: "b7daa12e83a14230b6c19bdacafc4c42",
-        name: "第5个盒子",
+        name: "0-4",
         appGroups: [
           [
             {
@@ -140,7 +140,7 @@ export var desks = [
       },
       {
         id: "7e96a648423a4b809cce4166b55a370f",
-        name: "第6个盒子",
+        name: "0-5",
         appGroups: [
           [
             {
@@ -154,7 +154,7 @@ export var desks = [
       },
       {
         id: "3b6d51ea11274374bdc17a475658ae76",
-        name: "第7个盒子",
+        name: "0-6",
         appGroups: [
           [
             {
@@ -168,7 +168,7 @@ export var desks = [
       },
       {
         id: "1617791e1ab64568a92433f3a686cbd4",
-        name: "第8个盒子",
+        name: "0-7",
         appGroups: [
           [
             {
@@ -182,7 +182,7 @@ export var desks = [
       },
       {
         id: "971c84fd0aae4d40816f170841498ee2",
-        name: "第9个盒子",
+        name: "0-8",
         appGroups: [
           [
             {
@@ -196,7 +196,7 @@ export var desks = [
       },
       {
         id: "42883f8f1f104162aae7c7adb2fcd710",
-        name: "第10个盒子",
+        name: "0-9",
         appGroups: [
           [
             {
@@ -210,7 +210,7 @@ export var desks = [
       },
       {
         id: "d1990732d1df4666adaa7636b41be54f",
-        name: "第11个盒子",
+        name: "0-10",
         appGroups: [
           [
             {
@@ -224,7 +224,7 @@ export var desks = [
       },
       {
         id: "bae1ea1067704bfa812a7921c12e8e19",
-        name: "第12个盒子",
+        name: "0-11",
         appGroups: [
           [
             {
@@ -238,7 +238,7 @@ export var desks = [
       },
       {
         id: "929d4fe2ce5644b1b1f1d755ab69e750",
-        name: "第13个盒子",
+        name: "0-12",
         appGroups: [
           [
             {
@@ -252,7 +252,7 @@ export var desks = [
       },
       {
         id: "58b3215cfc744f2592a6f6ff6bd69992",
-        name: "第14个盒子",
+        name: "0-13",
         appGroups: [
           [
             {
@@ -266,7 +266,7 @@ export var desks = [
       },
       {
         id: "f05bde141cda4f11832ed415fa6e4ebe",
-        name: "第15个盒子",
+        name: "0-14",
         appGroups: [
           [
             {
@@ -280,7 +280,7 @@ export var desks = [
       },
       {
         id: "cf012f2148614a9d81ccf08915b04912",
-        name: "第16个盒子",
+        name: "0-15",
         appGroups: [
           [
             {
@@ -293,16 +293,16 @@ export var desks = [
         groupAppLimit: 9
       }
     ],
-    name: "第1个桌面",
+    name: "1个桌面",
     id: "1f03352df43f42c0b66b255af2e545b9"
   },
-  // 第二个桌面
+  // 二个桌面
   {
     order: 2,
     boxes: [
       {
         id: "77599f8763da4a40818067f887eb951e",
-        name: "第1个盒子",
+        name: "1-0",
         appGroups: [
           [
             {
@@ -316,7 +316,7 @@ export var desks = [
       },
       {
         id: "d959625c7d3a42659710e9a80a7a660f",
-        name: "第2个盒子",
+        name: "1-1",
         appGroups: [
           [
             {
@@ -330,7 +330,7 @@ export var desks = [
       },
       {
         id: "520745bf61aa4be4b66f7b6f9159cea0",
-        name: "第3个盒子",
+        name: "1-2",
         appGroups: [
           [
             {
@@ -344,7 +344,7 @@ export var desks = [
       },
       {
         id: "e88b8ffdb5e54326a9123f169004e808",
-        name: "第4个盒子",
+        name: "1-3",
         appGroups: [
           [
             {
@@ -358,7 +358,7 @@ export var desks = [
       },
       {
         id: "385c82d742e1453595cc5adb181c3952",
-        name: "第5个盒子",
+        name: "1-4",
         appGroups: [
           [
             {
@@ -372,7 +372,7 @@ export var desks = [
       },
       {
         id: "94100926be4745aea575d2d01854e4bf",
-        name: "第6个盒子",
+        name: "1-5",
         appGroups: [
           [
             {
@@ -386,7 +386,7 @@ export var desks = [
       },
       {
         id: "af7fd5a1fa8e44399fcea3255330263b",
-        name: "第7个盒子",
+        name: "1-6",
         appGroups: [
           [
             {
@@ -400,7 +400,7 @@ export var desks = [
       },
       {
         id: "a9195052f5d040809f3f69313eb4c781",
-        name: "第8个盒子",
+        name: "1-7",
         appGroups: [
           [
             {
@@ -414,7 +414,7 @@ export var desks = [
       },
       {
         id: "cf8de61be90041d6a69aaa5bde01b22a",
-        name: "第9个盒子",
+        name: "1-8",
         appGroups: [
           [
             {
@@ -428,7 +428,7 @@ export var desks = [
       },
       {
         id: "bbafeca7ae2f4823ad2023aa6396fd4e",
-        name: "第10个盒子",
+        name: "1-9",
         appGroups: [
           [
             {
@@ -437,12 +437,11 @@ export var desks = [
             }
           ]
         ],
-
         groupAppLimit: 9
       }
       //  {
       //    id: "988203440c8c466a9faac310556f5f42",
-      //    name: "第11个盒子",
+      //    name: "11",
       //    appGroups: [
       //      [{
       //        name: "tonghuashun",
@@ -453,7 +452,7 @@ export var desks = [
       //    groupAppLimit: 9
       //  }
     ],
-    name: "第2个桌面",
+    name: "2个桌面",
     id: "7e6473d2fcda4e27bb5272ebdccdaa6a"
   }
 ];
@@ -470,7 +469,7 @@ class Box {
     this.id = id;
     this.name = name;
     this.appGroups = [];
-    // 小窗口/模态窗口 显示的组号 默认第一组
+    // 小窗口/模态窗口 显示的组号 默认一组
     this.displayNo = 0;
     this.groupAppLimit = GROUPAPPLIMIT;
   }

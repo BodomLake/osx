@@ -23,7 +23,7 @@
       @click="($event)=>{$event.stopPropagation()}">
       <ShiftZone orientation="left" :flowOver="isDragging" @switchUnit="switchUnit" :delaySwitchTime="400"></ShiftZone>
       <div class="ndg-modal-content">
-        <Box v-model="box" :enableDrag="enableDrag" :showAppName='true'></Box>
+        <Box v-model="box" :enableDrag="enableDrag" :showAppName='true' :checkedAsModal="showModal"></Box>
       </div>
       <ShiftZone orientation="right" :flowOver="isDragging" @switchUnit="switchUnit" :delaySwitchTime="400"></ShiftZone>
       <Indicator v-model="box"></Indicator>
@@ -189,8 +189,8 @@
         this.$forceUpdate();
         if (!this.showModal) {
           // 模态框开启动画
-          document.querySelector("#ndg-modal").style.zIndex = 10;
-          let modalContent = document.querySelector("#ndg-modal-content-border");
+          document.querySelector("div#ndg-modal").style.zIndex = 10;
+          let modalContent = document.querySelector("div#ndg-modal-content-border");
           modalContent.classList.add("popAnime");
           modalContent.style.zIndex = 9999;
           setTimeout(() => {
@@ -205,7 +205,7 @@
           }, this.duration);
         } else {
           // 模态框关闭动画
-          let modalContent = document.querySelector("#ndg-modal-content-border");
+          let modalContent = document.querySelector("div#ndg-modal-content-border");
           modalContent.classList.add("closeAnime");
           setTimeout(() => {
             console.log(this.initRect);
@@ -215,7 +215,7 @@
             modalContent.style.top = this.initRect["--initY"];
             // modalContent.style.transform = this.destRect['--ratio'];
             modalContent.classList.remove("closeAnime");
-            document.querySelector("#ndg-modal").style.zIndex = -1;
+            document.querySelector("div#ndg-modal").style.zIndex = -1;
           }, this.duration);
         }
         this.showModal = !this.showModal;

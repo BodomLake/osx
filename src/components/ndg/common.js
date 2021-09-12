@@ -5,4 +5,4 @@ export const CONTENT_BORDER = PREFIX + "content-border";
 export const DESKTOP = PREFIX + 'desktop';
 export const GROUP = PREFIX + "ndg-app-group";
 export const APP = PREFIX + "app";
-// export const GROUPAPPLIMIT = 9;
+export const GROUPAPPLIMIT = 9;

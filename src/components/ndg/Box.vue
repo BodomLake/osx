@@ -1,17 +1,15 @@
 <template>
-  <div class="ndg-scroll-box" :style="{'width': calcBoxWidth, 'transform': calcBoxOffsetX}">
+  <div class="ndg-scroll-box" :style="{'width': calcBoxWidth, 'transform': calcBoxOffsetX}" ref="group">
+
     <!-- 属于文件夹，默认九宫格模式，分割为9个一组，每一组作为一个大方格，含有9个或者以下的方格 -->
     <template v-for="(group, gid) in box.appGroups">
-      <div class="ndg-app-group" :key="gid" v-if="gridMode"
-           :style="{'visibility': box.displayNo != gid ? 'hidden': ''}">
-        <transition-group class="ndg-app-container" name="ndg-app-shift" :duration="switchDuration" tag="div"
-                          :draggable="false" ref="group">
+      <div class="ndg-app-group" :key="gid" v-if="gridMode" :style="{'visibility': box.displayNo != gid ? 'hidden': ''}">
+        <transition-group class="ndg-app-container" name="ndg-app-shift" :duration="switchDuration" tag="div" :draggable="false" >
           <template v-for="(app, aid) in group">
             <!-- 默认九个app一组 -->
             <div class="ndg-app" :key="app.id" :name="app.name" :data-group="gid" :id="app.id" :draggable="enableDrag"
-                 :class="{'shakeAnime': enableDrag && gid == box.displayNo}"
-                 @dragover="handleDragOver($event, gid, aid)"
-                 @dragstart="handleDragStart($event, gid, aid)">
+              :class="{'shakeAnime': enableDrag && gid == box.displayNo}" @dragover="handleDragOver($event, gid, aid)"
+              @dragstart="handleDragStart($event, gid, aid)">
               <my-icon :className="app.name" v-if="app.name!==''"></my-icon>
               <div class="ndg-app-desc" v-if="showAppName">
                 {{ app.name }}
@@ -21,153 +19,200 @@
         </transition-group>
       </div>
     </template>
+
     <!-- 不开启宫格模式 -->
-    <div v-if="!gridMode" :class="{'shakeAnime': enableDrag}" style="width: 100%;height: 100%"
-         :id="box.appGroups[0][0].id" :name="box.appGroups[0][0].name">
+    <div v-if="!gridMode" :class="{'shakeAnime': enableDrag}" style="width: 100%;height: 100%" :id="box.appGroups[0][0].id"
+      :name="box.appGroups[0][0].name">
       <my-icon :className="box.appGroups[0][0].name"></my-icon>
     </div>
+
   </div>
 </template>
 <script>
-// 存放app的盒子
-import MyIcon from "./MyIcon.vue";
+  // 存放app的盒子
+  import MyIcon from "./MyIcon.vue";
 
-export default {
-  name: "box",
-  beforeCreate() {
-  },
-  components: {
-    MyIcon: MyIcon
-  },
-  model: {
-    prop: "box",
-    event: "changeBox"
-  },
-  data() {
-    return {
-      // 生命周期防抖器
-      updatedTimer: 0,
-      // app之间拖拽跨过-节流计时器
-      appDOTimer: 0
-    };
-  },
-  watch: {
-    box: {
-      handler: function (newBOX, oldBOX) {
-        // this.locateApps();
-      },
-      immediate: false,
-      depp: true
-    }
-  },
-  mounted() {
-    // 立刻执行
-    this.locateApps();
-  },
-  updated() {
-    // 防抖 100ms
-    let debounceTime = 100;
-    if (Date.now() - this.updatedTimer < debounceTime) {
-      // 重置为当前时间
-      this.updatedTimer = Date.now();
-      return;
-    }
-    setTimeout(() => {
-      // 重置所有
+  export default {
+    name: "box",
+    beforeCreate() {},
+    components: {
+      MyIcon: MyIcon
+    },
+    model: {
+      prop: "box",
+      event: "changeBox"
+    },
+    data() {
+      return {
+        // 生命周期防抖器
+        updatedTimer: 0,
+        // app之间拖拽跨过-节流计时器
+        appDOTimer: 0,
+        draggingApp: {
+          groupIndex: 0,
+          appIndex: 0
+        }
+      };
+    },
+    watch: {
+      box: {
+        handler: function(newBOX, oldBOX) {
+          this.locateApps();
+        },
+        immediate: false,
+        depp: true
+      }
+    },
+    mounted() {
+      // 立刻执行
       this.locateApps();
-      // console.log("定位BOX完成, 不重置悬停状态");
-    }, debounceTime);
-  },
-  computed: {
-    // 宫格模式 如果被覆盖就一定要开启，如果没有覆盖的情况，就要根据app的数量判断
-    gridMode() {
-      if (this.box.covered) {
-        return true;
-      } else {
-        let appCount = this.box.appGroups.reduce((count, cur) => {
-          return count + cur.length;
-        }, 0);
-        // console.log("app计数", appCount);
-        // 无论是总数大于1
-        return appCount > 1;
-      }
     },
-    calcBoxOffsetX(arr, displayNo) {
-      // (box.appGroups, box.displayNo)
-      let len = this.box.appGroups.length;
-      return `translateX(-${this.box.displayNo * (100 / len)}%)`;
-    },
-    calcBoxWidth() {
-      let arr = this.box.appGroups;
-      if (arr && arr.length > 0) {
-        return 100 * arr.length + "%";
-      } else {
-        return "100%";
-      }
-    }
-  },
-  props: {
-    box: {
-      type: Object,
-      default: {}
-    },
-    showAppName: {
-      type: Boolean,
-      default: false
-    },
-    enableDrag: {
-      type: Boolean,
-      default: false
-    },
-    throttleTime: {
-      type: Number,
-      default: 200
-    },
-    switchDuration: {
-      type: Number,
-      default: 200
-    }
-  },
-  methods: {
-    locateApps() {
-      let groups = document.getElementById(this.box.id).children;
-      if (!groups) {
-        groups = this.$$refs.group;
-        console.log(this.$refs.group ? this.$refs["group"] : "没有宫格");
-      }
-      // 如果没有分组或者没有进入宫格模式
-      if (!groups || !this.gridMode) {
+    updated() {
+      // 防抖 100ms
+      let throttleTime = 100;
+      if (Date.now() - this.updatedTimer < throttleTime) {
         return;
       }
-      Array.from(groups).forEach((group, gid) => {
-        let apps = group.children;
-        Array.from(apps).forEach((app, aid) => {
-          // 获取当前app的坐标和尺寸
-          let appRect = app.getBoundingClientRect();
-          if (this.box.appGroups && this.box.appGroups[gid].length > 0) {
-            this.$set(this.box.appGroups[gid][aid], "DOMRect", appRect);
-            this.$set(this.box.appGroups[gid][aid], "suspendTime", 0);
-          }
-        });
-      });
-    },
-    handleDragOver($event, groudIndex, appIndex) {
-      $event.preventDefault();
-      // 节流100ms执行一次
-      const throttleTime = this.throttleTime;
-      if (Date.now() - this.appDOTimer < throttleTime) {
-        return;
-      }
-      // 新一轮计时，重新获取目前时间
-      this.appDOTimer = Date.now();
-      setTimeout(() => {
-        console.log("--appDOTimer--", groudIndex, appIndex);
+      this.updatedTimer = Date.now();
+      window.setTimeout(() => {
+        // 重置所有
+        console.log("%c BOX-Updated()--渲染完毕", "color:#fff; background-color: orange; border-radius: 2px; padding-right: 1px");
+        this.locateApps();
       }, throttleTime);
     },
-    handleDragStart($event, groudIndex, appIndex) {
+    computed: {
+      // 宫格模式 如果被覆盖就一定要开启，如果没有覆盖的情况，就要根据app的数量判断
+      gridMode() {
+        if (this.box.covered || this.checkedAsModal) {
+          return true;
+        } else {
+          let appCount = this.box.appGroups.flat(2).filter(app=>{
+            return app.name != "";
+          }).length;
+          // console.log("该BOX实际有效的app计数", appCount);
+          // 无论是总数大于1
+          return appCount > 1;
+        }
+      },
+      calcBoxOffsetX(arr, displayNo) {
+        // (box.appGroups, box.displayNo)
+        let len = this.box.appGroups.length;
+        return `translateX(-${this.box.displayNo * (100 / len)}%)`;
+      },
+      calcBoxWidth() {
+        let arr = this.box.appGroups;
+        if (arr && arr.length > 0) {
+          return 100 * arr.length + "%";
+        } else {
+          return "100%";
+        }
+      }
+    },
+    props: {
+      box: {
+        type: Object,
+        default: {}
+      },
+      showAppName: {
+        type: Boolean,
+        default: false
+      },
+      enableDrag: {
+        type: Boolean,
+        default: false
+      },
+      throttleTime: {
+        type: Number,
+        default: 200
+      },
+      switchDuration: {
+        type: Number,
+        default: 200
+      },
+      // 被当成Modal选中的情况
+      checkedAsModal: {
+        type : Boolean,
+        default: false,
+      }
+    },
+    methods: {
+      locateApps() {
+        let groups = this.$refs['group'];
+        // console.log(groups.children)
+        // 如果没有分组或者没有进入宫格模式，就直接结束本函数
+        if (!groups || !this.gridMode) {
+          return;
+        }
+        Array.from(groups).forEach((group, gid) => {
+          let apps = group.children;
+          Array.from(apps).forEach((app, aid) => {
+            // 获取当前app的坐标和尺寸
+            let appRect = app.getBoundingClientRect();
+            let appGroups = this.box.appGroups;
+            if (appGroups && appGroups[gid].length > 0) {
+              this.$set(this.box.appGroups[gid][aid], "DOMRect", appRect);
+              this.$set(this.box.appGroups[gid][aid], "suspendTime", 0);
+            }
+          });
+          // TODO: 剩余空间 restSpace的计算，rest1 rest2
+          this.$set(this.box.appGroups[gid], "restSpace", this.calcRestSpace());
+        });
+      },
+      handleDragOver($event, groudIndex, appIndex) {
+        $event.preventDefault();
+        // 节流100ms执行一次
+        const throttleTime = this.throttleTime;
+        if (Date.now() - this.appDOTimer < throttleTime) {
+          return;
+        }
+        // 新一轮计时，重新获取目前时间
+        this.appDOTimer = Date.now();
+        setTimeout(() => {
+          console.log("--appDOTimer--", groudIndex, appIndex);
+          let appGroups = this.box.appGroups;
+          // 循环每一个组
+          let judgeFlag = rect => {
+            if (rect == undefined) {
+              return false;
+            }
+            return (
+              rect.left < $event.clientX &&
+              rect.top < $event.clientY &&
+              rect.right > $event.clientX &&
+              rect.bottom > $event.clientY
+            );
+          };
+
+          for (let gid = 0; gid < appGroups.length; gid++) {
+            for (let aid = 0; aid < appGroups[gid].length; aid++) {
+              let app = appGroups[gid][aid];
+              let appRect = app.DOMRect;
+              let includeFlag = judgeFlag(appRect);
+              let selfCoverFlag = gid == groudIndex && aid == appIndex;
+              if (selfCoverFlag && selfCoverFlag) {
+                break;
+              }
+              if (includeFlag) {
+                // 当下是时间累加情况
+                if(app.suspendTime > this.li)
+                app.suspendTime += throttleTime;
+                break;
+              }
+            }
+            appGroups[gid].forEach((app, aid) => {});
+          }
+        }, throttleTime);
+      },
+      handleDragStart($event, groudIndex, appIndex) {
+        this.draggingApp.appIndex = appIndex;
+        this.draggingApp.groupIndex = groudIndex;
+        $event.stopPropagation();
+        // 设置好拖拽鼠标指示的内容
+        // $event.dataTransfer.effectAllowed = "link";
+      },
+      calcRestSpace() {}
     }
-  }
-};
+  };
 </script>
 <style scoped>
 .ndg-scroll-box {
@@ -200,6 +245,7 @@ export default {
 }
 
 .ndg-app {
+  //border: 0.5px skyblue groove;
   box-sizing: border-box;
   flex-grow: 1;
   border-radius: 3%;
@@ -248,4 +294,9 @@ export default {
 .shakeAnime {
   animation: shakeAnime 0.5s both infinite;
 }
+.ndg-app-shift-appear-to .ndg-app{
+  opacity: 0.45;
+  transition: all 0.5s ease-in-out;
+}
+
 </style>
