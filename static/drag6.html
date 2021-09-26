@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <style type="text/css">
+    #appBox {
+      height: 100%;
+      width: 100%;
+      display: flex;
+    }
+
+    #box1,
+    #box2 {
+      width: 200px;
+      height: 300px;
+      border-radius: 10px;
+      border: 1px solid #333;
+      margin-left: 40px;
+      padding: 20px;
+      display: inline-block;
+      transition: 1000ms all ease-in-out;
+    }
+
+    #box1 {
+      background-color: yellowgreen;
+    }
+
+    #box2 {
+      width: 100px;
+      height: 100px;
+      margin-left: -200px;
+      margin-top: 50px;
+      background-color: aquamarine;
+    }
+
+    #item1,
+    #item2,
+    #item3,
+    #item4,
+    #item5,
+    #item6 {
+      width: 100%;
+      margin: 0 auto;
+      margin-top: 10px;
+      border-radius: 10px;
+      height: 50px;
+      border: 1px solid #333;
+      text-align: center;
+      line-height: 50px;
+    }
+
+    .apps {
+      display: flex;
+      flex-wrap: wrap;
+      width: 500px;
+      height: 500px;
+      background-color: #f7f7b6;
+      margin-left: 10px;
+      border: 1px inset black;
+      overflow: hidden;
+      align-content: flex-start;
+    }
+
+    .app {
+      border: 0px black inset;
+      background-color: #add3d7;
+      width: 33.3%;
+      height: 33.3%;
+      max-width: calc(100% / 3);
+      min-width: calc(100% / 3);
+      max-height: calc(100% / 3);
+      min-height: calc(100% / 3);
+      /* transition: all 1s ease; */
+      animation: slideIn;
+      animation-duration: 1s;
+      animation-fill-mode: both;
+      animation-play-state: running;
+      animation-timing-function: ease;
+      animation-direction: alternate;
+      animation-iteration-count: infinite;
+    }
+    @keyframes slideIn {
+      0% {
+        transform: translateX(30%);
+        opacity: 0;
+      }
+
+      100% {
+        transform: translateX(0px);
+        opacity: 1;
+      }
+
+    }
+
+  </style>
+</head>
+
+<body>
+  <div id="appBox" class="outerside">
+    <div id="box1" draggable="true" class="outer" ondrop="drop1(event)" ondrag="drag1(event)"
+      ondragstart="dragStart1(event)" ondragenter="dragEnter1(event)" ondragover="dragOver1(event)"
+      ondragleave="dragLeave1(event)" ondragend="dragEnd1(event)" onmousedown="mousedown1(event)">
+      1
+      <!-- <div id="item1" class="item" draggable="true" ondragstart="drag(event)">item1</div> -->
+    </div>
+    <div id="box2" draggable="true" class="outer" ondrop="drop2(event)" ondrag="drag2(event)"
+      ondragstart="dragStart2(event)" ondragenter="dragEnter2(event)" ondragover="dragOver2(event)"
+      ondragleave="dragLeave2(event)" ondragend="dragEnd2(event)" onmousedown="mousedown2(event)">
+      <!-- <div id="item4" class="item" draggable="true" ondragstart="drag(event)">item4</div> -->
+      2
+    </div>
+
+    <div class="apps" style="margin-left: 100px;">
+      <div class="app" style="background-color: #00ff6f;"></div>
+      <div class="app" style="background-color: #1da1f2"></div>
+      <div class="app" style="background-color: yellowgreen"></div>
+      <div class="app" style="background-color: #65dfc9"></div>
+      <div class="app" style="background-color: lightgoldenrodyellow"></div>
+      <div style="width: 33.3%;height:33.3%;background-color: black"></div>
+      <div style="width: inherit;height:33.3%;background-color: red"></div>
+      <!--<div class="app"></div>-->
+      <!--<div class="app"></div>-->
+    </div>
+  </div>
+</body>
+
+<!-- <script src="../node_modules/jquery/dist/jquery.js"></script> -->
+<script type="text/javascript">
+  // debugger;
+  // window.onload = () => {
+  let apps = document.getElementsByClassName("app");
+  Array.from(apps).forEach((app, i) => {
+    // console.log(app.style.transform);
+    // app.style.transitionDelay = i * 200 + 'ms';
+    app.style.animationDelay = i * 300 + 'ms';
+    // app.style["opacity"] = "1";
+    // app.style.transform = "translateX(0px)";
+  });
+  // };
+
+  var timer1 = 0;
+  var timer2 = 0;
+  var timer3 = 0;
+  var timer4 = 0;
+  var throttleTime = 200;
+
+  function dragOver1(ev) {
+    // ev.preventDefault();
+    if (Date.now() - timer1 < throttleTime) {
+      return;
+    }
+    timer1 = Date.now();
+    setTimeout(() => {
+      console.log("dragOver-1");
+    }, 0);
+  }
+
+  function dragOver2(ev) {
+    // ev.preventDefault();
+    if (Date.now() - timer2 < throttleTime) {
+      return;
+    }
+    timer2 = Date.now();
+    setTimeout(() => {
+      console.log("dragOver-2");
+    }, throttleTime);
+  }
+
+  function dragEnter1(ev) {
+    console.log("dragEnter-1");
+  }
+
+  function dragEnter2(ev) {
+    console.log("dragEnter-2");
+  }
+
+  function dragLeave1(ev) {
+    console.log("dragLeave-1");
+  }
+
+  function dragLeave2(ev) {
+    console.log("dragLeave-2");
+  }
+
+  function dragEnd1(ev) {
+    console.log("dragEnd-1");
+  }
+
+  function dragEnd2(ev) {
+    console.log("dragEnd-2");
+  }
+
+  function drag1(ev) {
+    if (Date.now() - timer3 < throttleTime) {
+      return;
+    }
+    timer3 = Date.now();
+    setTimeout(() => {
+      console.log("drag-1");
+    }, throttleTime);
+  }
+
+  function drag2(ev) {
+    if (Date.now() - timer4 < throttleTime) {
+      return;
+    }
+    timer4 = Date.now();
+    setTimeout(() => {
+      console.log("drag-2");
+    }, throttleTime);
+  }
+
+  // 开始拖动
+  function dragStart1(ev) {
+    console.log("dragStart-1");
+  }
+
+  function dragStart2(ev) {
+    console.log("dragStart-2");
+  }
+
+  // 落入某一个AppBox中
+  function drop1(ev) {
+    console.log("drop-1", "落入到：1");
+  }
+  // 落入某一个AppBox中
+  function drop2(ev) {
+    console.log("drop-2", "落入到：2");
+  }
+
+  // 鼠标按键按下
+  function mousedown1(event) {
+    console.log("mouseDown-1");
+  }
+
+  function mousedown2(event) {
+    console.log("mouseDown-2");
+  }
+
+  function getArrayIndex(arr, obj) {
+    var i = arr.length;
+    while (i--) {
+      if (arr[i] === obj) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  // 交换元素
+  function swapElement(arr, i1, i2) {
+    let temp = arr[i1];
+    Object.assign(arr[i1], arr[i2]);
+    Object.assign(arr[i2], temp);
+    console.log(arr);
+  }
+
+</script>
+
+</html>
