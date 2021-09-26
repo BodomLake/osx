@@ -3,7 +3,7 @@
     <div class="ndg-scroll-zone" :style="[overLimitShowStyle]">
       <template v-for="(unit, ui) in box.appGroups">
         <div :key="ui" class="ndg-unit-box" @click="scrollToAppGroup($event, ui)" :style="[unitWidth]" v-if="box.appGroups.length >1">
-          <div class="ndg-unit" :class="{'ndg-checked-unit': box.displayNo == ui ,'moreItem': moreItem}">
+          <div class="ndg-unit" :class="{'ndg-checked-unit': box.displayNum == ui ,'moreItem': moreItem}">
           </div>
         </div>
       </template>
@@ -64,7 +64,7 @@
     methods: {
       scrollToAppGroup($event, ui) {
         // 更新 v-model
-        this.box.displayNo = ui;
+        this.box.displayNum = ui;
 
         // 平行移动游标指示器（向右）
         let transform = () => {

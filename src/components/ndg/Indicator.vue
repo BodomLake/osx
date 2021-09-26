@@ -3,7 +3,7 @@
     <div class="ndg-scroll-zone" id="ndg-scroll-zone-forDesk" :style="[overLimitShowStyle]">
       <template v-for="(unit, ui) in desks">
         <div :key="ui" class="ndg-unit-box" @click="scrollToDestDesk($event, ui)" :style="[unitWidth]">
-          <div class="ndg-unit" :class="{'ndg-checked-unit': displayNo == ui ,'moreItem': moreItem}">
+          <div class="ndg-unit" :class="{'ndg-checked-unit': displayNum == ui ,'moreItem': moreItem}">
           </div>
         </div>
       </template>
@@ -42,7 +42,7 @@
         type: Number,
         default: 5
       },
-      displayNo: {
+      displayNum: {
         type: Number,
         default: 0
       }
@@ -71,7 +71,7 @@
         let destDeskNo = this.$parent.currentDeskNo;
         console.log(ui, destDeskNo, "桌面");
         let deskOffset = ui- destDeskNo
-        // 向父组件发送 事件，移动桌面 
+        // 向父组件发送 事件，移动桌面
         this.$emit("scrollToDestDesk" , deskOffset);
         // 平行移动游标指示器（向右）
         let transform = () => {

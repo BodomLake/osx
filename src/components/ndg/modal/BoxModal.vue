@@ -10,10 +10,7 @@
         </div>
       </div>
       <!-- app集合的内容，加一个初始化的位置，然后移动到屏幕的中央 -->
-      <div class="ndg-modal-content-border-locator" style="visibility: hidden">
-        `
-        <!---->
-      </div>
+      <div class="ndg-modal-content-border-locator" style="visibility: hidden"></div>
       <!-- 底部区域 -->
       <div class="ndg-modal-footer">
       </div>
@@ -23,7 +20,7 @@
       @click="($event)=>{$event.stopPropagation()}">
       <ShiftZone orientation="left" :flowOver="isDragging" @switchUnit="switchUnit" :delaySwitchTime="400"></ShiftZone>
       <div class="ndg-modal-content">
-        <Box v-model="box" :enableDrag="enableDrag" :showAppName='true' :checkedAsModal="showModal"></Box>
+        <Box v-model="box" :enableDrag="enableDrag" :showAppName='true' :usedInModal="showModal"></Box>
       </div>
       <ShiftZone orientation="right" :flowOver="isDragging" @switchUnit="switchUnit" :delaySwitchTime="400"></ShiftZone>
       <Indicator v-model="box"></Indicator>
@@ -62,9 +59,13 @@
                 }
               ]
             ],
-            displayNo: 0,
+            displayNum: 0,
             groupAppLimit: 9,
             DOMRect: {
+              width: 0,
+              height: 0
+            },
+            outerDOMRect: {
               width: 0,
               height: 0
             }
@@ -152,7 +153,7 @@
         return {
           "--duration-time": this.duration + "ms"
         };
-      }
+      },
     },
     mounted() {
       window.addEventListener("resize", $event => {
@@ -160,7 +161,7 @@
           clearTimeout(this.resizeTimer);
         }
         this.resizeTimer = setTimeout(() => {
-          // console.log("模态框重置destPos");
+          // console.info("模态框重置destPos");
           this.destRect = this.calcModalRect(this.portrait);
           this.scaleRatio = this.calcRatio(this.portrait);
         },200);
@@ -174,18 +175,18 @@
       }
       if (Date.now() - this.updatedTimer < debounceTime) {
         // 重置为当前时间
-        console.log(this.showModal);
+        console.info(this.showModal);
         this.updatedTimer = Date.now();
         return;
       }
       this.updatedTimer = setTimeout(() => {
-        console.log("模态框重置destPos");
+        console.info("模态框重置destPos");
         this.destRect = this.calcModalRect(this.portrait);
       }, debounceTime);
     },
     methods: {
       // 打开模态框
-      toggleModal() {
+      toggle() {
         this.$forceUpdate();
         if (!this.showModal) {
           // 模态框开启动画
@@ -194,7 +195,7 @@
           modalContent.classList.add("popAnime");
           modalContent.style.zIndex = 9999;
           setTimeout(() => {
-            console.log(this.destRect);
+            console.info(this.destRect);
             modalContent.style.width = this.destRect["--destWidth"];
             modalContent.style.height = this.destRect["--destHeight"];
             modalContent.style.left = this.destRect["--destX"];
@@ -208,7 +209,7 @@
           let modalContent = document.querySelector("div#ndg-modal-content-border");
           modalContent.classList.add("closeAnime");
           setTimeout(() => {
-            console.log(this.initRect);
+            console.info(this.initRect);
             modalContent.style.width = this.initRect["--initWidth"];
             modalContent.style.height = this.initRect["--initHeight"];
             modalContent.style.left = this.initRect["--initX"];
@@ -221,13 +222,14 @@
         this.showModal = !this.showModal;
       },
       scrollToAppGroup(ui) {
-        // console.log("scrollToAppGroup", ui);
-        this.box.displayNo = ui;
+        // console.info("scrollToAppGroup", ui);
+        this.box.displayNum = ui;
       },
       switchUnit(offset) {
         let len = this.box.appGroups.length;
-        if (this.box.displayNo > 0 && this.box.displayNo < len - 1) {
-          this.box.displayNo += offset;
+        const result = this.box.displayNum + offset;
+        if (this.inRegion(result, 0, len - 1)) {
+          this.box.displayNum += offset;
         }
       },
       calcModalRect(portrait) {
@@ -253,12 +255,23 @@
         let destHeight = this.modalSize.height * vmin;
         let initWidth = this.box.DOMRect ? this.box.DOMRect.width : 0;
         let initHeight = this.box.DOMRect ? this.box.DOMRect.height : 0;
-        // console.log(destWidth / initWidth, destHeight / initHeight);
+        // console.info(destWidth / initWidth, destHeight / initHeight);
         return {
           "--ratioX": destWidth / initWidth,
           "--ratioY": destHeight / initHeight
         };
-      }
+      },
+      inRegion(val, a, b) {
+        if (!a) {
+          a = 0;
+        }
+        if (!b) {
+          b = 1000;
+        }
+        let low = Math.min(a, b)
+        let high = Math.max(a, b)
+        return val >= low && val <= high;
+      },
     }
   };
 </script>

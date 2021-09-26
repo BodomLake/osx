@@ -1,3 +1,6 @@
+import {v4 as uuidv4} from "uuid";
+import {Timer} from "@/components/ndg/timer";
+
 export var desks = [
   {
     order: 1,
@@ -294,7 +297,10 @@ export var desks = [
       }
     ],
     name: "1个桌面",
-    id: "1f03352df43f42c0b66b255af2e545b9"
+    id: "1f03352df43f42c0b66b255af2e545b9",
+    rect1: uuidv4(),
+    rect2: uuidv4(),
+    rectTimer: new Timer()
   },
   // 二个桌面
   {
@@ -438,24 +444,28 @@ export var desks = [
           ]
         ],
         groupAppLimit: 9
-      }
-      //  {
-      //    id: "988203440c8c466a9faac310556f5f42",
-      //    name: "11",
-      //    appGroups: [
-      //      [{
-      //        name: "tonghuashun",
-      //        id: "092b4fcc1a774f43872924be5f1042e0"
-      //      }]
-      //    ],
-      //    displayNo: 0,
-      //    groupAppLimit: 9
-      //  }
+      },
+       {
+         id: "988203440c8c466a9faac310556f5f42",
+         name: "11",
+         appGroups: [
+           [{
+             name: "tonghuashun",
+             id: "092b4fcc1a774f43872924be5f1042e0"
+           }]
+         ],
+         displayNum: 0,
+         groupAppLimit: 9
+       }
     ],
     name: "2个桌面",
-    id: "7e6473d2fcda4e27bb5272ebdccdaa6a"
+    id: "7e6473d2fcda4e27bb5272ebdccdaa6a",
+    rect1: uuidv4(),
+    rect2: uuidv4(),
+    rectTimer: new Timer()
   }
 ];
+
 class Desk {
   constructor(id, name, order) {
     this.order = order;
@@ -464,16 +474,18 @@ class Desk {
     this.id = id;
   }
 }
+
 class Box {
   constructor(id, name, groupAppLimit) {
     this.id = id;
     this.name = name;
     this.appGroups = [];
     // 小窗口/模态窗口 显示的组号 默认一组
-    this.displayNo = 0;
+    this.displayNum = 0;
     this.groupAppLimit = GROUPAPPLIMIT;
   }
 }
+
 class App {
   constructor(id, name) {
     this.name = name;

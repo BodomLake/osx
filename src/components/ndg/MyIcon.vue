@@ -62,6 +62,7 @@ export default {
   -moz-transform: translate(-50%, -50%);
   -ms-transform: translate(-50%, -50%);
   z-index: 3;
+  pointer-events: none;
 }
 
 .icon {
