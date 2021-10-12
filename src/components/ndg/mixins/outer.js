@@ -1,4 +1,4 @@
-
+import {SHIFTACTION} from "@/components/ndg/common";
 
 export default {
   name: 'outer',
@@ -15,12 +15,18 @@ export default {
       if (deskIndex == ddi && boxIndex == dbi) {
         this.targetBOX.innerSuspendTimer.shutdown()
         this.targetBOX.outerSuspendTimer.shutdown()
-        console.info('自交dragover')
-        return
+        // console.info('自交dragover')
+        return;
       } else {
-        console.info('outerSuspendTimer outer层计时', box.outerSuspendTimer.time)
+        // console.info('outerSuspendTimer outer层计时', box.outerSuspendTimer.time)
         if (box.outerSuspendTimer.time >= 250) {
-          this.moveBox(deskIndex, boxIndex)
+          // 交换BOX的位置
+          if (this.shiftAction == SHIFTACTION.BetweenDesk) {
+            this.shiftBOX(deskIndex, boxIndex)
+          } else if (this.shiftAction == SHIFTACTION.ShiftOutModal || this.shiftAction == SHIFTACTION.RecFromDock) {
+            // noop
+            // this.insertNewBOX(deskIndex, boxIndex)
+          }
           box.outerSuspendTimer.shutdown()
         }
       }
@@ -32,7 +38,7 @@ export default {
       this.targetIndex.boxIndex = boxIndex
       let notSelf = this.draggingIndex.deskIndex != deskIndex || this.draggingIndex.boxIndex != boxIndex
       let box = this.desks[deskIndex].boxes[boxIndex]
-      console.info('drag-enter拖入', deskIndex, boxIndex, $event.target)
+      // console.info('drag-enter拖入', deskIndex, boxIndex, $event.target)
 
       if (notSelf) {
         console.info("box外框开始计时")
@@ -68,6 +74,21 @@ export default {
       }
     },
     /**
+     * 落入框框
+     * @param $event
+     * @param deskIndex
+     * @param boxIndex
+     */
+    outerDrop($event, deskIndex, boxIndex) {
+      let box = this.desks[deskIndex].boxes[boxIndex]
+      console.log('outer-drop')
+      if (box) {
+        this.desks[deskIndex].boxes[boxIndex].outerSuspendTimer.shutdown()
+        this.desks[deskIndex].boxes[boxIndex].innerSuspendTimer.shutdown()
+        this.desks[deskIndex].boxes[boxIndex].covered = false;
+      }
+    },
+    /**
      * outerMouseEnter 外部：鼠标划入
      * @param $event
      * @param deskIndex
@@ -92,13 +113,5 @@ export default {
       // 离开就
       // this.desks[deskIndex].boxes[boxIndex].outerSuspendTime = 0
     },
-    outerDrop($event, deskIndex, boxIndex) {
-      let box = this.desks[deskIndex].boxes[boxIndex]
-      console.log('outer-drop')
-      if (box) {
-        this.desks[deskIndex].boxes[boxIndex].outerSuspendTimer.shutdown()
-        this.desks[deskIndex].boxes[boxIndex].innerSuspendTimer.shutdown()
-      }
-    }
   }
 }

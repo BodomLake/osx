@@ -1,7 +1,8 @@
 <template>
   <div class="ndg-shift" :class="[`ndg-shift-${orientation}`]" :style="[layer,ratio]"
-       :draggable="flowOver" @dragenter="intentToDragEnter($event)"
-       @dragleave="intentDiscardDrag($event)"></div>
+       @dragenter="intentToDragEnter($event)"
+       @dragleave="intentDiscardDrag($event)">
+  </div>
 </template>
 <script>
 export default {
@@ -53,7 +54,7 @@ export default {
   },
   methods: {
     intentToDragEnter($event) {
-      console.log("拖入，准备切换", $event.target, this.orientation);
+      console.log("拖入，准备切换", this.orientation);
       let shiftDOM = $event.target;
       let colorStart = "rgb(146 148 248 / 10%)";
       let colorEnd = "rgb(255 255 255 / 50%)";

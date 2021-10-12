@@ -10,17 +10,18 @@
       <!-- 多个桌面 -->
       <template v-for="(desk, i) in desks">
         <div class="ndg-desktop" :key="desk.id" :id="desk.id">
-          <!--:duration="switchDuration"-->
-          <transition-group tag="div" class="ndg-container" name="ndg-outer-shift"
-                            :draggable="isDragging">
+          <transition-group tag="div" :draggable="isDragging" class="ndg-container" name="ndg-outer-shift"
+                            :duration="switchDuration">
             <template v-for="(box, j) in desk.boxes">
               <div class="ndg-outer" :style="[gridSize]" :key="box.id" @click="($event)=>{$event.stopPropagation()}"
                    @mouseenter="ome($event, i, j)" @mouseleave="oml($event, i ,j)"
-                   @dragenter="outerDragEnter($event,i,j)" @dragover="outerDragOver($event, i ,j)"
-                   @dragleave="outerDragLeave($event,i,j)" @dragend="outerDragEnd($event, i ,j)"
+                   @dragenter="outerDragEnter($event,i,j)"
+                   @dragover="outerDragOver($event, i ,j)"
+                   @dragleave="outerDragLeave($event,i,j)"
+                   @dragend="outerDragEnd($event, i ,j)"
                    @drop="outerDrop($event,i,j)">
                 <div class="ndg-content-border" :class="{'ndg-box-covered': box.covered}"
-                     :style="[boxSize, checkedBOX(i,j), filledBOX(i,j)]" :key="box.id" :draggable="enableDrag"
+                     :style="[boxSize, checkedBOXStyle(i,j), filledBOX(i,j)]" :key="box.id" :draggable="enableDrag"
                      @dblclick="showModal($event, i,j)"
                      @dragstart="boxStartDrag($event,i,j)"
                      @drag="boxDrag($event, i, j)"
@@ -32,19 +33,19 @@
                      @touchstart="touchstart" @touchend="touchend" @touchmove="touchmove">
                   <Box v-model="desk.boxes[j]" :id="box.id" :name="box.name" :enableDrag="enableDrag"></Box>
                 </div>
-                <div class="ndg-desc" style="animation:none" :style="[checkedBOX(i,j)]">
+                <div class="ndg-desc" style="animation:none" :style="[checkedBOXStyle(i,j)]">
                   {{ box.name | resolveAppName }}
                 </div>
               </div>
             </template>
             <div :id="desk.rect1" :key="desk.rect1" name="rect1"
-                 @dragenter="contDragEnter($event, i)" @dragleave="contDragLeave($event, i, 1)"
-                 @dragover="contDragOver($event, i)" @drop="contDrop($event, i)"
+                 @dragenter="restZoneDragEnter($event, i)" @dragleave="restZoneDragLeave($event, i, 1)"
+                 @dragover="restZoneDragOver($event, i)" @drop="restZoneDrop($event, i)"
                  :style="{'max-height': gridSize['--gh'], 'min-height': gridSize['--gh'], 'width': rectArr1[i] }">
             </div>
             <div :id="desk.rect2" :key="desk.rect2" name="rect2" style="height: auto"
-                 @dragenter="contDragEnter($event, i)" @dragleave="contDragLeave($event, i, 2)"
-                 @dragover="contDragOver($event, i)" @drop="contDrop($event, i)"
+                 @dragenter="restZoneDragEnter($event, i)" @dragleave="restZoneDragLeave($event, i, 2)"
+                 @dragover="restZoneDragOver($event, i)" @drop="restZoneDrop($event, i)"
                  :style="{'width': '100%','height': rectArr2[i]}">
             </div>
           </transition-group>
@@ -52,7 +53,9 @@
       </template>
     </div>
     <!-- 文件夹的模态框，要在确定了的情况下加以渲染，即同时满足当下的定位和双击事件-->
-    <BoxModal v-model="checkedModal" :portrait="portrait" :enableDrag="enableDrag" ref="modal"></BoxModal>
+    <BoxModal v-model="checkedBox" :portrait="portrait" :enableDrag="enableDrag" ref="modal"
+              @shiftIntoModal="shiftIntoModal" @shiftOutFromModal="shiftOutFromModal"
+              @draggingIndexChange="draggingIndexChange"></BoxModal>
     <Indicator v-model="desks" @scrollToDestDesk="switchUnit" :displayNum="currentDeskNo"></Indicator>
     <DockBar v-model="dockApps"></DockBar>
     <canvas id="canvas" style="display:none"></canvas>
@@ -67,7 +70,7 @@ import Indicator from "./Indicator.vue";
 import MyIcon from "./MyIcon.vue";
 import ShiftZone from "./ShiftZone.vue";
 import BoxModal from "./modal/BoxModal.vue";
-import Box from "./Box.vue";
+import Box from "./box/Box.vue";
 // 混入：拆分各个区域功能代码
 import initMixin from "./mixins/init.js";
 import innerMixin from "./mixins/inner.js";
@@ -77,6 +80,7 @@ import listenerMixin from "./mixins/listener.js";
 // 导入公共用途库
 import {v4 as uuidv4} from "uuid";
 import {Timer} from "@/components/ndg/timer";
+import {SHIFTACTION, swapEle} from "@/components/ndg/common";
 
 export default {
   name: "nested-drag-grid",
@@ -103,7 +107,7 @@ export default {
     // 悬停判定时间上限
     suspendJudgeLimit: {
       type: Number,
-      default: 300
+      default: 250
     },
     // 拖入app集合内的判定时间
     dragIntoTimeLimit: {
@@ -135,21 +139,26 @@ export default {
   },
   data() {
     return {
+      // DockBar 中的app列表
       dockApps: {
         usually: [],
         running: []
       },
       // 正在拖拽？初始化为否
       isDragging: false,
-      // 被拖拽的坐标
+      // 被拖拽的APP坐标
       draggingIndex: {
-        deskIndex: 0,
-        boxIndex: 0
+        deskIndex: undefined,
+        boxIndex: undefined,
+        groupIndex: undefined,
+        appIndex: undefined,
       },
-      // 被置换的坐标
+      // 被置换APP的坐标
       targetIndex: {
-        deskIndex: 0,
-        boxIndex: 0
+        deskIndex: undefined,
+        boxIndex: undefined,
+        groupIndex: undefined,
+        appIndex: undefined,
       },
       // 正在移动
       movingBox: false,
@@ -192,7 +201,9 @@ export default {
         }
       },
       // 设备摆放方向 默认 landscape 所以是false
-      portrait: window.innerHeight > window.innerWidth
+      portrait: window.innerHeight > window.innerWidth,
+      // 拖拽行为
+      shiftAction: SHIFTACTION.BetweenDesk,
     };
   },
   computed: {
@@ -211,26 +222,22 @@ export default {
       }
     },
     // 把当前的BOX信息传入模态框
-    checkedModal: {
-      cache: false,
+    checkedBox: {
+      cache: true,
       get() {
-        return this.desks[this.modal.deskIndex].boxes[this.modal.boxIndex];
+        return this.desks[this.modal.deskIndex].boxes[this.modal.boxIndex]
       }
     },
     // 桌面拖拽的时候 被拖拽的BOX
     draggingBOX: {
       cache: false,
-      // 不带上 .appGroups[0][0];
       get() {
-        return this.desks[this.draggingIndex.deskIndex].boxes[
-          this.draggingIndex.boxIndex
-          ];
+        return this.desks[this.draggingIndex.deskIndex].boxes[this.draggingIndex.boxIndex];
       }
     },
     // 桌面拖拽的时候 目标BOX
     targetBOX: {
       cache: false,
-      // 不带上 .appGroups[0][0];
       get() {
         let ddi = this.targetIndex.deskIndex
         let dbi = this.targetIndex.boxIndex
@@ -259,16 +266,59 @@ export default {
   },
   methods: {
     /**
-     * rect1 rect2部分 拖出
-     * @param $event
-     * @param deskIndex
-     * @param rectNo
+     * modal内部的BOX的APP被拖拽，所定位的坐标
+     * @param groupIndex
+     * @param appIndex
      */
-    contDragEnter($event, deskIndex) {
-
-      console.info('移入', deskIndex)
-      this.desks[deskIndex].rectTimer.start();
-
+    draggingIndexChange(groupIndex, appIndex) {
+      // console.log('modal内部的BOX的APP被拖拽，所定位的坐标')
+      this.draggingIndex.groupIndex = groupIndex
+      this.draggingIndex.appIndex = appIndex
+    },
+    /**
+     * 从Modal内部拖出APP
+     * @param groupIndex
+     * @param appIndex
+     */
+    shiftOutFromModal(groupIndex, appIndex) {
+      this.draggingIndex.deskIndex = this.modal.deskIndex
+      this.draggingIndex.boxIndex = this.modal.boxIndex
+      this.draggingIndex.groupIndex = groupIndex
+      this.draggingIndex.appIndex = appIndex
+      // 从Modal中拖出
+      this.shiftAction = SHIFTACTION.ShiftOutModal;
+    },
+    /**
+     *  桌面的单APP，响应放入，<BoxModal\>的<Box\>之中
+     *  @param groupIndex (displayNum)
+     */
+    shiftIntoModal(groupIndex) {
+      // 模态框定位
+      let mdi = this.modal.deskIndex;
+      let mbi = this.modal.boxIndex;
+      // 删掉被拖拽的单位
+      let ddi = this.draggingIndex.deskIndex;
+      let dbi = this.draggingIndex.boxIndex
+      let dgi = this.draggingIndex.groupIndex
+      let dai = this.draggingIndex.appIndex
+      const draggedApp = this.desks[ddi].boxes[dbi].appGroups[dgi][dai];
+      // 被拖拽的app的内容
+      const app = {name: draggedApp.name, id: draggedApp.id}
+      console.log('拖入的APP是：', app.name, this.draggingIndex)
+      // 把APP加入到盒子的某个APP组内
+      this.desks[mdi].boxes[mbi].appGroups[groupIndex].push(app);
+      // 确认目标位置
+      this.targetIndex.deskIndex = this.modal.deskIndex
+      this.targetIndex.boxIndex = this.modal.boxIndex
+      this.targetIndex.groupIndex = groupIndex
+      this.targetIndex.appIndex = this.desks[mdi].boxes[mbi].appGroups[groupIndex].length - 1;
+      // 是否移除桌面上的盒子,app个数为0，就删了他
+      this.desks[ddi].boxes[dbi].appGroups[dgi].splice(dai, 1);
+      if (this.appCounter(ddi, dbi) == 0) {
+        this.desks[ddi].boxes.splice(dbi, 1);
+      }
+      // 改变拖拽行为
+      this.shiftAction = SHIFTACTION.ShiftIntoModal;
     },
     /**
      * rect1 rect2部分 拖出
@@ -276,31 +326,46 @@ export default {
      * @param deskIndex
      * @param rectNo
      */
-    contDragLeave($event, deskIndex, rectNo) {
+    restZoneDragEnter($event, deskIndex) {
+      console.info('移入', deskIndex)
+      this.desks[deskIndex].rectTimer.start();
+    },
+    /**
+     * rect1 rect2部分 拖出
+     * @param $event
+     * @param deskIndex
+     * @param rectNo
+     */
+    restZoneDragLeave($event, deskIndex, rectNo) {
       this.desks[deskIndex].rectTimer.shutdown();
     },
     /**
-     *
+     * restZoneDragOver
      * @param $event
      * @param deskIndex
      */
-    contDragOver($event, deskIndex) {
+    restZoneDragOver($event, deskIndex) {
       // 目标桌面的BOX个数
-      let boxNum = this.desks[deskIndex].boxes.length;
-      if (this.desks[deskIndex].rectTimer.time > this.suspendJudgeLimit) {
-        // 如果拖拽是跨桌面的，就不用前置顺序
-        let adjust = (deskIndex == this.draggingIndex.deskIndex) ? -1 : 0;
-        this.moveBox(deskIndex, boxNum + adjust);
-        this.desks[deskIndex].rectTimer.shutdown();
-      }
+      $event.preventDefault();
     },
     /**
      * 落入空闲区域
      * @param $event
      * @param deskIndex
      */
-    contDrop($event, deskIndex) {
+    restZoneDrop($event, deskIndex) {
       console.info('落入', deskIndex)
+      let boxNum = this.desks[deskIndex].boxes.length;
+      const timeOver = this.desks[deskIndex].rectTimer.time > this.suspendJudgeLimit;
+      if (this.shiftAction == SHIFTACTION.BetweenDesk) {
+        // 如果拖拽是跨桌面的，就不用前置顺序
+        let adjust = (deskIndex == this.draggingIndex.deskIndex) ? -1 : 0;
+        this.shiftBOX(deskIndex, boxNum + adjust);
+        this.desks[deskIndex].rectTimer.shutdown();
+      } else if (this.shiftAction == SHIFTACTION.ShiftOutModal || this.shiftAction == SHIFTACTION.RecFromDock) {
+        //  如果是从Modal中或者Dock中拖入到桌面
+        this.insertNewBOX(deskIndex, boxNum);
+      }
     },
 
     /**
@@ -308,7 +373,7 @@ export default {
      * @param targetDI
      * @param targetBI
      */
-    moveBox(targetDI, targetBI) {
+    shiftBOX(targetDI, targetBI) {
       // 移动BOX，或者切换桌面的时候，不允许再移动BOX
       if (this.movingBox || this.deskSwitching) {
         console.info('当前正在移动BOX，或者切换桌面')
@@ -339,21 +404,22 @@ export default {
         // 移动方向 true为向右下移动，也就是下标增大；反之就是 下标减小，向左上方移动
         let moveToHigher = boxIndex < targetBI && boxIndex != targetBI;
         let moveToLower = boxIndex > targetBI && boxIndex != targetBI;
+        // 目标的盒子们
         let targetBoxes = this.desks[targetDI].boxes;
         // 从左到右
         if (moveToHigher) {
           for (let i = boxIndex; i < targetBI; i++) {
-            targetBoxes = this.swapEle(targetBoxes, i, i + 1);
+            targetBoxes = swapEle(targetBoxes, i, i + 1);
           }
           reset();
         } else if (moveToLower) {
+          // 从右到左
           for (let j = boxIndex; j > targetBI; j--) {
-            targetBoxes = this.swapEle(targetBoxes, j, j - 1);
+            targetBoxes = swapEle(targetBoxes, j, j - 1);
           }
           reset();
         }
       } else {
-        // TODO: 重写！！！
         let draggedBOX = this.desks[deskIndex].boxes.splice(boxIndex, 1)[0]
         this.desks[targetDI].boxes.splice(targetBI, 0, draggedBOX);
         reset();
@@ -361,33 +427,41 @@ export default {
     },
 
     /**
-     * 决定鼠标动向
-     * @param $event
+     * 从modal中拖出，放入到桌面上
+     * @param deskIndex
+     * @param boxIndex
      */
-    deterMouseMove($event) {
-      let changeX = $event.clientX - this.mouse.x;
-      let changeY = $event.clientY - this.mouse.y;
-
-      if (changeX > 0) {
-        this.mouse.orientation.hor = "right";
-      } else if (changeX < 0) {
-        this.mouse.orientation.hor = "left";
+    insertNewBOX(deskIndex, boxIndex) {
+      console.log('从modal中拖出，放入到桌面上')
+      let app = this.checkedBox.appGroups[this.draggingIndex.groupIndex][this.draggingIndex.appIndex];
+      const box = {
+        id: uuidv4(),
+        name: app.name,
+        appGroups: [[{
+          'name': app.name,
+          'id': app.id
+        }]],
+        groupAppLimit: 9,
+        innerSuspendTimer: new Timer(),
+        outerSuspendTimer: new Timer(),
+        covered: false,
+        showModal: false,
+        displayNum: 0,
       }
-      if (changeY < 0) {
-        this.mouse.orientation.vet = "up";
-      } else if (changeY > 0) {
-        this.mouse.orientation.vet = "down";
-      }
+      this.desks[deskIndex].boxes.splice(boxIndex, 0, box);
+      this.checkedBox.appGroups[this.draggingIndex.groupIndex].splice(this.draggingIndex.appIndex, 1)
     },
-    // 打开该文件筐的模态窗
-    showModal($event, deskIndex, boxIndex, dragInto) {
+    /**
+     * @param $event
+     * @param deskIndex
+     * @param boxIndex
+     * @param dragInto
+     * 打开该文件筐的模态窗 只有多应用才能打开模态框，或者拖拽进入
+     */
+    showModal($event, deskIndex, boxIndex) {
       $event.stopPropagation();
-      // 只有多应用才能打开模态框，或者拖拽进入
-      // let targetBox = this.desks[deskIndex].boxes[boxIndex];
       let appCount = this.appCounter(deskIndex, boxIndex)
-      // console.info(targetBox.appGroups, appCount);
-      if (appCount > 1 || dragInto == true) {
-        // 指定具体要显示的 modal内容 已经在mouseenter中完成以下注释代码的功能
+      if (appCount > 1) {
         window.setTimeout(() => {
           this.modal.deskIndex = deskIndex;
           this.modal.boxIndex = boxIndex;
@@ -402,14 +476,11 @@ export default {
      * @returns {{opacity: (number)}}
      */
     // 被点击的BOX会弹出模态框，同时BOX消失
-    checkedBOX(deskIndex, boxIndex) {
-      let checkedFlag = (
-        (this.$refs["modal"] == undefined
-          ? false
-          : this.$refs["modal"].showModal) &&
+    checkedBOXStyle(deskIndex, boxIndex) {
+      let checkedFlag =
+        (this.$refs["modal"] && this.$refs["modal"].showModal) &&
         this.modal.deskIndex == deskIndex &&
-        this.modal.boxIndex == boxIndex
-      );
+        this.modal.boxIndex == boxIndex;
       return {
         "opacity": checkedFlag ? 0 : 1
       }
@@ -538,6 +609,13 @@ export default {
 </script>
 <!-- 盒子布局样式，内部app显示样式 -->
 <style scoped>
+* {
+  --gw: var(--gw);
+  --gh: var(--gh);
+  --boxinitWidth: var(--boxinitWidth);
+  --boxinitHeight: var(--boxinitHeight);
+}
+
 .ndg {
   position: fixed;
   top: 0%;
@@ -644,20 +722,23 @@ export default {
   border: 1px solid white;
   transition: transform 0.5s;
 }
+
 .ndg-outer-shift-active > .ndg-content-border {
   transition: all 1s;
 }
 
-.ndg-outer-shift-enter-active, .ndg-outer-shift-leave-active > .ndg-content-border{
+.ndg-outer-shift-enter-active, .ndg-outer-shift-leave-active > .ndg-content-border {
   transition: all 1s ease-in-out;
   border: 1px solid white;
 }
+
 .ndg-outer-shift-enter, .ndg-outer-shift-leave-to > .ndg-content-border {
   opacity: 0.5;
   border: 1px solid white;
 }
-.ndg-outer-shift-leave-active > .ndg-content-border{
-  //position: absolute;
+
+.ndg-outer-shift-leave-active > .ndg-content-border {
+//position: absolute;
 }
 
 .ndg-content-border {
@@ -666,7 +747,7 @@ export default {
   width: var(--boxinitWidth);
   height: var(--boxinitHeight);
   border-radius: 5%;
-  box-shadow: 1px 1px 5px 1px rgb(0 0 0 / 60%);
+  box-shadow: 1px 1px 5px 1px rgba(0, 0, 0, 0.6);
   overflow: hidden;
   transition: opacity 0.5s ease-in-out;
   animation-fill-mode: backwards;

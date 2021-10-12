@@ -52,10 +52,10 @@ export var desks = [
               name: "Bosszhipin",
               id: "0435e9e15654413f8a78b540568c68e0"
             },
-            {
-              name: "wangyiyun",
-              id: "518a970fa45d45bb8a5f2db3b8498206"
-            },
+            // {
+            //   name: "wangyiyun",
+            //   id: "518a970fa45d45bb8a5f2db3b8498206"
+            // },
             {
               name: "sougoup",
               id: "3b82e4935e654de8aa3701f68803231d"

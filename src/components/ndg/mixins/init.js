@@ -8,7 +8,7 @@ export default {
   },
   updated() {
     this.throttle(() => {
-      console.info("%c NDG-Updated()--渲染完毕", "background-color: orange border-radius: 2px padding-right: 1px")
+      // console.info("%c NDG-Updated()--渲染完毕", "background-color: orange border-radius: 2px padding-right: 1px")
       this.locateBOX()
     }, 500, this.updatedTimer)()
   },
@@ -182,61 +182,11 @@ export default {
         }
       })
     },
-    // 交换数组的元素,并且返回被splice()修改的数组
-    swapEle(arr, i1, i2) {
-      // 从下标arr[i2]自身开始向后删除，填充(...item)也就是arr[i1]，以数组形式返回被删掉的元素
-      arr[i1] = arr.splice(i2, 1, arr[i1])[0]
-      return arr
-    },
-    gradientSplit(a, b, step) {
-      let min = Math.min(a, b)
-      let max = Math.max(a, b)
-      let arr = []
-      arr.push(max)
-      let start = Math.ceil(min)
-      let end = Math.floor(max)
-      if (!step) {
-        step = 2
-      }
-      for (let i = end ;i > start; i = i - step) {
-        arr.push(i)
-      }
-      arr.push(min)
-      // console.info(arr)
-      return arr
-    },
     // 计算某个桌面的某个盒子内部的app数量
     appCounter(deskIndex, boxIndex) {
       return this.desks[deskIndex].boxes[boxIndex].appGroups.flat(2).filter(app => {
         return app.name != ''
       }).length
-    },
-    showEvent($event) {
-      console.info(
-        "offset",
-        $event.offsetX,
-        $event.offsetY,
-        "client",
-        $event.clientX,
-        $event.clientY,
-        "page",
-        $event.pageX,
-        $event.pageY,
-        "screen",
-        $event.screenX,
-        $event.screenY
-      )
-    },
-    inRegion(val, a, b) {
-      if (!a) {
-        a = 0
-      }
-      if (!b) {
-        b = 1000
-      }
-      let low = Math.min(a, b)
-      let high = Math.max(a, b)
-      return val >= low && val <= high
     },
     // 节流修饰
     throttle(fn, delay, timer) {
