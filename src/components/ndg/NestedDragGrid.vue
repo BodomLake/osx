@@ -697,7 +697,6 @@ export default {
   min-height: var(--gh);
   box-sizing: border-box;
   border-radius: 10%;
-  cursor: pointer;
   position: relative;
   overflow: hidden;
   transition: transform 0.25s ease-in-out;
