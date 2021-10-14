@@ -1,4 +1,4 @@
-import {SHIFTACTION} from "@/components/ndg/common";
+import {isDockApp, isInnerBox, isModalApp, isOuterBox} from "../common";
 
 export default {
   name: 'outer',
@@ -21,11 +21,10 @@ export default {
         // console.info('outerSuspendTimer outer层计时', box.outerSuspendTimer.time)
         if (box.outerSuspendTimer.time >= 250) {
           // 交换BOX的位置
-          if (this.shiftAction == SHIFTACTION.BetweenDesk) {
+          if (isOuterBox(this) || isInnerBox(this)) {
             this.shiftBOX(deskIndex, boxIndex)
-          } else if (this.shiftAction == SHIFTACTION.ShiftOutModal || this.shiftAction == SHIFTACTION.RecFromDock) {
-            // noop
-            // this.insertNewBOX(deskIndex, boxIndex)
+          } else if (isDockApp(this) || isModalApp(this)) {
+            // TODO
           }
           box.outerSuspendTimer.shutdown()
         }
@@ -83,9 +82,7 @@ export default {
       let box = this.desks[deskIndex].boxes[boxIndex]
       console.log('outer-drop')
       if (box) {
-        this.desks[deskIndex].boxes[boxIndex].outerSuspendTimer.shutdown()
-        this.desks[deskIndex].boxes[boxIndex].innerSuspendTimer.shutdown()
-        this.desks[deskIndex].boxes[boxIndex].covered = false;
+        this.recoverTargetBox(deskIndex, boxIndex)
       }
     },
     /**
@@ -95,9 +92,7 @@ export default {
      * @param boxIndex
      */
     ome($event, deskIndex, boxIndex) {
-      let appGroups = this.desks[deskIndex].boxes[boxIndex].appGroups
-      let appCount = this.appCounter(deskIndex, boxIndex)
-      let isApp = appGroups.length == 1 && appCount == 1
+      let isApp = this.appCounter(deskIndex, boxIndex) == 1
       if (!this.$refs["modal"].showModal && !isApp) {
         this.modal.deskIndex = deskIndex
         this.modal.boxIndex = boxIndex
@@ -113,5 +108,10 @@ export default {
       // 离开就
       // this.desks[deskIndex].boxes[boxIndex].outerSuspendTime = 0
     },
+    recoverTargetBox(deskIndex, boxIndex) {
+      this.desks[deskIndex].boxes[boxIndex].outerSuspendTimer.shutdown()
+      this.desks[deskIndex].boxes[boxIndex].innerSuspendTimer.shutdown()
+      this.desks[deskIndex].boxes[boxIndex].covered = false;
+    }
   }
 }

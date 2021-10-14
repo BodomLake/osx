@@ -10,7 +10,7 @@
             <!-- 默认九个app一组 -->
             <div class="ndg-app" :key="app.id" :name="app.name" :data-group="gid" :id="app.id"
                  :draggable="enableDrag && appliedInModal" :style="{'pointer-events': appliedInModal ? '' : 'none'}"
-                 :class="{'shakeAnime': enableDrag && gid == box.displayNum}"
+                 :class="{'shakeAnime': enableDrag && gid && gid == box.displayNum}"
                  @dragover="appDragOver($event, gid, aid)"
                  @dragstart="appDragStart($event, gid, aid)"
                  @dragleave="appDragLeave($event, gid, aid)"
@@ -50,7 +50,7 @@
 import MyIcon from "../MyIcon.vue";
 import {v4 as uuidv4} from "uuid";
 import {Timer} from "@/components/ndg/timer";
-import {APP, SHIFTACTION, swapEle} from "@/components/ndg/common";
+import {APP, swapEle} from "@/components/ndg/common";
 import mixin from './mixin'
 
 export default {
@@ -205,10 +205,6 @@ export default {
       type: Boolean,
       default: false,
     },
-    modalActOcaasion: {
-      type: Number,
-      default: SHIFTACTION.ShiftOutModal,
-    }
   },
   watch: {
     box: {
@@ -299,7 +295,6 @@ export default {
           reset();
         }
       } else {
-        // TODO: 重写！！！
         let draggedAPP = this.appGroups[groupIndex].splice(appIndex, 1)[0]
         this.appGroups[targetGI].splice(targetAI, 0, draggedAPP);
         reset();

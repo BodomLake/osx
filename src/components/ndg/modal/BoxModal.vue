@@ -25,8 +25,7 @@
       <ShiftZone orientation="left" :flowOver="isDragging" @switchUnit="switchUnit" :delaySwitchTime="400"></ShiftZone>
       <div class="ndg-modal-content">
         <Box v-model="box" :enableDrag="enableDrag" :showAppName='true' :appliedInModal="showModal"
-             @shiftIntoModal="shiftIntoModal" @draggingIndexChange="draggingIndexChange"
-             :modalActOcaasion="modalActOcaasion"></Box>
+             @shiftIntoModal="shiftIntoModal" @draggingIndexChange="draggingIndexChange"></Box>
       </div>
       <ShiftZone orientation="right" :flowOver="isDragging" @switchUnit="switchUnit" :delaySwitchTime="400"></ShiftZone>
       <Indicator v-model="box"></Indicator>
@@ -39,7 +38,7 @@ import MyIcon from "../MyIcon.vue";
 import Box from "../box/Box.vue";
 import Indicator from "./Indicator.vue";
 import ShiftZone from "../ShiftZone.vue";
-import {inRegion, SHIFTACTION} from "@/components/ndg/common";
+import {inRegion} from "@/components/ndg/common";
 import {Timer} from "@/components/ndg/timer";
 import mixin from "./mixin.js"
 
@@ -146,10 +145,10 @@ export default {
       scaleRatio: this.calcRatio(),
       // 重置尺寸计时器
       resizeTimer: null,
+      // 开关计时器
+      toggleTimer: null,
       // 计时器，判断是否要关闭当前modal
       modalSuspendTimer: new Timer(),
-      // modal默认的行为场合：总是有意拖出的，除非外界修改；关闭模态框的时候自动修正为 SHIFTACTION.ShiftOutModal
-      modalActOcaasion: SHIFTACTION.ShiftOutModal,
       // APP定位
       draggingIndex: {
         groupIndex: 0,
@@ -210,34 +209,33 @@ export default {
   },
   methods: {
     // 打开模态框
-    toggle(action) {
+    toggle() {
       this.$forceUpdate();
       let modalContent = document.querySelector("div#ndg-modal-content-border");
-      if (!this.showModal) {
-        // 模态框开启动画
-        document.querySelector("div#ndg-modal").style.zIndex = 10;
-        modalContent.classList.add("popAnime");
-        modalContent.style.zIndex = 9999;
-        if (action) {
-          console.log('修改模态弹框的开关行为', action == SHIFTACTION.ShiftIntoModal ? '拖入' : '拖出')
-          this.modalActOcaasion = action;
-        }
-        setTimeout(() => {
-        }, this.duration);
-      } else {
-        // 模态框关闭动画
-        modalContent.classList.remove("popAnime");
-        modalContent.classList.add("closeAnime");
-        setTimeout(() => {
-          modalContent.classList.remove("closeAnime");
-          document.querySelector("div#ndg-modal").style.zIndex = -1;
-          // 恢复模态框的普通开关行为
-          this.modalActOcaasion = SHIFTACTION.ShiftOutModal;
-          console.log('修改模态弹框的开关行为', action == SHIFTACTION.ShiftOutModal ? '拖出' : '拖入')
-        }, this.duration);
+      if (this.toggleTimer) {
+        clearTimeout(this.resizeTimer);
       }
-      // 修改状态
-      this.showModal = !this.showModal;
+      this.toggleTimer = setTimeout(() => {
+        if (!this.showModal) {
+          // 模态框开启动画
+          document.querySelector("div#ndg-modal").style.zIndex = 10;
+          modalContent.classList.add("popAnime");
+          modalContent.style.zIndex = 9999;
+          setTimeout(() => {
+          }, this.duration);
+        } else {
+          // 模态框关闭动画
+          modalContent.classList.remove("popAnime");
+          modalContent.classList.add("closeAnime");
+          setTimeout(() => {
+            modalContent.classList.remove("closeAnime");
+            document.querySelector("div#ndg-modal").style.zIndex = -1;
+            // 恢复模态框的普通开关行为
+          }, this.duration);
+        }
+        // 修改状态
+        this.showModal = !this.showModal;
+      }, 100);
     },
     scrollToAppGroup(ui) {
       // console.info("scrollToAppGroup", ui);

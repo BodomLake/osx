@@ -80,7 +80,8 @@ import listenerMixin from "./mixins/listener.js";
 // 导入公共用途库
 import {v4 as uuidv4} from "uuid";
 import {Timer} from "@/components/ndg/timer";
-import {SHIFTACTION, swapEle} from "@/components/ndg/common";
+import {APP, DOCKAPP, isDockApp, isInnerBox, isModalApp, isOuterBox, swapEle} from "@/components/ndg/common";
+import {OUTERBOX} from "./common";
 
 export default {
   name: "nested-drag-grid",
@@ -202,8 +203,6 @@ export default {
       },
       // 设备摆放方向 默认 landscape 所以是false
       portrait: window.innerHeight > window.innerWidth,
-      // 拖拽行为
-      shiftAction: SHIFTACTION.BetweenDesk,
     };
   },
   computed: {
@@ -285,8 +284,6 @@ export default {
       this.draggingIndex.boxIndex = this.modal.boxIndex
       this.draggingIndex.groupIndex = groupIndex
       this.draggingIndex.appIndex = appIndex
-      // 从Modal中拖出
-      this.shiftAction = SHIFTACTION.ShiftOutModal;
     },
     /**
      *  桌面的单APP，响应放入，<BoxModal\>的<Box\>之中
@@ -314,11 +311,10 @@ export default {
       this.targetIndex.appIndex = this.desks[mdi].boxes[mbi].appGroups[groupIndex].length - 1;
       // 是否移除桌面上的盒子,app个数为0，就删了他
       this.desks[ddi].boxes[dbi].appGroups[dgi].splice(dai, 1);
+      this.
       if (this.appCounter(ddi, dbi) == 0) {
         this.desks[ddi].boxes.splice(dbi, 1);
       }
-      // 改变拖拽行为
-      this.shiftAction = SHIFTACTION.ShiftIntoModal;
     },
     /**
      * rect1 rect2部分 拖出
@@ -356,15 +352,19 @@ export default {
     restZoneDrop($event, deskIndex) {
       console.info('落入', deskIndex)
       let boxNum = this.desks[deskIndex].boxes.length;
-      const timeOver = this.desks[deskIndex].rectTimer.time > this.suspendJudgeLimit;
-      if (this.shiftAction == SHIFTACTION.BetweenDesk) {
+      // const timeOver = this.desks[deskIndex].rectTimer.time > this.suspendJudgeLimit;
+      if (isOuterBox(this) || isInnerBox(this)) {
         // 如果拖拽是跨桌面的，就不用前置顺序
         let adjust = (deskIndex == this.draggingIndex.deskIndex) ? -1 : 0;
         this.shiftBOX(deskIndex, boxNum + adjust);
         this.desks[deskIndex].rectTimer.shutdown();
-      } else if (this.shiftAction == SHIFTACTION.ShiftOutModal || this.shiftAction == SHIFTACTION.RecFromDock) {
+        // TODO
+      } else if (isModalApp(this)) {
         //  如果是从Modal中或者Dock中拖入到桌面
-        this.insertNewBOX(deskIndex, boxNum);
+        this.modalAppIntoDesk(deskIndex, boxNum);
+      } else if (isDockApp(this)) {
+        //  如果是从Modal中或者Dock中拖入到桌面
+        this.dockAppIntoDesk(deskIndex, boxNum);
       }
     },
 
@@ -428,13 +428,17 @@ export default {
 
     /**
      * 从modal中拖出，放入到桌面上
-     * @param deskIndex
-     * @param boxIndex
+     * @param deskIndex 目标桌面
+     * @param boxIndex 放到目标盒子附近
      */
-    insertNewBOX(deskIndex, boxIndex) {
+    modalAppIntoDesk(deskIndex, boxIndex) {
       console.log('从modal中拖出，放入到桌面上')
-      let app = this.checkedBox.appGroups[this.draggingIndex.groupIndex][this.draggingIndex.appIndex];
-      const box = {
+      let dgi = this.draggingIndex.groupIndex;
+      let dai = this.draggingIndex.appIndex;
+      let appGroups = this.checkedBox.appGroups;
+      let app = appGroups[dgi][dai];
+      console.log(this.checkedBox, app, dgi, dai)
+      let insertBox = {
         id: uuidv4(),
         name: app.name,
         appGroups: [[{
@@ -448,8 +452,18 @@ export default {
         showModal: false,
         displayNum: 0,
       }
-      this.desks[deskIndex].boxes.splice(boxIndex, 0, box);
-      this.checkedBox.appGroups[this.draggingIndex.groupIndex].splice(this.draggingIndex.appIndex, 1)
+      // 在桌面appGroups.[deskIndex].boxes[boxIndex]上追加盒子
+      this.desks[deskIndex].boxes.splice(boxIndex, 0, insertBox);
+      // 如果被删掉的盒子所在组只有他一个app的话,删掉该组
+      if (appGroups[dgi].length = 1) {
+        appGroups.splice(dgi, 1)
+      } else {
+        // 如果不是只剩一个，就删除单个app
+        appGroups[dgi].splice(dai, 1)
+      }
+    },
+    dockAppIntoDesk() {
+
     },
     /**
      * @param $event
@@ -653,7 +667,7 @@ export default {
   max-height: 100%;
   display: flex;
   flex-direction: row;
-//transition: all 0.5s ease-in-out;
+/ / transition: all 0.5 s ease-in-out;
 }
 
 /* 当前桌面 */
@@ -700,7 +714,7 @@ export default {
   position: relative;
   overflow: hidden;
   transition: transform 0.25s ease-in-out;
-//border: 0.5px skyblue groove;
+/ / border: 0.5 px skyblue groove;
 }
 
 .ndg-outer-shift {
@@ -737,7 +751,7 @@ export default {
 }
 
 .ndg-outer-shift-leave-active > .ndg-content-border {
-//position: absolute;
+/ / position: absolute;
 }
 
 .ndg-content-border {
@@ -750,7 +764,7 @@ export default {
   overflow: hidden;
   transition: opacity 0.5s ease-in-out;
   animation-fill-mode: backwards;
-//pointer-events: none;
+/ / pointer-events: none;
 }
 
 .ndg-desc {

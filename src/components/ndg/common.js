@@ -2,17 +2,37 @@ export const PREFIX = "ndg-";
 export const BACKGROUND = PREFIX + "background";
 export const CONTAINER = PREFIX + "container";
 export const CONTENT_BORDER = PREFIX + "content-border";
+export const OUTERBOX = PREFIX + "outer";
 export const DESKTOP = PREFIX + 'desktop';
 export const GROUP = PREFIX + "ndg-app-group";
 export const APP = PREFIX + "app";
+export const DOCKAPP = PREFIX + "dock-app";
 export const GROUPAPPLIMIT = 9;
-// 拖拽行为划分
-export const SHIFTACTION = {
-  'BetweenDesk': 0,
-  'ShiftIntoModal': 1,
-  'ShiftOutModal': 2,
-  'MoveToDock': 3,
-  'RecFromDock': 4,
+
+export function isDockApp(vue) {
+  let dom = vue.$store.state.draggingDOM;
+  // console.log(dom.classList)
+  return dom.classList.contains(DOCKAPP)
+}
+
+
+export function isModalApp(vue) {
+  let dom = vue.$store.state.draggingDOM;
+  // console.log(dom.classList)
+  return dom.classList.contains(APP)
+}
+
+
+export function isOuterBox(vue) {
+  let dom = vue.$store.state.draggingDOM;
+  // console.log(dom.classList)
+  return dom.classList.contains(OUTERBOX)
+}
+
+export function isInnerBox(vue) {
+  let dom = vue.$store.state.draggingDOM;
+  // console.log(dom.classList)
+  return dom.classList.contains(CONTENT_BORDER)
 }
 
 /**
