@@ -24,7 +24,7 @@
          @click="($event)=>{$event.stopPropagation()}">
       <ShiftZone orientation="left" :flowOver="isDragging" @switchUnit="switchUnit" :delaySwitchTime="400"></ShiftZone>
       <div class="ndg-modal-content">
-        <Box v-model="box" :enableDrag="enableDrag" :showAppName='true' :appliedInModal="showModal"
+        <Box v-model="box" :enableDrag="enableDrag" :showAppName='true' :appliedInModal="showModal" :modalIndex="modalIndex"
              @shiftIntoModalFromDesk="shiftIntoModalFromDesk"
              @shiftIntoModalFromOtherModal="shiftIntoModalFromOtherModal"></Box>
       </div>

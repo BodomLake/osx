@@ -20,11 +20,12 @@ export default {
       // 拖出APP，不需要Drop，只需要等over的时间到了，就启动以下代码
       let overTime = this.modalSuspendTimer.time > 500
       let di = this.$store.state.draggingIndex;
-      let inSameModal = di.deskIndex == this.modalIndex.deskIndex && di.boxIndex == this.modalIndex.boxIndex
+      const inSameModal = di.deskIndex == this.modalIndex.deskIndex && di.boxIndex == this.modalIndex.boxIndex
       if (!isModalApp(this) && overTime) {
         // NOOP 拖入的情况，则什么也不做 no operation
       } else if (isModalApp(this) && overTime) {
         console.log('开关Modal', this.modalSuspendTimer.time)
+        console.log('inSameModal', inSameModal, 'dragIndex', di, 'modalIndex',this.modalIndex)
         // 发送给桌面（上级组件），让他知道被拖拽的是个什么APP，并且告知这是一个modal框拖出的事件
         // 响应给 上级组件的混入代码：outer.js，做出相应插入或者并入
         this.$emit('shiftOutFromModal', di.groupIndex, di.appIndex)
@@ -41,15 +42,16 @@ export default {
       let displayNum = this.box.displayNum;
       console.log('drop落在modal-body中组号：', displayNum, '是ModalAPP:', isModalApp(this))
       const isFull = this.box.appGroups[displayNum].length >= 9;
+
+      let di = this.$store.state.draggingIndex;
+      let inSameModal = di.deskIndex == this.modalIndex.deskIndex && di.boxIndex == this.modalIndex.boxIndex
       // 拖入APP
       if (isOuterBox(this) || isInnerBox(this) || isDockApp(this) && !isFull) {
         // 把被拖拽的APP 追加放入BOX中的一组中
         this.$emit('shiftIntoModalFromDesk', displayNum)
       } else if (isModalApp(this) && !isFull) {
         // 被拖拽的 当前BOX或者其他BOX所属 modal的内部APP，相当于这可能是跨组(Folder)调动
-        let fromOtherModal = this.$store.state.draggingIndex.boxIndex !== this.modalIndex.boxIndex ||
-          this.$store.state.draggingIndex.deskIndex != this.modalIndex.deskIndex;
-        if (fromOtherModal) {
+        if (!inSameModal) {
           this.$emit('shiftIntoModalFromOtherModal', displayNum)
         } else {
           //  同一个modal内部

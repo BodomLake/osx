@@ -3,12 +3,13 @@
        :style="{'width': calcBoxWidth, 'transform': calcBoxOffsetX,'pointer-events': appliedInModal ? '' : 'none'}">
     <!-- 属于文件夹，默认九宫格模式，分割为9个一组，每一组作为一个大方格，含有9个或者以下的方格 -->
     <template v-for="(group, gid) in box.appGroups">
-      <div class="ndg-app-group" :key="gid" v-if="gridMode"
+      <div class="ndg-app-group" :key="gid" v-if="gridMode" :data-gi="gid"
            :style="{'visibility': box.displayNum != gid ? 'hidden': ''}">
         <transition-group class="ndg-app-container" name="ndg-app-shift" :duration="switchDuration" tag="div">
           <template v-for="(app, aid) in group">
             <!-- 默认九个app一组 -->
             <div class="ndg-app" :key="app.id" :name="app.name" :data-group="gid" :id="app.id"
+                 :data-gi="gid" :data-ai="aid" :data-di="modalIndex.deskIndex" :data-bi="modalIndex.boxIndex"
                  :draggable="enableDrag && appliedInModal" :style="{'pointer-events': appliedInModal ? '' : 'none'}"
                  :class="{'shakeAnime': enableDrag && gid && gid == box.displayNum}"
                  @dragover="appDragOver($event, gid, aid)"
@@ -196,6 +197,18 @@ export default {
       type: Boolean,
       default: false,
     },
+    modalIndex: {
+      type: Object,
+      required: false,
+      default: () => {
+        return {
+          deskIndex: 0,
+          boxIndex: 0,
+          groupIndex: 0,
+          appIndex: 0,
+        }
+      }
+    }
   },
   watch: {
     box: {
@@ -259,6 +272,7 @@ export default {
           groupIndex: targetGI,
           appIndex: targetAI,
         })
+        console.log('setDraggingIndex', 'shiftApp')
         this.setApps();
         // 移动结束了
         setTimeout(() => {

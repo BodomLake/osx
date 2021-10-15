@@ -9,18 +9,19 @@
          @mousedown="mousedown($event)" @mousemove="mousemove($event)">
       <!-- 多个桌面 -->
       <template v-for="(desk, i) in desks">
-        <div class="ndg-desktop" :key="desk.id" :id="desk.id">
+        <div class="ndg-desktop" :key="desk.id" :id="desk.id" :data-di="i">
           <transition-group tag="div" :draggable="isDragging" class="ndg-container" name="ndg-outer-shift"
-                            :duration="switchDuration">
+                            :duration="switchDuration" :data-di="i">
             <template v-for="(box, j) in desk.boxes">
-              <div class="ndg-outer" :style="[gridSize]" :key="box.id" @click="($event)=>{$event.stopPropagation()}"
+              <div class="ndg-outer" :style="[gridSize]" :key="box.id" :data-di="i" :data-bi="j"
+                   @click="($event)=>{$event.stopPropagation()}"
                    @mouseenter="ome($event, i, j)" @mouseleave="oml($event, i ,j)"
                    @dragenter="outerDragEnter($event,i,j)"
                    @dragover="outerDragOver($event, i ,j)"
                    @dragleave="outerDragLeave($event,i,j)"
                    @dragend="outerDragEnd($event, i ,j)"
                    @drop="outerDrop($event,i,j)">
-                <div class="ndg-content-border" :class="{'ndg-box-covered': box.covered}"
+                <div class="ndg-content-border" :class="{'ndg-box-covered': box.covered}" :data-di="i" :data-bi="j"
                      :style="[boxSize, checkedBOXStyle(i,j), filledBOX(i,j)]" :key="box.id" :draggable="enableDrag"
                      @dblclick="showModal($event, i,j)"
                      @dragstart="boxStartDrag($event,i,j)"
@@ -31,7 +32,8 @@
                      @dragover="boxDragOver($event, i, j)"
                      @dragleave="boxDragLeave($event,i,j)"
                      @touchstart="touchstart" @touchend="touchend" @touchmove="touchmove">
-                  <Box v-model="desk.boxes[j]" :id="box.id" :name="box.name" :enableDrag="enableDrag"></Box>
+                  <Box v-model="desk.boxes[j]" :id="box.id" :name="box.name" :enableDrag="enableDrag"
+                       :data-di="i" :data-bi="j"></Box>
                 </div>
                 <div class="ndg-desc" style="animation:none" :style="[checkedBOXStyle(i,j)]">
                   {{ box.name | resolveAppName }}
@@ -363,13 +365,11 @@ export default {
     shiftBOX(targetDI, targetBI) {
       // 移动BOX，或者切换桌面的时候，不允许再移动BOX
       if (this.movingBox || this.deskSwitching) {
-        console.info('当前正在移动BOX，或者切换桌面')
         return;
       }
       let boxIndex = this.$store.state.draggingIndex.boxIndex;
       let deskIndex = this.$store.state.draggingIndex.deskIndex;
       if (boxIndex == targetBI && deskIndex == targetDI) {
-        console.warn('不可以挤压自己，置换自己')
         this.movingBox = false;
         return;
       }
@@ -382,12 +382,12 @@ export default {
         this.locateBOX();
         // 移动结束了
         setTimeout(() => {
-          console.info('movingBox已经重置为false')
           this.movingBox = false;
+          console.info('movingBox == false')
         }, this.switchDuration)
       }
-      // 开始移动BOX
       this.movingBox = true;
+      console.info('movingBox == true')
       // TODO 暂时不考虑挤压效果
       if (targetDI == deskIndex) {
         // 移动方向 true为向右下移动，也就是下标增大；反之就是 下标减小，向左上方移动

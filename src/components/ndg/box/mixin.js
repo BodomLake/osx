@@ -9,12 +9,14 @@ export default {
      * @param appIndex
      */
     appDragStart($event, groupIndex, appIndex) {
-      this.$store.commit('setDraggingIndex', {
-        appIndex: appIndex,
+      console.log($event.target.dataset)
+      let di = {
+        deskIndex: $event.target.dataset.di,
+        boxIndex: $event.target.dataset.bi,
         groupIndex: groupIndex,
-        deskIndex: this.$parent.$props['modalIndex'].deskIndex,
-        boxIndex: this.$parent.$props['modalIndex'].boxIndex,
-      })
+        appIndex: appIndex,
+      }
+      this.$store.commit('setDraggingIndex', di)
       $event.stopPropagation();
       console.log('appDragStart', $event.target)
       this.$store.commit('setDraggingDOM', $event.target);

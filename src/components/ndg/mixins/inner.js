@@ -7,7 +7,7 @@ export default {
   },
   methods: {
     boxStartDrag($event, deskIndex, boxIndex) {
-      console.info('开始拖拽:drag-start', $event.target, deskIndex, boxIndex)
+      console.info('开始拖拽:drag-start', deskIndex, boxIndex)
       if (this.appCounter(deskIndex, boxIndex) == 0) {
         $event.preventDefault()
         return
@@ -71,12 +71,11 @@ export default {
     boxDragEnter($event, deskIndex, boxIndex) {
       $event.stopPropagation()
       $event.preventDefault()
-      console.log('内框')
       let notSelf = this.$store.state.draggingIndex.deskIndex != deskIndex || this.$store.state.draggingIndex.boxIndex != boxIndex
       if (notSelf) {
         let box = this.desks[deskIndex].boxes[boxIndex]
         // TODO 要注意的是：鼠标从外框进入内框，需要暂停 outerSuspendTimer 的计时
-        console.info("box内框开始计时", $event.target)
+        console.info("box内框开始计时")
         box.innerSuspendTimer.start()
         // 暂停外框交界计时
         box.outerSuspendTimer.pause()
