@@ -53,9 +53,10 @@
       </template>
     </div>
     <!-- 文件夹的模态框，要在确定了的情况下加以渲染，即同时满足当下的定位和双击事件-->
-    <BoxModal v-model="checkedBox" :portrait="portrait" :enableDrag="enableDrag" ref="modal"
-              @shiftIntoModal="shiftIntoModal" @shiftOutFromModal="shiftOutFromModal"
-              @draggingIndexChange="draggingIndexChange"></BoxModal>
+    <BoxModal v-model="desks" :portrait="portrait" :enableDrag="enableDrag" ref="modal" :modalIndex="modalIndex"
+              @shiftIntoModalFromDesk="shiftIntoModalFromDesk"
+              @shiftOutFromModal="shiftOutFromModal"
+              @shiftIntoModalFromOtherModal="shiftIntoModalFromOtherModal"></BoxModal>
     <Indicator v-model="desks" @scrollToDestDesk="switchUnit" :displayNum="currentDeskNo"></Indicator>
     <DockBar v-model="dockApps"></DockBar>
     <canvas id="canvas" style="display:none"></canvas>
@@ -94,7 +95,6 @@ export default {
     Indicator: Indicator
   },
   mixins: [initMixin, outerMixin, innerMixin, mobileMixin, listenerMixin],
-
   props: {
     layout: {
       type: Object,
@@ -145,29 +145,16 @@ export default {
         usually: [],
         running: []
       },
+      modalIndex: {
+        deskIndex: 0,
+        boxIndex: 0,
+        groupIndex: 0,
+        appIndex: 0,
+      },
       // 正在拖拽？初始化为否
       isDragging: false,
-      // 被拖拽的APP坐标
-      draggingIndex: {
-        deskIndex: undefined,
-        boxIndex: undefined,
-        groupIndex: undefined,
-        appIndex: undefined,
-      },
-      // 被置换APP的坐标
-      targetIndex: {
-        deskIndex: undefined,
-        boxIndex: undefined,
-        groupIndex: undefined,
-        appIndex: undefined,
-      },
       // 正在移动
       movingBox: false,
-      // 模态框的数据
-      modal: {
-        deskIndex: 0,
-        boxIndex: 0
-      },
       // 拖拽跨过桌面了
       crossDesk: false,
       // 启用拖拽？进入拖拽模式，桌面添加一个；BOX全部添加一组，并且滑动到最后一组（displayNum调节到最大）；对应的指示器也要添加一个圆点
@@ -220,26 +207,19 @@ export default {
 
       }
     },
-    // 把当前的BOX信息传入模态框
-    checkedBox: {
-      cache: true,
-      get() {
-        return this.desks[this.modal.deskIndex].boxes[this.modal.boxIndex]
-      }
-    },
     // 桌面拖拽的时候 被拖拽的BOX
     draggingBOX: {
       cache: false,
       get() {
-        return this.desks[this.draggingIndex.deskIndex].boxes[this.draggingIndex.boxIndex];
+        return this.desks[this.$store.state.draggingIndex.deskIndex].boxes[this.$store.state.draggingIndex.boxIndex];
       }
     },
     // 桌面拖拽的时候 目标BOX
     targetBOX: {
       cache: false,
       get() {
-        let ddi = this.targetIndex.deskIndex
-        let dbi = this.targetIndex.boxIndex
+        let ddi = this.$store.state.targetIndex.deskIndex
+        let dbi = this.$store.state.targetIndex.boxIndex
         return this.desks[ddi].boxes[dbi];
       }
     },
@@ -264,15 +244,16 @@ export default {
     },
   },
   methods: {
-    /**
-     * modal内部的BOX的APP被拖拽，所定位的坐标
-     * @param groupIndex
-     * @param appIndex
-     */
-    draggingIndexChange(groupIndex, appIndex) {
-      // console.log('modal内部的BOX的APP被拖拽，所定位的坐标')
-      this.draggingIndex.groupIndex = groupIndex
-      this.draggingIndex.appIndex = appIndex
+    shiftIntoModalFromOtherModal(groupIndex) {
+      console.log('shiftIntoModalFromOtherModal', '从modal拖出再从Modal中拖入');
+      let di = this.$store.state.draggingIndex;
+      let draggedAPP = this.desks[di.deskIndex].boxes[di.boxIndex].appGroups[di.groupIndex].splice(di.appIndex, 1)[0];
+      let modal = this.desks[this.modalIndex.deskIndex].boxes[this.modalIndex.boxIndex]
+      console.log(di, draggedAPP, modal)
+      modal.appGroups[groupIndex].push({
+        name: draggedAPP.name,
+        id: draggedAPP.id,
+      })
     },
     /**
      * 从Modal内部拖出APP
@@ -280,40 +261,46 @@ export default {
      * @param appIndex
      */
     shiftOutFromModal(groupIndex, appIndex) {
-      this.draggingIndex.deskIndex = this.modal.deskIndex
-      this.draggingIndex.boxIndex = this.modal.boxIndex
-      this.draggingIndex.groupIndex = groupIndex
-      this.draggingIndex.appIndex = appIndex
+      this.modalIndex.appIndex = appIndex;
+      this.modalIndex.groupIndex = groupIndex;
     },
     /**
      *  桌面的单APP，响应放入，<BoxModal\>的<Box\>之中
      *  @param groupIndex (displayNum)
      */
-    shiftIntoModal(groupIndex) {
+    shiftIntoModalFromDesk(groupIndex) {
       // 模态框定位
-      let mdi = this.modal.deskIndex;
-      let mbi = this.modal.boxIndex;
+      let mdi = this.modalIndex.deskIndex;
+      let mbi = this.modalIndex.boxIndex;
+
       // 删掉被拖拽的单位
-      let ddi = this.draggingIndex.deskIndex;
-      let dbi = this.draggingIndex.boxIndex
-      let dgi = this.draggingIndex.groupIndex
-      let dai = this.draggingIndex.appIndex
+      let ddi = this.$store.state.draggingIndex.deskIndex;
+      let dbi = this.$store.state.draggingIndex.boxIndex
+      let dgi = this.$store.state.draggingIndex.groupIndex
+      let dai = this.$store.state.draggingIndex.appIndex
+
       const draggedApp = this.desks[ddi].boxes[dbi].appGroups[dgi][dai];
       // 被拖拽的app的内容
       const app = {name: draggedApp.name, id: draggedApp.id}
-      console.log('拖入的APP是：', app.name, this.draggingIndex)
+      console.log('拖入的APP是：', app.name, '序号：', ddi, dbi, dgi, dai, 'modal序号:', mdi, mbi)
       // 把APP加入到盒子的某个APP组内
       this.desks[mdi].boxes[mbi].appGroups[groupIndex].push(app);
       // 确认目标位置
-      this.targetIndex.deskIndex = this.modal.deskIndex
-      this.targetIndex.boxIndex = this.modal.boxIndex
-      this.targetIndex.groupIndex = groupIndex
-      this.targetIndex.appIndex = this.desks[mdi].boxes[mbi].appGroups[groupIndex].length - 1;
-      // 是否移除桌面上的盒子,app个数为0，就删了他
+      this.$store.commit('setTargetIndex', {
+        deskIndex: this.modalIndex.deskIndex,
+        boxIndex: this.modalIndex.boxIndex,
+        groupIndex: groupIndex,
+        appIndex: this.desks[mdi].boxes[mbi].appGroups[groupIndex].length - 1
+      })
       this.desks[ddi].boxes[dbi].appGroups[dgi].splice(dai, 1);
-      this.
+      // 是否移除桌面上的盒子,app个数为0，就删了他
       if (this.appCounter(ddi, dbi) == 0) {
         this.desks[ddi].boxes.splice(dbi, 1);
+        // 位置也要变动啊 (要同一桌面，还要目标BOX(Modal)下标比被拖拽的boxIndex大，也就是小标往后移)
+        let adjust = dbi < mbi && ddi == mdi;
+        if (adjust) {
+          this.modalIndex.boxIndex = mbi - 1;
+        }
       }
     },
     /**
@@ -351,20 +338,20 @@ export default {
      */
     restZoneDrop($event, deskIndex) {
       console.info('落入', deskIndex)
-      let boxNum = this.desks[deskIndex].boxes.length;
+      let boxNo = this.desks[deskIndex].boxes.length;
       // const timeOver = this.desks[deskIndex].rectTimer.time > this.suspendJudgeLimit;
       if (isOuterBox(this) || isInnerBox(this)) {
         // 如果拖拽是跨桌面的，就不用前置顺序
-        let adjust = (deskIndex == this.draggingIndex.deskIndex) ? -1 : 0;
-        this.shiftBOX(deskIndex, boxNum + adjust);
+        let adjust = (deskIndex == this.$store.state.draggingIndex.deskIndex) ? -1 : 0;
+        this.shiftBOX(deskIndex, boxNo + adjust);
         this.desks[deskIndex].rectTimer.shutdown();
         // TODO
       } else if (isModalApp(this)) {
         //  如果是从Modal中或者Dock中拖入到桌面
-        this.modalAppIntoDesk(deskIndex, boxNum);
+        this.modalAppIntoDesk(deskIndex, boxNo);
       } else if (isDockApp(this)) {
         //  如果是从Modal中或者Dock中拖入到桌面
-        this.dockAppIntoDesk(deskIndex, boxNum);
+        this.dockAppIntoDesk(deskIndex, boxNo);
       }
     },
 
@@ -379,8 +366,8 @@ export default {
         console.info('当前正在移动BOX，或者切换桌面')
         return;
       }
-      let boxIndex = this.draggingIndex.boxIndex;
-      let deskIndex = this.draggingIndex.deskIndex;
+      let boxIndex = this.$store.state.draggingIndex.boxIndex;
+      let deskIndex = this.$store.state.draggingIndex.deskIndex;
       if (boxIndex == targetBI && deskIndex == targetDI) {
         console.warn('不可以挤压自己，置换自己')
         this.movingBox = false;
@@ -388,8 +375,10 @@ export default {
       }
       let reset = () => {
         // 置换后腰修改draggingIndex的数据
-        this.draggingIndex.deskIndex = targetDI;
-        this.draggingIndex.boxIndex = targetBI;
+        this.$store.commit('setDraggingIndex', {
+          deskIndex: targetDI,
+          boxIndex: targetBI,
+        })
         this.locateBOX();
         // 移动结束了
         setTimeout(() => {
@@ -400,7 +389,7 @@ export default {
       // 开始移动BOX
       this.movingBox = true;
       // TODO 暂时不考虑挤压效果
-      if (targetDI == this.draggingIndex.deskIndex) {
+      if (targetDI == deskIndex) {
         // 移动方向 true为向右下移动，也就是下标增大；反之就是 下标减小，向左上方移动
         let moveToHigher = boxIndex < targetBI && boxIndex != targetBI;
         let moveToLower = boxIndex > targetBI && boxIndex != targetBI;
@@ -433,11 +422,11 @@ export default {
      */
     modalAppIntoDesk(deskIndex, boxIndex) {
       console.log('从modal中拖出，放入到桌面上')
-      let dgi = this.draggingIndex.groupIndex;
-      let dai = this.draggingIndex.appIndex;
-      let appGroups = this.checkedBox.appGroups;
+      let dgi = this.$store.state.draggingIndex.groupIndex;
+      let dai = this.$store.state.draggingIndex.appIndex;
+      let appGroups = this.desks[this.modalIndex.deskIndex].boxes[this.modalIndex.boxIndex].appGroups;
       let app = appGroups[dgi][dai];
-      console.log(this.checkedBox, app, dgi, dai)
+      console.log(appGroups, app, dgi, dai)
       let insertBox = {
         id: uuidv4(),
         name: app.name,
@@ -455,8 +444,12 @@ export default {
       // 在桌面appGroups.[deskIndex].boxes[boxIndex]上追加盒子
       this.desks[deskIndex].boxes.splice(boxIndex, 0, insertBox);
       // 如果被删掉的盒子所在组只有他一个app的话,删掉该组
-      if (appGroups[dgi].length = 1) {
+      if (appGroups[dgi].length == 1) {
         appGroups.splice(dgi, 1)
+        // 改变现实的组号
+        this.modalIndex.deskIndex = deskIndex;
+        this.modalIndex.boxIndex = boxIndex;
+        this.$refs['modal'].box.displayNum--;
       } else {
         // 如果不是只剩一个，就删除单个app
         appGroups[dgi].splice(dai, 1)
@@ -477,8 +470,8 @@ export default {
       let appCount = this.appCounter(deskIndex, boxIndex)
       if (appCount > 1) {
         window.setTimeout(() => {
-          this.modal.deskIndex = deskIndex;
-          this.modal.boxIndex = boxIndex;
+          this.modalIndex.deskIndex = deskIndex;
+          this.modalIndex.boxIndex = boxIndex;
           this.$refs["modal"].toggle();
         }, 10);
       }
@@ -491,13 +484,12 @@ export default {
      */
     // 被点击的BOX会弹出模态框，同时BOX消失
     checkedBOXStyle(deskIndex, boxIndex) {
+      let modal = this.$refs['modal'];
       let checkedFlag =
-        (this.$refs["modal"] && this.$refs["modal"].showModal) &&
-        this.modal.deskIndex == deskIndex &&
-        this.modal.boxIndex == boxIndex;
-      return {
-        "opacity": checkedFlag ? 0 : 1
-      }
+        (modal && modal.$data['showModal']) &&
+        this.modalIndex.deskIndex == deskIndex &&
+        this.modalIndex.boxIndex == boxIndex;
+      return {"opacity": checkedFlag ? 0 : 1}
     },
 
     /**

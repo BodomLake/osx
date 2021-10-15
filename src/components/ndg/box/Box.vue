@@ -74,15 +74,6 @@ export default {
       // 正在移动app
       movingApp: false,
       groupShifting: false,
-      // APP定位
-      draggingIndex: {
-        groupIndex: 0,
-        appIndex: 0,
-      },
-      targetIndex: {
-        groupIndex: 0,
-        appIndex: 0,
-      },
     };
   },
   computed: {
@@ -162,8 +153,8 @@ export default {
     draggingApp: {
       cache: false,
       get() {
-        let gid = this.draggingIndex.groupIndex;
-        let aid = this.draggingIndex.appIndex;
+        let gid = this.$store.state.draggingIndex.groupIndex;
+        let aid = this.$store.state.draggingIndex.appIndex;
         return this.appGroups[gid][aid]
       }
     },
@@ -171,8 +162,8 @@ export default {
     targetApp: {
       cache: false,
       get() {
-        let gid = this.targetIndex.groupIndex
-        let aid = this.targetIndex.appIndex
+        let gid = this.$store.state.targetIndex.groupIndex
+        let aid = this.$store.state.targetIndex.appIndex
         return this.appGroups[gid][aid]
       }
     },
@@ -255,8 +246,8 @@ export default {
         console.info('当前正在移动App，或者切换Group')
         return;
       }
-      let appIndex = this.draggingIndex.appIndex;
-      let groupIndex = this.draggingIndex.groupIndex;
+      let appIndex = this.$store.state.draggingIndex.appIndex;
+      let groupIndex = this.$store.state.draggingIndex.groupIndex;
       if (groupIndex == targetGI && appIndex == targetAI) {
         console.warn('不可以挤压自己，置换自己')
         this.movingApp = false;
@@ -264,8 +255,10 @@ export default {
       }
       let reset = () => {
         // 置换后，要修改draggingIndex的数据
-        this.draggingIndex.groupIndex = targetGI;
-        this.draggingIndex.appIndex = targetAI;
+        this.$store.commit('setDraggingIndex', {
+          groupIndex: targetGI,
+          appIndex: targetAI,
+        })
         this.setApps();
         // 移动结束了
         setTimeout(() => {
@@ -275,7 +268,7 @@ export default {
       }
       // 开始移动App
       this.movingApp = true;
-      if (targetGI == this.draggingIndex.groupIndex) {
+      if (targetGI == this.$store.state.draggingIndex.groupIndex) {
         // 移动方向 true为向右下移动，也就是下标增大；反之就是 下标减小，向左上方移动
         let moveToHigher = appIndex < targetAI && appIndex != targetAI;
         let moveToLower = appIndex > targetAI && appIndex != targetAI;

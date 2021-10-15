@@ -7,8 +7,8 @@ export default {
   },
   methods: {
     outerDragOver($event, deskIndex, boxIndex) {
-      let dbi = this.draggingIndex.boxIndex
-      let ddi = this.draggingIndex.deskIndex
+      let dbi = this.$store.state.draggingIndex.boxIndex
+      let ddi = this.$store.state.draggingIndex.deskIndex
       console.info(deskIndex, boxIndex)
       let box = this.desks[deskIndex].boxes[boxIndex]
       // 判定是否在rect范围之内
@@ -30,17 +30,25 @@ export default {
         }
       }
     },
+    /**
+     * outerDragEnter 进入外层
+     * @param $event
+     * @param deskIndex
+     * @param boxIndex
+     */
     outerDragEnter($event, deskIndex, boxIndex) {
       $event.stopPropagation()
       $event.preventDefault()
-      this.targetIndex.deskIndex = deskIndex
-      this.targetIndex.boxIndex = boxIndex
-      let notSelf = this.draggingIndex.deskIndex != deskIndex || this.draggingIndex.boxIndex != boxIndex
-      let box = this.desks[deskIndex].boxes[boxIndex]
-      // console.info('drag-enter拖入', deskIndex, boxIndex, $event.target)
-
+      console.log('外框')
+      this.$store.commit('setTargetIndex', {
+        deskIndex: deskIndex,
+        boxIndex: boxIndex,
+      })
+      let notSelf = this.$store.state.draggingIndex.deskIndex != deskIndex || this.$store.state.draggingIndex.boxIndex != boxIndex;
+      console.log('dragEnter', deskIndex, boxIndex, this.$store.state.draggingIndex.boxIndex)
       if (notSelf) {
         console.info("box外框开始计时")
+        let box = this.desks[deskIndex].boxes[boxIndex]
         // TODO 要注意的是：鼠标从内框进入外框，需要暂停 innerSuspendTimer 的计时
         box.outerSuspendTimer.start()
         box.innerSuspendTimer.pause()
@@ -94,8 +102,9 @@ export default {
     ome($event, deskIndex, boxIndex) {
       let isApp = this.appCounter(deskIndex, boxIndex) == 1
       if (!this.$refs["modal"].showModal && !isApp) {
-        this.modal.deskIndex = deskIndex
-        this.modal.boxIndex = boxIndex
+        this.modalIndex.deskIndex = deskIndex;
+        this.modalIndex.boxIndex = boxIndex;
+        console.log( deskIndex, boxIndex, this.$refs["modal"].$props['modalIndex'])
       }
     },
     /**

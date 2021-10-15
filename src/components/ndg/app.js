@@ -83,7 +83,7 @@ export var desks = [
       },
       {
         id: "8c28ff131afc4a809db6fa7c1f9888ba",
-        name: "0-1",
+        name: "QQ",
         appGroups: [
           [
             {
@@ -97,7 +97,7 @@ export var desks = [
       },
       {
         id: "834684d7db3d40f09838a8b78e78fa1d",
-        name: "0-2",
+        name: "微信",
         appGroups: [
           [
             {
@@ -129,7 +129,7 @@ export var desks = [
       },
       {
         id: "b7daa12e83a14230b6c19bdacafc4c42",
-        name: "0-4",
+        name: "高德地图",
         appGroups: [
           [
             {
@@ -143,7 +143,7 @@ export var desks = [
       },
       {
         id: "7e96a648423a4b809cce4166b55a370f",
-        name: "0-5",
+        name: "知乎",
         appGroups: [
           [
             {
@@ -157,7 +157,7 @@ export var desks = [
       },
       {
         id: "3b6d51ea11274374bdc17a475658ae76",
-        name: "0-6",
+        name: "钉钉",
         appGroups: [
           [
             {
@@ -170,22 +170,8 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "1617791e1ab64568a92433f3a686cbd4",
-        name: "0-7",
-        appGroups: [
-          [
-            {
-              name: "sougoup",
-              id: "51680290780b412d801a3b5893ef5a1c"
-            }
-          ]
-        ],
-
-        groupAppLimit: 9
-      },
-      {
         id: "971c84fd0aae4d40816f170841498ee2",
-        name: "0-8",
+        name: "饿了么",
         appGroups: [
           [
             {
@@ -199,7 +185,7 @@ export var desks = [
       },
       {
         id: "42883f8f1f104162aae7c7adb2fcd710",
-        name: "0-9",
+        name: "哔哩哔哩",
         appGroups: [
           [
             {
@@ -213,7 +199,7 @@ export var desks = [
       },
       {
         id: "d1990732d1df4666adaa7636b41be54f",
-        name: "0-10",
+        name: "搜狐",
         appGroups: [
           [
             {
@@ -227,7 +213,7 @@ export var desks = [
       },
       {
         id: "bae1ea1067704bfa812a7921c12e8e19",
-        name: "0-11",
+        name: "中国电信",
         appGroups: [
           [
             {
@@ -241,7 +227,7 @@ export var desks = [
       },
       {
         id: "929d4fe2ce5644b1b1f1d755ab69e750",
-        name: "0-12",
+        name: "中国联通",
         appGroups: [
           [
             {
@@ -255,7 +241,7 @@ export var desks = [
       },
       {
         id: "58b3215cfc744f2592a6f6ff6bd69992",
-        name: "0-13",
+        name: "国泰君安证券",
         appGroups: [
           [
             {
@@ -268,22 +254,8 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "f05bde141cda4f11832ed415fa6e4ebe",
-        name: "0-14",
-        appGroups: [
-          [
-            {
-              name: "nongyeyinhang",
-              id: "4fac11a6570e4875b48036b12ddecc9b"
-            }
-          ]
-        ],
-
-        groupAppLimit: 9
-      },
-      {
         id: "cf012f2148614a9d81ccf08915b04912",
-        name: "0-15",
+        name: "咸鱼",
         appGroups: [
           [
             {
@@ -308,7 +280,7 @@ export var desks = [
     boxes: [
       {
         id: "77599f8763da4a40818067f887eb951e",
-        name: "1-0",
+        name: "京东商城",
         appGroups: [
           [
             {
@@ -322,7 +294,7 @@ export var desks = [
       },
       {
         id: "d959625c7d3a42659710e9a80a7a660f",
-        name: "1-1",
+        name: "雪球",
         appGroups: [
           [
             {
@@ -335,22 +307,8 @@ export var desks = [
         groupAppLimit: 9
       },
       {
-        id: "520745bf61aa4be4b66f7b6f9159cea0",
-        name: "1-2",
-        appGroups: [
-          [
-            {
-              name: "git1",
-              id: "81216033be9e4808bf80ecdbb489bb88"
-            }
-          ]
-        ],
-
-        groupAppLimit: 9
-      },
-      {
         id: "e88b8ffdb5e54326a9123f169004e808",
-        name: "1-3",
+        name: "工商银行",
         appGroups: [
           [
             {
@@ -364,7 +322,7 @@ export var desks = [
       },
       {
         id: "385c82d742e1453595cc5adb181c3952",
-        name: "1-4",
+        name: "建设银行",
         appGroups: [
           [
             {
@@ -378,7 +336,7 @@ export var desks = [
       },
       {
         id: "94100926be4745aea575d2d01854e4bf",
-        name: "1-5",
+        name: "中国银行",
         appGroups: [
           [
             {
@@ -392,7 +350,7 @@ export var desks = [
       },
       {
         id: "af7fd5a1fa8e44399fcea3255330263b",
-        name: "1-6",
+        name: "北京银行",
         appGroups: [
           [
             {
@@ -406,7 +364,7 @@ export var desks = [
       },
       {
         id: "a9195052f5d040809f3f69313eb4c781",
-        name: "1-7",
+        name: "支付宝",
         appGroups: [
           [
             {
@@ -420,7 +378,7 @@ export var desks = [
       },
       {
         id: "cf8de61be90041d6a69aaa5bde01b22a",
-        name: "1-8",
+        name: "计算器",
         appGroups: [
           [
             {
@@ -432,22 +390,9 @@ export var desks = [
 
         groupAppLimit: 9
       },
-      {
-        id: "bbafeca7ae2f4823ad2023aa6396fd4e",
-        name: "1-9",
-        appGroups: [
-          [
-            {
-              name: "dongfangcaifuwang",
-              id: "d126d93dcc774f5c8fc3a96d8d68da55"
-            }
-          ]
-        ],
-        groupAppLimit: 9
-      },
        {
          id: "988203440c8c466a9faac310556f5f42",
-         name: "11",
+         name: "同花顺",
          appGroups: [
            [{
              name: "tonghuashun",
@@ -460,6 +405,71 @@ export var desks = [
     ],
     name: "2个桌面",
     id: "7e6473d2fcda4e27bb5272ebdccdaa6a",
+    rect1: uuidv4(),
+    rect2: uuidv4(),
+    rectTimer: new Timer()
+  },
+  {
+    order: 3,
+    boxes: [
+      {
+        id: "60eaeb77d3964b5b81ff2b057456d577",
+        name: "搜狗",
+        appGroups: [
+          [
+            {
+              name: "sougoup",
+              id: "d1c1052275c84ff489d4bf1055963d7b"
+            }
+          ],
+
+        ],
+        groupAppLimit: 9
+      },
+      {
+        id: "f05bde141cda4f11832ed415fa6e4ebe",
+        name: "农业银行",
+        appGroups: [
+          [
+            {
+              name: "nongyeyinhang",
+              id: "4fac11a6570e4875b48036b12ddecc9b"
+            }
+          ]
+        ],
+
+        groupAppLimit: 9
+      },
+      {
+        id: "bbafeca7ae2f4823ad2023aa6396fd4e",
+        name: "东方财富网",
+        appGroups: [
+          [
+            {
+              name: "dongfangcaifuwang",
+              id: "d126d93dcc774f5c8fc3a96d8d68da55"
+            }
+          ]
+        ],
+        groupAppLimit: 9
+      },
+      {
+        id: "520745bf61aa4be4b66f7b6f9159cea0",
+        name: "Git-Hub",
+        appGroups: [
+          [
+            {
+              name: "git1",
+              id: "81216033be9e4808bf80ecdbb489bb88"
+            }
+          ]
+        ],
+
+        groupAppLimit: 9
+      },
+    ],
+    name: "3个桌面",
+    id: "9cd9d2b1bef94efbb68e7316b5f992c9",
     rect1: uuidv4(),
     rect2: uuidv4(),
     rectTimer: new Timer()

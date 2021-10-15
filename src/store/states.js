@@ -7,16 +7,16 @@ export default {
   targetDOM: {},
   // 被拖拽的APP坐标
   draggingIndex: {
-    deskIndex: undefined,
-    boxIndex: undefined,
-    groupIndex: undefined,
-    appIndex: undefined,
+    deskIndex: 0,
+    boxIndex: 0,
+    groupIndex: 0,
+    appIndex: 0,
   },
   // 被置换APP的坐标
   targetIndex: {
-    deskIndex: undefined,
-    boxIndex: undefined,
-    groupIndex: undefined,
-    appIndex: undefined,
+    deskIndex: 0,
+    boxIndex: 0,
+    groupIndex: 0,
+    appIndex: 0,
   },
 }

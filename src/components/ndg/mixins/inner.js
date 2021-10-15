@@ -15,12 +15,16 @@ export default {
       this.isDragging = true
       $event.stopPropagation()
       // 定位坐标
-      this.draggingIndex.deskIndex = deskIndex
-      this.draggingIndex.boxIndex = boxIndex
-      // 默认为0 0 ，默认被拖拽的是单app，或者
-      this.draggingIndex.groupIndex = 0
-      this.draggingIndex.appIndex = 0
+      this.$store.commit('setDraggingIndex', {
+        deskIndex: deskIndex,
+        boxIndex: boxIndex,
+        // 默认为0 0 ，默认被拖拽的是单app，或者
+        groupIndex: 0,
+        appIndex: 0
+      })
+      // 定位被拖拽的DOM元素
       this.$store.commit('setDraggingDOM', $event.target);
+
       // 方格内显示几个app？
       let boxDisplayNum = this.desks[deskIndex].boxes[boxIndex].displayNum
       // 找到被拖拽的元素
@@ -40,12 +44,13 @@ export default {
     boxDrop($event, deskIndex, boxIndex) {
       console.info('drop', deskIndex, boxIndex)
       let targetBox = this.desks[deskIndex].boxes[boxIndex]
-      this.targetIndex.deskIndex = deskIndex
-      this.targetIndex.boxIndex = boxIndex
-      let ddi = this.draggingIndex.deskIndex
-      let dbi = this.draggingIndex.boxIndex
-      console.info(deskIndex, boxIndex,
-        targetBox.innerSuspendTimer.time, targetBox.outerSuspendTimer.time)
+      this.$store.commit('setTargetIndex', {
+        deskIndex: deskIndex,
+        boxIndex: boxIndex,
+      })
+      let ddi = this.$store.state.draggingIndex.deskIndex
+      let dbi = this.$store.state.draggingIndex.boxIndex
+      console.info(deskIndex, boxIndex, targetBox.innerSuspendTimer.time, targetBox.outerSuspendTimer.time)
       let inDuration = inRegion(targetBox.innerSuspendTimer.time, this.suspendJudgeLimit, this.dragIntoTimeLimit)
       // 被拖拽的是单个app
       let isSingleApp = this.appCounter(ddi, dbi) == 1
@@ -66,9 +71,10 @@ export default {
     boxDragEnter($event, deskIndex, boxIndex) {
       $event.stopPropagation()
       $event.preventDefault()
-      let notSelf = this.draggingIndex.deskIndex != deskIndex || this.draggingIndex.boxIndex != boxIndex
-      let box = this.desks[deskIndex].boxes[boxIndex]
+      console.log('内框')
+      let notSelf = this.$store.state.draggingIndex.deskIndex != deskIndex || this.$store.state.draggingIndex.boxIndex != boxIndex
       if (notSelf) {
+        let box = this.desks[deskIndex].boxes[boxIndex]
         // TODO 要注意的是：鼠标从外框进入内框，需要暂停 outerSuspendTimer 的计时
         console.info("box内框开始计时", $event.target)
         box.innerSuspendTimer.start()
@@ -95,18 +101,24 @@ export default {
     boxDragOver($event, deskIndex, boxIndex) {
       $event.preventDefault()
       $event.stopPropagation()
-      this.targetIndex.deskIndex = deskIndex
-      this.targetIndex.boxIndex = boxIndex
-      let dbi = this.draggingIndex.boxIndex
-      let ddi = this.draggingIndex.deskIndex
+      let setPosition = () => {
+        this.$store.commit('setTargetIndex', {
+          deskIndex: deskIndex,
+          boxIndex: boxIndex,
+        })
+        this.modalIndex.deskIndex = deskIndex;
+        this.modalIndex.boxIndex = boxIndex;
+      }
+      let dbi = this.$store.state.draggingIndex.boxIndex
+      let ddi = this.$store.state.draggingIndex.deskIndex
       let box = this.desks[deskIndex].boxes[boxIndex]
       // 判定是否在rect范围之内,被拖拽的盒子内含app数量也不可以大于1，大于1属于文件夹，只能移动位置；
       const selfCover = (deskIndex == ddi && boxIndex == dbi);
       // 被拖拽的是本来做出上一个状态的时候就是桌面BOX，并且该BOX要是内涵APP数量大于1，就不能让他对目标有悬停放大的效果
       // 被拖拽的只能是桌面上单个APP，以及DOCKAPP，还有Modal-BOX内部单个APP
-      const isFolderInDesk = this.appCounter(ddi, dbi) > 1 && (isOuterBox(this) || isInnerBox(this)) ;
+      const draggedIsFolderInDesk = this.appCounter(ddi, dbi) > 1 && (isOuterBox(this) || isInnerBox(this));
       console.info("定位到目标盒子", deskIndex, boxIndex, box.innerSuspendTimer.time, ddi, dbi)
-      if (selfCover || isFolderInDesk) {
+      if (selfCover || draggedIsFolderInDesk) {
         return;
       }
       // 第一步，准备拖入放大BOX，也就是准备打开Modal
@@ -115,9 +127,9 @@ export default {
       const step2 = box.innerSuspendTimer.time > 500 && this.$refs["modal"].$data['showModal'] == false
       if (step1 && box.covered == false) {
         box.covered = true
-        this.modal.deskIndex = deskIndex
-        this.modal.boxIndex = boxIndex
+        setPosition();
       } else if (step2) {
+        setPosition()
         box.covered = false
         window.setTimeout(() => {
           box.innerSuspendTimer.shutdown()

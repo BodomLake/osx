@@ -25,7 +25,8 @@
       <ShiftZone orientation="left" :flowOver="isDragging" @switchUnit="switchUnit" :delaySwitchTime="400"></ShiftZone>
       <div class="ndg-modal-content">
         <Box v-model="box" :enableDrag="enableDrag" :showAppName='true' :appliedInModal="showModal"
-             @shiftIntoModal="shiftIntoModal" @draggingIndexChange="draggingIndexChange"></Box>
+             @shiftIntoModalFromDesk="shiftIntoModalFromDesk"
+             @shiftIntoModalFromOtherModal="shiftIntoModalFromOtherModal"></Box>
       </div>
       <ShiftZone orientation="right" :flowOver="isDragging" @switchUnit="switchUnit" :delaySwitchTime="400"></ShiftZone>
       <Indicator v-model="box"></Indicator>
@@ -53,34 +54,51 @@ export default {
   created() {
   },
   props: {
-    box: {
-      type: Object,
+    desks: {
+      type: Array,
       require: true,
       default: () => {
-        return {
-          id: "",
-          name: "",
-          appGroups: [
-            [
-              {
-                name: "",
-                id: ""
-              }
-            ]
-          ],
-          displayNum: 0,
-          groupAppLimit: 9,
-          DOMRect: {
-            width: 0,
-            height: 0
-          },
-          outerDOMRect: {
-            width: 0,
-            height: 0
-          },
-        };
       }
     },
+    modalIndex: {
+      type: Object,
+      default: () => {
+        return {
+          deskIndex: 0,
+          boxIndex: 0,
+          groupIndex: 0,
+          appIndex: 0,
+        }
+      }
+    },
+    /*    box: {
+          type: Object,
+          require: true,
+          default: () => {
+            return {
+              id: "",
+              name: "",
+              appGroups: [
+                [
+                  {
+                    name: "",
+                    id: ""
+                  }
+                ]
+              ],
+              displayNum: 0,
+              groupAppLimit: 9,
+              DOMRect: {
+                width: 0,
+                height: 0
+              },
+              outerDOMRect: {
+                width: 0,
+                height: 0
+              },
+            };
+          }
+        },*/
     name: {
       type: String,
       default: () => {
@@ -121,7 +139,7 @@ export default {
     },
   },
   model: {
-    prop: "box",
+    prop: "desks",
     event: "change"
   },
   watch: {
@@ -149,19 +167,13 @@ export default {
       toggleTimer: null,
       // 计时器，判断是否要关闭当前modal
       modalSuspendTimer: new Timer(),
-      // APP定位
-      draggingIndex: {
-        groupIndex: 0,
-        appIndex: 0,
-      },
-      targetIndex: {
-        groupIndex: 0,
-        appIndex: 0,
-      },
     };
   },
   mixins: [mixin],
   computed: {
+    box() {
+      return this.desks[this.modalIndex.deskIndex].boxes[this.modalIndex.boxIndex];
+    },
     // 初始化的位置和尺寸
     initRect() {
       return {
@@ -176,7 +188,6 @@ export default {
         "--duration-time": this.duration + "ms"
       };
     },
-
   },
   mounted() {
     window.addEventListener("resize", $event => {
@@ -187,7 +198,7 @@ export default {
         // console.info("模态框重置destPos");
         this.destRect = this.calcModalRect(this.portrait);
         this.scaleRatio = this.calcRatio(this.portrait);
-      }, 200);
+      }, 1000);
     });
   },
   updated() {
@@ -208,6 +219,14 @@ export default {
     }, debounceTime);
   },
   methods: {
+    setModalIndex(index) {
+      console.log('定位Modal的index')
+      Object.keys(this.modalIndex).forEach(key => {
+        if (index[key]) {
+          this.modalIndex[key] = index[key]
+        }
+      })
+    },
     // 打开模态框
     toggle() {
       this.$forceUpdate();
@@ -216,21 +235,18 @@ export default {
         clearTimeout(this.resizeTimer);
       }
       this.toggleTimer = setTimeout(() => {
-        if (!this.showModal) {
-          // 模态框开启动画
+        if (!this.showModal) {         // 模态框开启动画
           document.querySelector("div#ndg-modal").style.zIndex = 10;
           modalContent.classList.add("popAnime");
           modalContent.style.zIndex = 9999;
           setTimeout(() => {
           }, this.duration);
-        } else {
-          // 模态框关闭动画
+        } else {                      // 模态框关闭动画
           modalContent.classList.remove("popAnime");
           modalContent.classList.add("closeAnime");
           setTimeout(() => {
             modalContent.classList.remove("closeAnime");
             document.querySelector("div#ndg-modal").style.zIndex = -1;
-            // 恢复模态框的普通开关行为
           }, this.duration);
         }
         // 修改状态
@@ -265,6 +281,12 @@ export default {
       };
     },
     calcRatio() {
+      if (!this.box) {
+        return {
+          "--ratioX": 1,
+          "--ratioY": 1
+        };
+      }
       let vmin = Math.min(window.innerHeight, window.innerWidth) / 100;
       let vmax = Math.max(window.innerHeight, window.innerWidth) / 100;
       let destWidth = this.modalSize.width * vmin;
@@ -277,14 +299,12 @@ export default {
         "--ratioY": destHeight / initHeight
       };
     },
-    shiftIntoModal(groupIndex) {
-      this.$emit('shiftIntoModal', groupIndex)
+    shiftIntoModalFromDesk(groupIndex) {
+      this.$emit('shiftIntoModalFromDesk', groupIndex)
     },
-    draggingIndexChange(groupIndex, appIndex) {
-      this.draggingIndex.groupIndex = groupIndex
-      this.draggingIndex.appIndex = appIndex
-      this.$emit('draggingIndexChange', groupIndex, appIndex);
-    }
+    shiftIntoModalFromOtherModal(groupIndex) {
+      this.$emit('shiftIntoModalFromOtherModal', groupIndex)
+    },
   }
 };
 </script>
