@@ -1,7 +1,7 @@
 <template>
   <div class="time">
-    <div style="display: inline">{{currentDate}}</div>
-    <div style="display: inline">{{currentTime}}</div>
+    <!--<div style="display: inline; font-size: 12px;">{{ currentDate }}</div>-->
+    <div style="display: inline; font-size: 12px; color: white">{{week}} {{ currentTime }}</div>
   </div>
 </template>
 
@@ -9,12 +9,12 @@
 import {Timer} from "@/components/ndg/timer";
 
 let calender = new Date();
-const weeks = ['星期天', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六',]
+const weeks = ['周天', '周一', '周二', '周三', '周四', '周五', '周六',]
 export default {
   name: "Time",
   data() {
     return {
-      timer: new Timer(),
+      timer: {},
       calender: calender,
       day: calender.getDay(),
       year: calender.getFullYear(),
@@ -34,19 +34,23 @@ export default {
       return hour + ':' + min + ':' + sec
     },
     currentDate() {
-      let week = weeks[this.day];
       let month = this.month < 10 ? '0' + this.month : this.month;
       let day = this.date < 10 ? '0' + this.date : this.date;
-      return this.year + '-' + month + '-' + day;
+      return this.year + '-' + month + '-' + day + ' ' + this.week;
     },
+    week() {
+      return weeks[this.day];
+    }
   },
   created() {
-    setInterval(() => {
+    // 每隔一秒钟更新一次
+    this.timer = setInterval(() => {
       this.updateTime()
     }, 1000)
   },
   methods: {
     updateTime() {
+      // 当下时间
       let now = new Date();
       this.year = now.getFullYear();
       this.month = now.getMonth() + 1;
@@ -57,12 +61,11 @@ export default {
       this.sec = now.getSeconds();
       this.day = now.getDay();
     },
-    resolveZero(){
+    resolveZero() {
 
     }
   },
-  filters: {
-  }
+  filters: {}
 }
 </script>
 
