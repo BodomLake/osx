@@ -1,7 +1,22 @@
 export default {
   name: 'listener',
   data() {
-    return {}
+    return {
+      // 长按情况
+      longPress: {
+        timer: 0,
+        moveFlag: false,
+        flag: false,
+        startPos: {
+          x: 0,
+          y: 0
+        },
+        endPos: {
+          x: 0,
+          y: 0
+        }
+      },
+    }
   },
   mounted() {
     // 定位，格式化，初始化
@@ -51,16 +66,33 @@ export default {
     window.addEventListener("touchend", $event => {
       if (this.$refs["modal"].showModal) this.$refs["modal"].toggle()
     })
-    // 初始化长按状态
-    window.addEventListener("mousedown", $event => {
+    // 双击退出拉拽模式
+    window.addEventListener("dblclick", $event => {
+      this.longPress.flag = false
+      this.longPress.moveFlag = false
+      this.isDragging = false
+      this.enableDrag = false
+      this.locateBOX()
+    })
+  },
+  methods: {
+    /**
+     * 初始化长按状态
+     * @param $event
+     */
+    initLongPressStat($event) {
+      // debugger;
       this.longPress.timer = Date.now()
       this.longPress.moveFlag = false
       this.longPress.flag = false
       this.longPress.startPos.x = $event.clientX
       this.longPress.startPos.y = $event.clientY
-    })
-    // 判断是否进入长按，长按就意味着要使用拖拽模式
-    window.addEventListener("mouseup", $event => {
+    },
+    /**
+     * 判断是否进入长按，长按就意味着要使用拖拽模式
+     * @param $event
+     */
+    judgeLongPressStat($event) {
       this.longPress.endPos.x = $event.clientX
       this.longPress.endPos.y = $event.clientY
       let delta = Date.now() - this.longPress.timer
@@ -87,14 +119,7 @@ export default {
       } else {
         // console.info(this.longPress.moveFlag ? "已经移动了" : "鼠标未移动")
       }
-    })
-    // 双击退出拉拽模式
-    window.addEventListener("dblclick", $event => {
-      this.longPress.flag = false
-      this.longPress.moveFlag = false
-      this.isDragging = false
-      this.enableDrag = false
-      this.locateBOX()
-    })
-  },
+
+    },
+  }
 }

@@ -8,14 +8,11 @@ export default {
     state.targetDOM = dom;
   },
   setDraggingIndex(state, index) {
-
     Object.keys(state.draggingIndex).forEach(key => {
       if (index[key]) {
         state.draggingIndex[key] = index[key]
       }
     })
-    // console.log('定位被拖拽的index', state.draggingIndex.deskIndex, state.draggingIndex.boxIndex,
-    //   state.draggingIndex.groupIndex, state.draggingIndex.appIndex)
   },
   setTargetIndex(state, index) {
     // console.log('定位目标index')

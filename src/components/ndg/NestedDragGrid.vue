@@ -10,8 +10,9 @@
          @mousedown="mousedown($event)" @mousemove="mousemove($event)">
       <!-- 多个桌面 -->
       <template v-for="(desk, i) in desks">
-        <div class="ndg-desktop" :key="desk.id" :id="desk.id" :data-di="i">
-          <transition-group tag="div" :draggable="isDragging" class="ndg-container" name="ndg-outer-shift"
+        <div class="ndg-desktop" :key="desk.id" :id="desk.id" :data-di="i"
+             @mousedown="initLongPressStat($event)" @mouseup="judgeLongPressStat($event)">
+          <transition-group tag="div" draggable="false" class="ndg-container" name="ndg-outer-shift"
                             :duration="switchDuration" :data-di="i">
             <template v-for="(box, j) in desk.boxes">
               <div class="ndg-outer" :style="[gridSize]" :key="box.id" :data-di="i" :data-bi="j"
@@ -41,15 +42,15 @@
                 </div>
               </div>
             </template>
-            <div :id="desk.rect1" :key="desk.rect1" name="rect1"
+            <div :id="desk.rect1" :key="desk.rect1" name="rect1" draggable="false"
                  @dragenter="restZoneDragEnter($event, i)" @dragleave="restZoneDragLeave($event, i, 1)"
                  @dragover="restZoneDragOver($event, i)" @drop="restZoneDrop($event, i)"
                  :style="{'max-height': gridSize['--gh'], 'min-height': gridSize['--gh'], 'width': rectArr1[i] }">
             </div>
-            <div :id="desk.rect2" :key="desk.rect2" name="rect2" style="height: 100%"
+            <div :id="desk.rect2" :key="desk.rect2" name="rect2" draggable="false"
                  @dragenter="restZoneDragEnter($event, i)" @dragleave="restZoneDragLeave($event, i, 2)"
                  @dragover="restZoneDragOver($event, i)" @drop="restZoneDrop($event, i)"
-                 :style="{'width': '100%','min-height': rectArr2[i]}">
+                 :style="{'width': '100%','min-height': rectArr2[i], 'height': '100%'}">
             </div>
           </transition-group>
         </div>
@@ -179,20 +180,7 @@ export default {
       deskSwitching: false,
       // 重置尺寸计时器
       resizeTimer: null,
-      // 长按情况
-      longPress: {
-        timer: 0,
-        moveFlag: false,
-        flag: false,
-        startPos: {
-          x: 0,
-          y: 0
-        },
-        endPos: {
-          x: 0,
-          y: 0
-        }
-      },
+
       // 鼠标移动计时器
       mouseMoveFlag: true,
       mouse: {
