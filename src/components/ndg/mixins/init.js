@@ -67,7 +67,8 @@ export default {
       let row = this.layout.row
       this.desks.forEach((desk, did) => {
         let boxNum = desk.boxes.length
-        let height = (row - Math.ceil(boxNum / col)) / row * 100 + '%'
+        // let height = (row - Math.ceil(boxNum / col)) / row * 100 + '%'
+        let height = (row - Math.ceil(boxNum / col)) / row  * 75 + 'vh'
         arr.push(height)
       })
       return arr

@@ -342,7 +342,7 @@ export default {
 }
 
 .ndg-app {
-//border: 0.5px skyblue groove; box-sizing: border-box; flex-grow: 1; border-radius: 3%; cursor: pointer; position: relative;
+/*border: 0.5px skyblue groove; box-sizing: border-box; flex-grow: 1; border-radius: 3%; cursor: pointer; position: relative;*/
   /* 限制宽度 */
   min-width: calc(calc(100% / 3));
   max-width: calc(calc(100% / 3));

@@ -1,5 +1,6 @@
 <template>
   <div class="ndg">
+    <top-bar></top-bar>
     <!-- 上下左右固定的盒子，拖入就会发生桌面位移，isDragging表示主界面的盒子拖动了，这些四周的固定盒子才允许被拖入 -->
     <shift-zone orientation="left" :flowOver="isDragging" @switchUnit="switchUnit" :size="3"></shift-zone>
     <shift-zone orientation="right" :flowOver="isDragging" @switchUnit="switchUnit" :size="3"></shift-zone>
@@ -45,10 +46,10 @@
                  @dragover="restZoneDragOver($event, i)" @drop="restZoneDrop($event, i)"
                  :style="{'max-height': gridSize['--gh'], 'min-height': gridSize['--gh'], 'width': rectArr1[i] }">
             </div>
-            <div :id="desk.rect2" :key="desk.rect2" name="rect2" style="height: auto"
+            <div :id="desk.rect2" :key="desk.rect2" name="rect2" style="height: 100%"
                  @dragenter="restZoneDragEnter($event, i)" @dragleave="restZoneDragLeave($event, i, 2)"
                  @dragover="restZoneDragOver($event, i)" @drop="restZoneDrop($event, i)"
-                 :style="{'width': '100%','height': rectArr2[i]}">
+                 :style="{'width': '100%','min-height': rectArr2[i]}">
             </div>
           </transition-group>
         </div>
@@ -74,6 +75,7 @@ import MyIcon from "./MyIcon.vue";
 import ShiftZone from "./ShiftZone.vue";
 import BoxModal from "./modal/BoxModal.vue";
 import Box from "./box/Box.vue";
+import TopBar from "@/components/ndg/topbar/TopBar";
 // 混入：拆分各个区域功能代码
 import initMixin from "./mixins/init.js";
 import innerMixin from "./mixins/inner.js";
@@ -86,9 +88,11 @@ import {Timer} from "@/components/ndg/timer";
 import {APP, DOCKAPP, isDockApp, isInnerBox, isModalApp, isOuterBox, swapEle} from "@/components/ndg/common";
 import {OUTERBOX} from "./common";
 
+
 export default {
   name: "nested-drag-grid",
   components: {
+    TopBar: TopBar,
     MyIcon: MyIcon,
     BoxModal: BoxModal,
     Box: Box,
@@ -144,8 +148,18 @@ export default {
     return {
       // DockBar 中的app列表
       dockApps: {
-        usually: [],
-        running: []
+        usually: [
+          {
+            name: "zhifubao",
+            id: "1886c60e1ee64440-9582-7e1c503869c0"
+          }
+        ],
+        running: [
+          {
+            name: "jisuanqi",
+            id: "0162bcd500b14efda11ef8466cae92c7"
+          }
+        ]
       },
       modalIndex: {
         deskIndex: 0,
@@ -229,7 +243,7 @@ export default {
     gridSize() {
       return {
         "--gw": 100 / this.layout.col + "vw",
-        "--gh": 80 / this.layout.row + "vh"
+        "--gh": 75 / this.layout.row + "vh"
       }
     },
   },
@@ -674,7 +688,7 @@ export default {
 
 /* ndg容器布局 */
 .ndg-container {
-  margin: 1vh auto 0 auto;
+  margin: 5vh auto 0 auto;
   /* margin: 0 auto; */
   display: flex;
   display: -webkit-flex;
@@ -684,7 +698,7 @@ export default {
   justify-content: flex-start;
   align-content: flex-start;
   width: 100vw;
-  height: 80vmin;
+  min-height: 75vmin;
 }
 
 /* ndg 大宫格布局 */
