@@ -46,7 +46,7 @@
       dragStart(ev) {
         console.log("开始拖动", ev);
         console.log(ev.target);
-      },  
+      },
       mousedown(event) {
         console.log("鼠标下按", event.target);
         this.draggedDOM = event.target;
@@ -161,7 +161,7 @@
 .grid {
   border: 2px solid;
   /* text-align: center; */
-  cursor: pointer;
+  cursor: url("/static/cursor/link.cur"), auto;
   /* 项目的位置是可以指定的，具体方法就是指定项目的四个边框，分别定位在哪根网格线，还可以指定为网格线的名字 */
   /* row column start end 组合 grid-column-start: 2;  grid-column-end: 4; */
   /* grid-area 属性指定项目放在哪一个区域 */

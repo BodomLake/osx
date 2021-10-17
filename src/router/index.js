@@ -12,6 +12,7 @@ import Parent from "@/components/experience/model/Parent";
 import Stars from "@/components/experience/Stars";
 // Nested Drag Grid
 import NestedDragGrid from "@/components/ndg/NestedDragGrid";
+import MainEnter  from "@/components/ndg/screenlocker/MainEnter";
 
 Vue.use(Router);
 
@@ -19,7 +20,7 @@ export default new Router({
   routes: [
     {
       path: "/",
-      redirect: "/home"
+      redirect: "/scrennlocker"
     },
     {
       path: "/nestedDragGrid",
@@ -38,9 +39,9 @@ export default new Router({
       }
     },
     {
-      path: "/home",
-      name: "Home",
-      component: Home,
+      path: "/mainEnter",
+      name: "MainEnter",
+      component: MainEnter,
       children: [
         {
           path: "/draggableDND",

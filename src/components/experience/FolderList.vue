@@ -146,7 +146,7 @@
 }
 .item:hover {
   background-color: #fdfdfd;
-  cursor: pointer;
+  cursor: url("/static/cursor/link.cur"), auto;
 }
 .item + .item {
   border-top: none;
