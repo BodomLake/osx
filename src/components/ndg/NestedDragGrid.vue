@@ -86,8 +86,8 @@ import listenerMixin from "./mixins/listener.js";
 // 导入公共用途库
 import {v4 as uuidv4} from "uuid";
 import {Timer} from "@/components/ndg/timer";
-import {APP, DOCKAPP, isDockApp, isInnerBox, isModalApp, isOuterBox, swapEle} from "@/components/ndg/common";
-import {OUTERBOX} from "./common";
+import {APP, DOCKAPP, isDockApp, isInnerBox, isModalApp, isOuterBox, swapEle} from "@/components/ndg/common/common";
+import {OUTERBOX} from "./common/common";
 
 
 export default {

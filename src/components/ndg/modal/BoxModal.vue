@@ -39,7 +39,7 @@ import MyIcon from "../MyIcon.vue";
 import Box from "../box/Box.vue";
 import Indicator from "./Indicator.vue";
 import ShiftZone from "../ShiftZone.vue";
-import {inRegion} from "@/components/ndg/common";
+import {inRegion} from "@/components/ndg/common/common";
 import {Timer} from "@/components/ndg/timer";
 import mixin from "./mixin.js"
 

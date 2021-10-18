@@ -1,5 +1,5 @@
 import {desks} from "../app.js"
-import {BACKGROUND, CONTAINER, GROUPAPPLIMIT} from "../common.js"
+import {BACKGROUND, CONTAINER, GROUPAPPLIMIT} from "../common/common.js"
 import {Timer} from "@/components/ndg/timer"
 
 export default {

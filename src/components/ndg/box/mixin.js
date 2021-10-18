@@ -1,4 +1,4 @@
-import {APP, DOCKAPP, isDockApp, isInnerBox, isModalApp, isOuterBox, OUTERBOX} from "@/components/ndg/common";
+import {APP, DOCKAPP, isDockApp, isInnerBox, isModalApp, isOuterBox, OUTERBOX} from "@/components/ndg/common/common";
 
 export default {
   methods: {

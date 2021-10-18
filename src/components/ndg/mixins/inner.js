@@ -1,4 +1,4 @@
-import {DESKTOP, inRegion, isInnerBox, isOuterBox} from "@/components/ndg/common"
+import {DESKTOP, inRegion, isInnerBox, isOuterBox} from "@/components/ndg/common/common"
 
 export default {
   name: 'inner',

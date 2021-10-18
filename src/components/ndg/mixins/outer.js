@@ -1,4 +1,4 @@
-import {isDockApp, isInnerBox, isModalApp, isOuterBox} from "../common";
+import {isDockApp, isInnerBox, isModalApp, isOuterBox} from "../common/common";
 
 export default {
   name: 'outer',

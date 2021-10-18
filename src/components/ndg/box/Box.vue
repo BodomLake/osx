@@ -51,7 +51,7 @@
 import MyIcon from "../MyIcon.vue";
 import {v4 as uuidv4} from "uuid";
 import {Timer} from "@/components/ndg/timer";
-import {APP, swapEle} from "@/components/ndg/common";
+import {APP, swapEle} from "@/components/ndg/common/common";
 import mixin from './mixin'
 
 export default {

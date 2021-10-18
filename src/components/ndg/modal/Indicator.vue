@@ -106,8 +106,6 @@
 }
 .ndg-scroll-zone {
   /* background-color: var(--bgColor); */
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   display: flex;
   flex-direction: row;
   /* 如果实际页面 大于等于规定上限，那么显示的手法就是靠左显示，另外一种就是小于上限：则居中center */

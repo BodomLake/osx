@@ -20,7 +20,7 @@ export default new Router({
   routes: [
     {
       path: "/",
-      redirect: "/scrennlocker"
+      redirect: "/mainEnter"
     },
     {
       path: "/nestedDragGrid",

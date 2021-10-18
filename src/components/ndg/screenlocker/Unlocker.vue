@@ -6,7 +6,7 @@
       </div>
       <div class="inputed-bar">
         <template v-for="index in (1,pwdLen)">
-          <div class="pwd-display" :style="{'width': pwdDisplayWidth}">
+          <div class="pwd-display" :style="{'width': pwdDisplayWidth}" :class="{'shakeAnime' : error}">
             <div class="pwd-circle" :style="{'background-color': inputed[index -1] ? 'white' : 'transparent'}"></div>
           </div>
         </template>
@@ -51,6 +51,7 @@ export default {
       correctPwd: [1, 2, 3, 4, 5, 6],
       msg: '请输入密码',
       clickedIndex: 0,
+      error: false,
     }
   },
   beforeCreate() {
@@ -87,7 +88,7 @@ export default {
         this.clickedIndex = 0;
       }, 100)
       if (this.inputed.length == this.pwdLen) {
-        alert('不可以再输入了')
+        return;
       }
       if (this.inputed.length < this.pwdLen && !isNaN(num)) {
         this.inputed.push(Number(num));
@@ -113,9 +114,12 @@ export default {
       }
       if (result) {
         this.msg = '输入正确'
-        this.$emit('pass', true);
+        this.$emit('pass', !this.error);
+      } else {
+        this.error = true;
       }
       setTimeout(() => {
+        this.error = false;
         this.inputed = [];
       }, 200)
       return result;
@@ -170,11 +174,8 @@ export default {
 }
 
 .clicked {
-  animation-name: clicked;
   /*动画结束后不使用动画中的任何一个状态*/
-  animation-fill-mode: none;
-  animation-timing-function: ease-in-out;
-  animation-duration: 100ms;
+  animation: clicked 250ms none ease-in-out;
 }
 
 @keyframes clicked {
@@ -193,10 +194,10 @@ export default {
 .circle-button > .number {
   position: relative;
   left: 50%;
-  top: 50%;
+  top: 48%;
   transform: translate(-50%, -50%);
   color: white;
-  font-size: 4vmin;
+  font-size: 5vmin;
   font-weight: 600;
   user-select: none;
 }
@@ -204,7 +205,7 @@ export default {
 .circle-button > .letter {
   position: relative;
   left: 50%;
-  top: 50%;
+  top: 40%;
   transform: translate(-50%, -50%);
   color: white;
   font-size: 2vmin;
@@ -265,7 +266,7 @@ export default {
   }
 
   .circle-button > .number {
-    font-size: 3vmax;
+    font-size: 4vmax;
   }
 
   .circle-button > .letter {
@@ -275,6 +276,33 @@ export default {
   .notice {
     width: 30vmax;
     height: 8vmax;
+  }
+}
+
+.shakeAnime {
+  animation: shakeAnime 250ms both infinite;
+}
+
+/* 实现抖动 */
+@keyframes shakeAnime {
+  0% {
+    transform: scale(1) translate(1px, 0);
+  }
+
+  25% {
+    transform: scale(1) translate(0, 1px);
+  }
+
+  50% {
+    transform: scale(1) translate(-1px, 0);
+  }
+
+  75% {
+    transform: scale(1) translate(0, -1px);
+  }
+
+  100% {
+    transform: scale(1) translate(0, 0);
   }
 }
 
