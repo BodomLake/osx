@@ -49,7 +49,6 @@
 <style scoped>
 .my-icon {
   display: inline;
-  /* margin: 0.05rem; */
   position: absolute;
   top: 50%;
   left: 50%;

@@ -1,7 +1,7 @@
 <template>
   <div class="my-icon">
     <!-- <remote-js :src="src"></remote-js> -->
-    <svg class="icon svg-icon"  aria-hidden="true" width="100%"
+    <svg class="icon"  aria-hidden="true" width="100%"
          height="100%" preserveAspectRatio="none">
       <use :xlink:href="'#icon-' + className"></use>
     </svg>
@@ -51,9 +51,9 @@ export default {
 </script>
 <style scoped>
 .my-icon {
-  display: inline;
-  height: 80%;
-  width: 80%;
+  display: flex;
+  height: 85%;
+  width: fit-content;
   position: absolute;
   top: 50%;
   left: 50%;

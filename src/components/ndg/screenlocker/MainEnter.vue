@@ -19,7 +19,10 @@
             <div class="date">{{ month }}月{{ day }}日 {{ week }}</div>
           </div>
         </div>
-        <div class="tipslist">
+        <div class="tipsList-zone">
+          <TipsList></TipsList>
+        </div>
+        <div class="handler">
 
         </div>
       </template>
@@ -36,6 +39,7 @@
 // 屏锁，上滑解锁，密码解锁
 import Unlocker from "@/components/ndg/screenlocker/Unlocker";
 import TimeMixin from "@/components/ndg/common/time";
+import TipsList from "@/components/ndg/screenlocker/TipsList";
 
 export default {
   name: 'MainEnter',
@@ -45,7 +49,7 @@ export default {
     }
   },
   mixins: [TimeMixin],
-  components: {Unlocker},
+  components: {Unlocker, TipsList},
   methods: {
     gotoMainPage(judge) {
       if (judge) {
@@ -74,39 +78,58 @@ export default {
   user-select: none;
   color: white;
 }
-.tipslist {
-
+.tipsList-zone {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -40%);
+  width: 100%;
+  height: 66vh;
+}
+.handler {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 1vh;
+  height: 1vw;
+  width: 30vw;
+  background-color: white;
+  border-radius: 10px 10px 10px 10px;
+  transition: all 500ms ease-in-out;
 }
 
 .calender {
   position: fixed;
-  top: 20%;
+  top: 15%;
   left: 50%;
   transform: translate(-50%, -50%);
 }
 
 .calender>.time {
   font-weight: 400;
-  font-size: 5vmax;
+  font-size: 5vw;
 }
 .calender>.time > div:nth-child(1) {
   display: inline;
-  margin-right: 10px;
+  margin-right: 1vw;
 }
 .calender>.time > div:nth-child(2) {
   display: inline;
-  margin-right: 10px;
 }
 .calender>.time > div:nth-child(3) {
   display: inline;
-  margin-right: 10px;
 }
 
 .calender>.date {
   font-weight: 200;
-  font-size: 3vmin;
+  font-size: 2vmin;
 }
 </style>
 <style scoped>
+@media screen and (orientation: portrait) {
+  .handler {
+    width: 40vmin;
+  }
 
+}
 </style>
