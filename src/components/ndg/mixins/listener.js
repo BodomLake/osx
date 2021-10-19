@@ -22,58 +22,13 @@ export default {
     // 定位，格式化，初始化
     this.initBOX()
     setTimeout(() => {
-      // this.square()
     }, 300)
     this.$forceUpdate()
-
-    window.addEventListener("resize", $event => {
-      // 防抖 100ms 延时执行
-      if (this.resizeTimer) {
-        clearTimeout(this.resizeTimer)
-      }
-      this.resizeTimer = window.setTimeout(() => {
-        console.info("全局 resize...")
-        this.locateBOX()
-        // this.square()
-        this.portrait = window.innerHeight > window.innerWidth
-      }, 100)
-    })
-    window.addEventListener("keydown", $event => {
-      let keyCode = $event.key
-      // debugger
-      switch (keyCode) {
-        case "ArrowLeft":
-          this.switchUnit(-1)
-          $event.preventDefault()
-          break
-        case "ArrowRight":
-          this.switchUnit(1)
-          $event.preventDefault()
-          break
-        case "ArrowUp":
-          break
-        case "ArrowDown":
-          break
-        case "Escape":
-          if (this.$refs["modal"].showModal) this.$refs["modal"].toggle()
-        default:
-      }
-    })
-    window.addEventListener("click", $event => {
-      // 需要获取modal的主体范围 判断是否在其中？决定是否关闭
-      if (this.$refs["modal"].showModal) this.$refs["modal"].toggle()
-    })
-    window.addEventListener("touchend", $event => {
-      if (this.$refs["modal"].showModal) this.$refs["modal"].toggle()
-    })
-    // 双击退出拉拽模式
-    window.addEventListener("dblclick", $event => {
-      this.longPress.flag = false
-      this.longPress.moveFlag = false
-      this.isDragging = false
-      this.enableDrag = false
-      this.locateBOX()
-    })
+    window.addEventListener("resize", this.resize)
+    window.addEventListener("keydown", this.keyDown)
+    window.addEventListener("click", this.click)
+    window.addEventListener("touchend", this.touchend)
+    window.addEventListener("dblclick", this.dblclick)
   },
   methods: {
     /**
@@ -121,5 +76,85 @@ export default {
       }
 
     },
-  }
+    /**
+     * 按键响应
+     * @param $event
+     */
+    keyDown($event) {
+      let keyCode = $event.key
+      console.log($event.key, $event.ctrlKey, $event.altKey, $event.which, $event.charCode, $event.metaKey)
+      switch (keyCode) {
+        case "ArrowLeft":
+          this.switchUnit(-1)
+          $event.preventDefault()
+          break
+        case "ArrowRight":
+          this.switchUnit(1)
+          $event.preventDefault()
+          break
+        case "ArrowUp":
+          break
+        case "ArrowDown":
+          break
+        case "Escape":
+          if (this.$refs["modal"].showModal) this.$refs["modal"].toggle()
+        default:
+      }
+      if (keyCode == "l" || keyCode == "L") {
+        if ($event.ctrlKey && $event.altKey) {
+          this.$router.push('/mainEnter')
+        }
+      }
+    },
+    /**
+     * 点击关闭modal框
+     * @param $event
+     */
+    click($event) {
+      if (this.$refs["modal"].showModal) this.$refs["modal"].toggle()
+    },
+    /**
+     * 双击退出拉拽模式
+     */
+    dblclick($event) {
+      this.longPress.flag = false
+      this.longPress.moveFlag = false
+      this.isDragging = false
+      this.enableDrag = false
+      this.locateBOX()
+    },
+    /**
+     * 触摸模式下退出拉拽模式
+     */
+    touchend($event) {
+      // TODO
+    },
+    /**
+     * window resize
+     */
+    resize($event) {
+      // 防抖 100ms 延时执行
+      if (this.resizeTimer) {
+        clearTimeout(this.resizeTimer)
+      }
+      this.resizeTimer = window.setTimeout(() => {
+        console.info("全局 resize...")
+        this.locateBOX()
+        // this.square()
+        this.portrait = window.innerHeight > window.innerWidth
+      }, 100)
+    },
+  },
+  beforeRouteLeave: function (to, from, next) {
+    if (to.path == '/mainEnter' && from.path == '/nestedDragGrid') {
+      console.log(this)
+      window.removeEventListener('resize', this.resize)
+      window.removeEventListener('keydown', this.keyDown)
+      window.removeEventListener('click', this.click)
+      window.removeEventListener('touchend', this.touchend)
+      window.removeEventListener('dblclick', this.dblclick)
+    }
+    next();
+  },
 }
+

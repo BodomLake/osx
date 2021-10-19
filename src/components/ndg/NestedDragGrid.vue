@@ -1,10 +1,9 @@
 <template>
   <div class="ndg">
     <top-bar></top-bar>
-    <!-- 上下左右固定的盒子，拖入就会发生桌面位移，isDragging表示主界面的盒子拖动了，这些四周的固定盒子才允许被拖入 -->
     <shift-zone orientation="left" :flowOver="isDragging" @switchUnit="switchUnit" :size="3"></shift-zone>
     <shift-zone orientation="right" :flowOver="isDragging" @switchUnit="switchUnit" :size="3"></shift-zone>
-    <!-- 不要用高斯模糊 否则动画会卡顿 'filter': modal.show? 'blur(4px)':'blur(0px)' -->
+    <!-- 不要用高斯模糊 否则动画会卡顿 'filter': modal.show? 'blur(4px)':'blur(0px)' ,建议使用 filter.js自行绘制高斯模糊背景 -->
     <div class="ndg-background"
          :style="{'width': deskWidth,'transition': `all ${switchDeskTimeCost}ms ease-in-out`, 'transform': deskOffset}"
          @mousedown="mousedown($event)" @mousemove="mousemove($event)">
@@ -86,9 +85,7 @@ import listenerMixin from "./mixins/listener.js";
 // 导入公共用途库
 import {v4 as uuidv4} from "uuid";
 import {Timer} from "@/components/ndg/timer";
-import {APP, DOCKAPP, isDockApp, isInnerBox, isModalApp, isOuterBox, swapEle} from "@/components/ndg/common/common";
-import {OUTERBOX} from "./common/common";
-
+import {isDockApp, isInnerBox, isModalApp, isOuterBox, swapEle} from "@/components/ndg/common/common";
 
 export default {
   name: "nested-drag-grid",
@@ -207,9 +204,6 @@ export default {
           "--boxinitHeight": this.boxInitRatio * less + unit
         }
       },
-      set() {
-
-      }
     },
     // 桌面拖拽的时候 被拖拽的BOX
     draggingBOX: {
@@ -602,7 +596,7 @@ export default {
         console.info(did, '该桌面app数量', appCount)
         return appCount > 0;
       })
-    }
+    },
   },
   filters: {
     resolveAppName(appName) {
@@ -661,7 +655,7 @@ export default {
   max-height: 100%;
   display: flex;
   flex-direction: row;
-/ / transition: all 0.5 s ease-in-out;
+  transition: all 0.5s ease-in-out;
 }
 
 /* 当前桌面 */
@@ -708,7 +702,6 @@ export default {
   position: relative;
   overflow: hidden;
   transition: transform 0.25s ease-in-out;
-/ / border: 0.5 px skyblue groove;
 }
 
 .ndg-outer-shift {
@@ -745,7 +738,7 @@ export default {
 }
 
 .ndg-outer-shift-leave-active > .ndg-content-border {
-/ / position: absolute;
+  position: absolute;
 }
 
 .ndg-content-border {
@@ -758,7 +751,7 @@ export default {
   overflow: hidden;
   transition: opacity 0.5s ease-in-out;
   animation-fill-mode: backwards;
-/ / pointer-events: none;
+  pointer-events: none;
 }
 
 .ndg-desc {

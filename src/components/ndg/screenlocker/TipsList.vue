@@ -1,8 +1,8 @@
 <template>
   <div class="tipslist">
-    <template v-for="tip in tipList">
+    <template v-for="(tip,tid) in tipList">
       <div class="item" :style="{'max-height': defaultHeight, 'height': defaultHeight}">
-        <tip-bar :tip="tip"></tip-bar>
+        <tip-bar :tip="tip" @enterApp="enterApp(tid)"></tip-bar>
       </div>
     </template>
   </div>
@@ -59,7 +59,12 @@ export default {
       return 100 / this.displayNum + '%';
     }
   },
-  methods: {}
+  methods: {
+    enterApp(tid) {
+      let app = this.tipList[tid]
+      this.$emit('enterApp', app)
+    }
+  }
 }
 </script>
 
@@ -71,10 +76,12 @@ export default {
   left: 50%;
   transform: translate(-50%, 0);
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
 }
+
 .tipslist::-webkit-scrollbar {
   width: 0px;
   height: 0px;
@@ -84,7 +91,8 @@ export default {
   width: 100%;
   justify-items: center;
 }
-@media screen and  (orientation: portrait){
+
+@media screen and  (orientation: portrait) {
   .tipslist {
     width: 40vh;
   }

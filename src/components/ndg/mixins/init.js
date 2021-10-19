@@ -192,8 +192,8 @@ export default {
     // 节流修饰
     throttle(fn, delay, timer) {
       return function () {
-        var context = this
-        var args = arguments
+        let context = this
+        let args = arguments
         if (!timer) {
           timer = setTimeout(function () {
             fn.apply(context, args)

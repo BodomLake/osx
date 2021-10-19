@@ -45,12 +45,13 @@ export function swapEle(arr, i1, i2) {
 
 /**
  * 根据区间和步长，划分出一个梯度数组
+ * 默认从大到小 max->min
  * @param a
  * @param b
  * @param step
  * @returns {*[]}
  */
-export function gradientSplit(a, b, step) {
+export function gradientSplit(a, b, step, reverse) {
   let min = Math.min(a, b)
   let max = Math.max(a, b)
   let arr = []
@@ -58,13 +59,15 @@ export function gradientSplit(a, b, step) {
   let start = Math.ceil(min)
   let end = Math.floor(max)
   if (!step) {
-    step = 2
+    step = 1
   }
   for (let i = end; i > start; i = i - step) {
     arr.push(i)
   }
   arr.push(min)
-  // console.info(arr)
+  if (reverse) {
+    arr.reverse();
+  }
   return arr
 }
 
@@ -80,3 +83,5 @@ export function inRegion(val, a, b) {
   let high = Math.max(a, b)
   return val >= low && val <= high;
 }
+
+export const blankEle = document.createElement('span')

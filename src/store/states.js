@@ -1,4 +1,8 @@
 export default {
+  // 鼠标位置信息
+  mouse:{
+
+  },
   //  desks
   desks: {},
   // 拖拽的DOM

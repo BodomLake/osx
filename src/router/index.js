@@ -7,16 +7,14 @@ import DND from "@/components/experience/DND";
 import DoubleDND from "@/components/experience/doubleDND";
 
 import Grid from "@/components/experience/Grid";
-import Home from "@/components/home/Home";
 import Parent from "@/components/experience/model/Parent";
 import Stars from "@/components/experience/Stars";
 // Nested Drag Grid
 import NestedDragGrid from "@/components/ndg/NestedDragGrid";
-import MainEnter  from "@/components/ndg/screenlocker/MainEnter";
+import MainEnter from "@/components/ndg/screenlocker/MainEnter";
 
 Vue.use(Router);
-
-export default new Router({
+const router = new Router({
   routes: [
     {
       path: "/",
@@ -77,3 +75,4 @@ export default new Router({
     }
   ]
 });
+export default router;

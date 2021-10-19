@@ -4,4 +4,7 @@ export default {
   draggingBox(state, getters) {
     return {}
   },
+  getMousePos(state, getter){
+    return state.mouse;
+  }
 }

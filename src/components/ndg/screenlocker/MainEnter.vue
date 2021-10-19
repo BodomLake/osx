@@ -12,7 +12,8 @@
         <div class="locker">
           <div class="calender">
             <div class="time">
-              <div>{{ hour }}</div>:
+              <div>{{ hour }}</div>
+              :
               <div>{{ min < 10 ? '0' + min : min }}</div>
               <!--:<span>{{ sec < 10 ? '0' + sec : sec }}</span>-->
             </div>
@@ -20,7 +21,7 @@
           </div>
         </div>
         <div class="tipsList-zone">
-          <TipsList></TipsList>
+          <TipsList @enterApp="enterApp"></TipsList>
         </div>
         <div class="handler">
 
@@ -45,8 +46,11 @@ export default {
   name: 'MainEnter',
   data() {
     return {
-      lockMode: false,
+      lockMode: true,
     }
+  },
+  mounted() {
+
   },
   mixins: [TimeMixin],
   components: {Unlocker, TipsList},
@@ -57,12 +61,17 @@ export default {
           path: '/nestedDragGrid',
         });
       }
+      this.lockMode = true;
     },
     quitUnLockMode(msg) {
       this.lockMode = true;
+    },
+    enterApp(app) {
+      console.log(app)
+      // 进入解锁界面
+      this.lockMode = false;
     }
   }
-
 }
 </script>
 <style scoped>
@@ -78,6 +87,7 @@ export default {
   user-select: none;
   color: white;
 }
+
 .tipsList-zone {
   position: fixed;
   top: 50%;
@@ -86,6 +96,7 @@ export default {
   width: 100%;
   height: 66vh;
 }
+
 .handler {
   position: fixed;
   left: 50%;
@@ -105,22 +116,25 @@ export default {
   transform: translate(-50%, -50%);
 }
 
-.calender>.time {
+.calender > .time {
   font-weight: 400;
   font-size: 5vw;
 }
-.calender>.time > div:nth-child(1) {
+
+.calender > .time > div:nth-child(1) {
   display: inline;
   margin-right: 1vw;
 }
-.calender>.time > div:nth-child(2) {
-  display: inline;
-}
-.calender>.time > div:nth-child(3) {
+
+.calender > .time > div:nth-child(2) {
   display: inline;
 }
 
-.calender>.date {
+.calender > .time > div:nth-child(3) {
+  display: inline;
+}
+
+.calender > .date {
   font-weight: 200;
   font-size: 2vmin;
 }

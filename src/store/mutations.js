@@ -21,5 +21,8 @@ export default {
         state.targetIndex[key] = index[key]
       }
     })
+  },
+  setMousePos(state, info){
+    state.mouse = info
   }
 }
