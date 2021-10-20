@@ -12,18 +12,18 @@
 // const src = "../assets/iconfont.js"
 export default {
   name: "my-icon",
-  // components: {
-  //   "remote-js": {
-  //     render(createElement) {
-  //       return createElement("script", {
-  //         attrs: { type: "text/javascript", src: this.src }
-  //       });
-  //     },
-  //     props: {
-  //       src: { type: String, required: true }
-  //     }
-  //   }
-  // },
+/*  components: {
+    "remote-js": {
+      render(createElement) {
+        return createElement("script", {
+          attrs: { type: "text/javascript", src: this.src }
+        });
+      },
+      props: {
+        src: { type: String, required: true }
+      }
+    }
+  },*/
   beforeCreate() {
   },
   data() {

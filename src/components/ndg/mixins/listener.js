@@ -117,6 +117,7 @@ export default {
      * 双击退出拉拽模式
      */
     dblclick($event) {
+      console.log('dblclick')
       this.longPress.flag = false
       this.longPress.moveFlag = false
       this.isDragging = false

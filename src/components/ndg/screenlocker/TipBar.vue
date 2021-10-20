@@ -1,12 +1,12 @@
 <template>
-  <div class="tipbar">
+  <div class="tipbar" :id="tip.id" @mousedown="()=>{this.$emit('startDrag', tip.id)}">
     <!-- 主版面-->
     <div class="main-panel" :style="{'transform': offset}"
          draggable="true"
-         @dragstart="dragStart($event)"
-         @dragend="dragEnd($event)"
-         @dragover="dragOver($event)"
-         @dblclick="enterApp($event)"
+         @dragstart="dragStart($event,tip.id)"
+         @dragend="dragEnd($event, tip.id)"
+         @dragover="dragOver($event, tip.id)"
+         @dblclick="enterApp($event, tip.id)"
          ref="panel">
       <div class="app-icon">
         <div style="position: relative;height: 100%">
@@ -31,22 +31,28 @@
       </div>
     </div>
     <!-- 左侧抽屉-->
-    <div class="left-draw" :style="{'z-index': offsetX > barWidth? 1: -1, 'opacity': offsetX > 200 ? 1: 0}">
-      <div>左侧 查看 清空</div>
-      <slot name="left-draw"></slot>
-    </div>
+    <template v-if="upOffsetX > 0">
+      <div class="left-draw"
+           :style="{'z-index': upOffsetX >= barRect.width ? 1: -1, 'opacity': upOffsetX >= barRect.width * dragBackLimit ? 1: 0}">
+        <div style="height: 100%">左侧 查看 清空</div>
+        <slot name="left-draw"></slot>
+      </div>
+    </template>
     <!-- 右侧抽屉 -->
-    <div class="right-draw" :style="{'z-index': offsetX < -barWidth ? 1: -1, 'opacity': offsetX < -200 ? 1: 0}">
-      <div>右侧 查看 清空</div>
-      <slot name="right-draw"></slot>
-    </div>
+    <template v-else>
+      <div class="right-draw"
+           :style="{'z-index': upOffsetX <= -barRect.width ? 1: -1, 'opacity': upOffsetX < -barRect.width * dragBackLimit ? 1: 0}">
+        <div>右侧 查看 清空</div>
+        <slot name="right-draw"></slot>
+      </div>
+    </template>
   </div>
 </template>
 
 <script>
 
 import MyIcon from "@/components/ndg/MyIcon";
-import {blankEle, gradientSplit} from "@/components/ndg/common/common";
+import {blankEle, gradientSplit, inRegion} from "@/components/ndg/common/common";
 import {Timer} from "@/components/ndg/timer";
 
 export default {
@@ -56,12 +62,24 @@ export default {
     return {
       timer: new Timer(),
       startPos: {
-        screenX: 0,
-        screenY: 0,
+        clientX: 0,
+        clientY: 0,
       },
-      offsetX: 0,
+      upOffsetX: 0,
+      upOffsetY: 0,
       offsetY: 0,
-      barWidth: 0,
+      barRect: {
+        height: 0,
+        width: 0,
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        x: 0,
+        y: 0
+      },
+      // 拖出自身范围
+      outOfRange: false,
     }
   },
   props: {
@@ -72,69 +90,83 @@ export default {
         return {}
       }
     },
+    tidx: {
+      type: Number,
+      default: 0,
+    },
     dragBackLimit: {
       type: Number,
-      default: 0.5
+      default: 0.3
     }
   },
   mounted() {
-    this.calcBarWidth();
+    this.calcBarRect();
   },
   updated() {
-    this.calcBarWidth();
+
   },
   computed: {
     offset() {
-      return `translateX(${this.offsetX}px)`
+      return `translateX(${this.upOffsetX}px)`
+    },
+    overLimit() {
+      if (this.upOffsetX == 0) {
+        return false;
+      }
+      return Math.abs(this.upOffsetX) >= this.barRect.width * this.dragBackLimit
     },
   },
   watch: {},
   methods: {
-    dragStart($event) {
+    dragStart($event, tid) {
+      $event.stopPropagation();
       $event.dataTransfer.effectAllowed = "move";
       $event.dataTransfer.setDragImage(blankEle, 0, 0)
-      this.startPos.screenX = $event.screenX;
-      this.startPos.screenY = $event.screenY;
+      this.startPos.clientX = $event.clientX;
+      this.startPos.clientY = $event.clientY;
+      this.$emit('startDrag', tid)
     },
-    dragOver($event) {
-      this.offsetX = $event.screenX - this.startPos.screenX
-      console.log('dragOver', '触发', this.offsetX)
+    dragOver($event, tid) {
+      // 告诉父组件，tid以及现在鼠标的X位置
+      // console.log('dragOver', '触发 dragAct', this.upOffsetX, $event.clientY, this.barRect.top)
+      this.$emit('dragAct', $event.clientX)
     },
-    dragEnd($event) {
-      console.log('dragEnd', '触发', this.offsetX, this.barWidth, this.barWidth * this.dragBackLimit)
-      const overLimit = Math.abs(this.offsetX) > this.barWidth * this.dragBackLimit
+    //
+    crossDragOver(clientX) {
+      console.log('响应父组件的调用')
+      this.upOffsetX = clientX - this.startPos.clientX
+    },
+    crossDragEnd() {
+
+    },
+    dragEnd($event, tid) {
+      let linSpace = []
       // 位移长度不够，就返回原始位置
-      if (!overLimit) {
-        // 默认从大到小 如果是向左移动，就翻转一下数组
-        let linSpace = gradientSplit(this.offsetX, 0, 25, this.offsetX < 0)
-        // 阶梯移动
-        for (let i = 0; i < linSpace.length; i++) {
-          setTimeout(() => {
-            this.offsetX = linSpace[i]
-          }, 25 * i);
+      if (this.tip.id == this.$parent.$data.dragId) {
+        if (!this.overLimit) {               // 默认从大到小 如果是向左移动，就翻转一下数组
+          linSpace = gradientSplit(this.upOffsetX, 0, 25, this.upOffsetX < 0)
+        } else if (this.overLimit) {         // 位移长度足够，则自动进入到当前动作的末尾
+          const barWidth = this.barRect.width;
+          linSpace = gradientSplit(this.upOffsetX, this.upOffsetX > 0 ? barWidth : -1 * barWidth, 25, this.upOffsetX > 0)
         }
-      } else if (overLimit) {         // 位移长度足够，则自动进入到当前动作的末尾
-        let linSpace = gradientSplit(this.offsetX, this.offsetX > 0 ? this.barWidth : -1 *this.barWidth, 25, this.offsetX > 0)
-        console.log('dragEnd', linSpace)
-        // 阶梯移动
+        // 一点点的拉过去
         for (let i = 0; i < linSpace.length; i++) {
           setTimeout(() => {
-            this.offsetX = linSpace[i]
-          }, 25 * i);
+            this.upOffsetX = linSpace[i]
+          }, 20 * i);
         }
       }
 
     },
-    calcBarWidth() {
+    calcBarRect() {
       let bar = document.getElementsByClassName('main-panel')[0]
       if (bar) {
-        this.barWidth = bar.getBoundingClientRect().width;
-      } else {
-        this.barWidth = 0;
+        this.barRect = bar.getBoundingClientRect()
+        // console.log(this.barRect)
       }
     },
-    enterApp($event) {
-      this.$emit('enterApp')
+    enterApp($event, id) {
+      this.$emit('enterApp', id)
     }
   }
 
@@ -146,13 +178,17 @@ export default {
   z-index: 0;
   color: black;
   height: 90%;
-  background-color: rgba(255, 255, 255, 0.4);
+  /*  background-color: rgba(255, 255, 255, 0.5);*/
   border-radius: 15px 15px 15px 15px;
   user-select: none;
   position: relative;
   top: 50%;
   transform: translate(0%, -50%);
   transition: all 500ms ease-in-out;
+  background-image: url("../../../assets/bottom.png");
+  padding-left: 1%;
+  padding-right: 1%;
+
 }
 
 .tipbar :hover {
@@ -173,16 +209,21 @@ export default {
 
 .app-icon {
   width: 20%;
+  opacity: 1;
 }
 
 .bar {
   width: 80%;
+  opacity: 1;
+  padding-top: 1%;
+  padding-bottom: 1%;
 }
 
 .bar1 {
   display: flex;
   height: 30%;
-  font-size: 12px;
+  font-size: 1.8vmin;
+  text-align: center;
 }
 
 .bar1 > div {
@@ -199,13 +240,14 @@ export default {
 }
 
 .bar2 {
-  height: 38%;
-  font-size: 16px;
+  height: 40%;
+  font-size: 2.5vmin;
   font-weight: 600;
 }
 
 .bar3 {
-  height: 32%;
+  height: 30%;
+  font-size: 1.8vmin;
 }
 
 </style>
@@ -215,15 +257,20 @@ export default {
   position: absolute;
   height: 100%;
   width: 100%;
-  z-index: -1;
+  z-index: 1;
   transition: opacity 0.5s ease-in-out;
+}
+
+.bar1 > div > span {
+  height: 100%;
 }
 
 .right-draw {
   position: absolute;
   height: 100%;
   width: 100%;
-  z-index: -1;
+  z-index: 1;
   transition: opacity 0.5s ease-in-out;
 }
+
 </style>

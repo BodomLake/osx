@@ -751,7 +751,6 @@ export default {
   overflow: hidden;
   transition: opacity 0.5s ease-in-out;
   animation-fill-mode: backwards;
-  pointer-events: none;
 }
 
 .ndg-desc {
