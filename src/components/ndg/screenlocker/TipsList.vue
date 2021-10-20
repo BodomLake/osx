@@ -5,7 +5,7 @@
       <template v-for="(tip,tidx) in tipList">
         <div class="item" :style="{'max-height': defaultHeight, 'height': defaultHeight}">
           <tip-bar :tip="tip" :tidx="tidx"
-                   @enterApp="enterApp" @startDrag="setDragId" @dragAct="crossDragOver">
+                   @enterApp="enterApp" @dragEnd="endDrag" @startDrag="startDrag" @dragAct="crossDragOver">
           </tip-bar>
         </div>
       </template>
@@ -17,6 +17,7 @@
 <script>
 import TipBar from "@/components/ndg/screenlocker/TipBar";
 import {v4 as uuidv4} from "uuid";
+import {Timer} from "@/components/ndg/timer";
 
 export default {
   name: "TipsList",
@@ -65,8 +66,14 @@ export default {
   },
   data() {
     return {
-      dragId: '',
-      offset: 0,
+      // 被拖拽的Bar的id
+      dragBarId: '',
+      // 纵向位移量
+      offsetY: 0,
+      timer: new Timer(),
+      // 拖拽的速度，决定是否要拉到底
+      speed: 0,
+
     }
   },
   computed: {
@@ -74,7 +81,7 @@ export default {
       return 100 / this.displayNum + '%';
     },
     scrollOffset() {
-      return `translateY(${this.offset}px)`
+      return `translateY(${this.offsetY}px)`
     },
   },
   methods: {
@@ -82,14 +89,21 @@ export default {
       let app = this.tipList[tid]
       this.$emit('enterApp', app)
     },
-    setDragId(tid) {
+    startDrag(tid) {
       console.log('被拉拽的tid', tid)
-      this.dragId = tid;
+      this.dragBarId = tid;
+      this.timer.start();
+    },
+    /**
+     * 拖拽结束了
+     */
+    endDrag() {
+      this.timer.shutdown()
     },
     crossDragOver(clientX) {
       for (let i = 0; i < this.$children.length; i++) {
         let child = this.$children[i]
-        if (child.$el.id == this.dragId) {
+        if (child.$el.id == this.dragBarId) {
           child['crossDragOver'](clientX)
           break;
         }

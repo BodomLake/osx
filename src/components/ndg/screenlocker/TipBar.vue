@@ -65,9 +65,12 @@ export default {
         clientX: 0,
         clientY: 0,
       },
+      // 上层 位移
       upOffsetX: 0,
       upOffsetY: 0,
-      offsetY: 0,
+      // 下层 位移
+      btOffsetY: 0,
+      btOffsetX: 0,
       barRect: {
         height: 0,
         width: 0,
@@ -78,8 +81,6 @@ export default {
         x: 0,
         y: 0
       },
-      // 拖出自身范围
-      outOfRange: false,
     }
   },
   props: {
@@ -156,7 +157,7 @@ export default {
           }, 20 * i);
         }
       }
-
+      this.$emit('dragEnd')
     },
     calcBarRect() {
       let bar = document.getElementsByClassName('main-panel')[0]
@@ -178,14 +179,14 @@ export default {
   z-index: 0;
   color: black;
   height: 90%;
-  /*  background-color: rgba(255, 255, 255, 0.5);*/
+  background-color: rgba(255, 255, 255, 0.5);
   border-radius: 15px 15px 15px 15px;
   user-select: none;
   position: relative;
   top: 50%;
   transform: translate(0%, -50%);
   transition: all 500ms ease-in-out;
-  background-image: url("../../../assets/bottom.png");
+  /* background-image: url("../../../assets/bottom.png");*/
   padding-left: 1%;
   padding-right: 1%;
 
