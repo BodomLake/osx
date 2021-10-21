@@ -3,10 +3,15 @@
 
     <template v-if="$route.path == '/mainEnter'">
       <!-- 解锁界面 -->
-      <div v-if="!lockMode">
-        <!--<router-link to="/nestedDragGrid">NDG</router-link>-->
-        <unlocker @pass="gotoMainPage" @quitUnLockMode="quitUnLockMode"></unlocker>
-      </div>
+      <transition>
+
+      </transition>
+      <template v-if="!lockMode">
+        <div>
+          <unlocker @pass="gotoMainPage" @quitUnLockMode="quitUnLockMode"></unlocker>
+        </div>
+      </template>
+
       <!-- 锁屏界面 -->
       <template v-else>
         <div class="locker">
@@ -40,7 +45,7 @@
 // 屏锁，上滑解锁，密码解锁
 import Unlocker from "@/components/ndg/screenlocker/Unlocker";
 import TimeMixin from "@/components/ndg/common/time";
-import TipsList from "@/components/ndg/screenlocker/TipsList";
+import TipsList from "@/components/ndg/screenlocker/TipsList/TipsList";
 
 export default {
   name: 'MainEnter',
