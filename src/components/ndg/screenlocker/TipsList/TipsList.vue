@@ -31,7 +31,6 @@
 
 <script>
 import TipBar from "@/components/ndg/screenlocker/TipsList/TipBar";
-import {v4 as uuidv4} from "uuid";
 import {Timer} from "@/components/ndg/timer";
 import {
   dongfangcaifu,
@@ -61,7 +60,6 @@ export default {
     }
   },
   mounted() {
-    // 计算容器尺寸
     this.tipList.push(dongfangcaifu)
     this.tipList.push(wechat)
     this.tipList.push(qqmail)
@@ -104,6 +102,8 @@ export default {
       },
       dragOverTimer: 0,
       scrolling: false,
+      // 水平拖拽？如果是垂直拖拽则是true
+      horzDrag: false,
     }
   },
   computed: {
@@ -117,7 +117,7 @@ export default {
       return this.offsetY + this.baseOffsetY
     },
     transition() {
-      return this.scrolling ? '' : 'transform 0.3s ease-in-out';
+      return this.scrolling ? '' : 'transform 0.2s ease-in-out';
     }
   },
   methods: {
@@ -140,18 +140,12 @@ export default {
       this.timer.shutdown()
     },
     /**
-     * 让被选中的<TipBar>响应水平位移
+     * 让被选中的<TipBar>响应水平位移判断
      * @param clientX
      * @param clientY
      */
-    crossDragOver(clientX, clientY) {
-      for (let i = 0; i < this.$children.length; i++) {
-        let child = this.$children[i]
-        if (child.$el.id == this.dragBarId) {
-          child['crossDragOver'](clientX, clientY)
-          break;
-        }
-      }
+    crossDragOver(horzDrag) {
+      this.horzDrag = horzDrag;
     },
     /**
      * 外层dom响应<TipBar>的拉拽事件传播
@@ -167,6 +161,10 @@ export default {
     listDragOver($event) {
       // console.log('起始：', 'x', this.startPos.clientX, 'y', this.startPos.clientY)
       // console.log('移动', 'x:', $event.clientX, 'y:', $event.clientY)
+      // 如果横向拖拽就不要
+      if (this.horzDrag) {
+        return;
+      }
       // 容器高度以及滚动高度
       const containerHeight = this.$refs['container'].getBoundingClientRect().height;
       const scrollHeight = this.$refs['container'].scrollHeight;
@@ -181,7 +179,7 @@ export default {
       } else if (inRegion(this.totalOffset, -(containerHeight * this.overDragRatio + excessHeight), 0) && this.totalOffset <= 0) {
         this.offsetY = offset;
       }
-      console.log('位移量', this.offsetY, containerHeight, scrollHeight, excessHeight, offset)
+      // console.log('位移量', this.offsetY, containerHeight, scrollHeight, excessHeight, offset)
     },
     listDragEnd($event) {
       this.scrolling = false;

@@ -1,7 +1,7 @@
 <template>
   <div class="tipbar" :id="tip.id" @mousedown="checkBar($event, tip.id)" ref="panel">
     <!-- 主版面-->
-    <div class="main-panel" :style="{'transform': upOffset}" draggable="true"
+    <div class="main-panel" :style="{'transform': scrollOffset, 'transition': transition}" draggable="true"
          @dragstart="dragStart($event,tip.id)"
          @dragend="dragEnd($event, tip.id)"
          @dragover="dragOver($event, tip.id)"
@@ -33,34 +33,34 @@
       <div class="right-cover cover"></div>
     </div>
     <!-- 左侧抽屉-->
-    <template v-if="offsetX > 0">
-      <div :style="{'z-index': offsetX >= barRect.width ? 2: -1}"
+    <template v-if="totalOffset > 0">
+      <div :style="{'z-index': totalOffset >= barRect.width ? 2: -1}"
            class="left-draw" @mousedown="md($event, 'left')" ref="left">
-        <div :style="{'z-index': offsetX >= barRect.width/3 ? 2: -1, 'opacity': offsetX >= barRect.width/3 ? 1: 0}">
+        <div :style="{'z-index': totalOffset >= barRect.width/3 ? 2: -1, 'opacity': totalOffset >= barRect.width/3 ? 1: 0}">
           左侧
         </div>
         <div
-          :style="{'z-index': offsetX >= barRect.width*2/3 ? 2: -1, 'opacity': offsetX >= barRect.width*2/3? 1: 0}">
+          :style="{'z-index': totalOffset >= barRect.width*2/3 ? 2: -1, 'opacity': totalOffset >= barRect.width*2/3? 1: 0}">
           查看
         </div>
-        <div :style="{'z-index': offsetX >= barRect.width ? 2: -1, 'opacity': offsetX >= barRect.width ? 1: 0}">清空
+        <div :style="{'z-index': totalOffset >= barRect.width ? 2: -1, 'opacity': totalOffset >= barRect.width ? 1: 0}">清空
         </div>
         <slot name="left-draw"></slot>
       </div>
     </template>
     <!-- 右侧抽屉 -->
-    <template v-if="offsetX < 0">
-      <div :style="{'z-index': offsetX >= barRect.width ? 2: -1}"
+    <template v-if="totalOffset < 0">
+      <div :style="{'z-index': totalOffset >= barRect.width ? 2: -1}"
            @mousedown="md($event, 'right')" class="right-draw" ref="right">
         <div
-          :style="{'z-index': offsetX <= -barRect.width ? 2: -1, 'opacity': offsetX <= -barRect.width ? 1: 0}">
+          :style="{'z-index': totalOffset <= -barRect.width ? 2: -1, 'opacity': totalOffset <= -barRect.width ? 1: 0}">
           清理
         </div>
         <div
-          :style="{'z-index': offsetX <= -barRect.width*2/3 ? 2: -1, 'opacity': offsetX <= -barRect.width*2/3? 1: 0}">
+          :style="{'z-index': totalOffset <= -barRect.width*2/3 ? 2: -1, 'opacity': totalOffset <= -barRect.width*2/3? 1: 0}">
           删除
         </div>
-        <div :style="{'z-index': offsetX <= -barRect.width/3 ? 2: -1, 'opacity': offsetX <= -barRect.width/3 ? 1: 0}">
+        <div :style="{'z-index': totalOffset <= -barRect.width/3 ? 2: -1, 'opacity': totalOffset <= -barRect.width/3 ? 1: 0}">
           右侧
         </div>
         <slot name="right-draw"></slot>
@@ -90,7 +90,7 @@ export default {
         clientX: 0
       },
       offsetX: 0,
-      offsetY: 0,
+      baseOffsetX: 0,
       barRect: {
         height: 0,
         width: 0,
@@ -101,11 +101,8 @@ export default {
         x: 0,
         y: 0
       },
-      dragState: {
-        dragToLeft: false,
-        dragToRight: false,
-      },
-
+      scrolling: false,
+      horzDrag: true,
     }
   },
   props: {
@@ -131,20 +128,16 @@ export default {
   updated() {
 
   },
-  watch: {
-    "offsetX": {
-      handler: function (val, oldVal) {
-        if (val == 0) {
-          this.dragState.dragToRight = false;
-          this.dragState.dragToLeft = false;
-        }
-      },
-      immediate: true
-    }
-  },
+  watch: {},
   computed: {
-    upOffset() {
-      return `translateX(${this.offsetX}px)`
+    scrollOffset() {
+      return `translateX(${this.totalOffset}px)`
+    },
+    totalOffset() {
+      return this.offsetX + this.baseOffsetX
+    },
+    transition() {
+      return this.scrolling ? '' : 'transform 0.2s ease-in-out';
     },
     dragOut() {
       if (this.offsetX == 0) {
