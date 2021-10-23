@@ -1,123 +1,74 @@
 <template>
   <div style="height: 100%;width: 100%">
     <div class="tips-list" draggable="false"
-         @dragstart="listDragStart($event)" @dragover="listDragOver($event)">
-      <div style="height: 100%;width: 100%" :style="{'transform': scrollOffset}">
+         @dragstart="listDragStart($event)"
+         @dragover="listDragOver($event)"
+         @dragend="listDragEnd($event)"
+         @mousedown="md($event)"
+         @wheel="wheel($event)">
+      <div class="list-container" :style="{'transform': scrollOffset, 'transition': transition }" ref="container">
         <template v-for="(tip,tidx) in tipList">
-          <div class="item" :style="{'max-height': defaultHeight, 'height': defaultHeight}">
+          <div class="tip-item" :style="{'height': defaultHeight,}">
             <tip-bar :tip="tip" :tidx="tidx"
                      @enterApp="enterApp" @dragEnd="endDrag" @startDrag="startDrag" @dragAct="crossDragOver">
             </tip-bar>
           </div>
         </template>
-        <div class="rest-bar" v-show="tipList.length < displayNum">
+        <div class="rest-bar" v-show="tipList.length < displayNum && tipList.length >0">
           <div class="rest-app-bar"></div>
-          <div class="clear-all">清除所有</div>
+          <div class="clear-all" @click="clearAll">清除所有</div>
         </div>
       </div>
     </div>
     <template>
       <div class="outer-bar-locate rest-bar" v-show="tipList.length >= displayNum">
         <div class="rest-app-bar"></div>
-        <div class="clear-all">清除所有</div>
+        <div class="clear-all" @click="clearAll">清除所有</div>
       </div>
     </template>
-
   </div>
-
 </template>
 
 <script>
 import TipBar from "@/components/ndg/screenlocker/TipsList/TipBar";
 import {v4 as uuidv4} from "uuid";
 import {Timer} from "@/components/ndg/timer";
+import {
+  dongfangcaifu,
+  eleme,
+  neteasemusic,
+  qqmail,
+  taobao,
+  wechat,
+  zhifubao
+} from "@/components/ndg/screenlocker/example";
+import {gradientSplit, inRegion} from "@/components/ndg/common/common";
 
 export default {
   name: "TipsList",
   components: {TipBar},
   props: {
-    tipList: {
-      required: false,
-      type: Array,
-      default: () => {
-        return [
-          {
-            app: 'wangyiyun',
-            name: '网易云音乐',
-            time: Math.ceil(30 * Math.random()),
-            title: '私信箱',
-            subTitle: '您收到一条私信...',
-            detail: '你好啊，很高兴认识你！',
-            id: uuidv4()
-          },
-          {
-            app: 'zhifubao',
-            name: '支付宝',
-            time: Math.ceil(30 * Math.random()),
-            title: '收款',
-            subTitle: '您收到一笔收款待查收...',
-            detail: '收款50元',
-            id: uuidv4()
-          },
-          {
-            app: 'eliaomo',
-            name: '饿了么',
-            time: Math.ceil(30 * Math.random()),
-            title: '订单状态',
-            subTitle: '骑手正在派送中',
-            detail: '剩余时间30min',
-            id: uuidv4()
-          },
-          {
-            app: 'taobao',
-            name: '淘宝',
-            time: Math.ceil(30 * Math.random()),
-            title: '提醒',
-            subTitle: '你关注的商品减价了',
-            detail: '直降30￥',
-            id: uuidv4()
-          },
-          {
-            app: 'we-chat',
-            name: '微信',
-            time: Math.ceil(30 * Math.random()),
-            title: '公众号',
-            subTitle: '您订阅的实战精英有新文章发布',
-            detail: '猪肉上市公司财报浅析',
-            id: uuidv4(),
-          },
-        ]
-      }
-    },
+    // 一个页面显示的TipBar数量
     displayNum: {
       require: false,
       type: Number,
       default: 6
     },
+    overDragRatio: {
+      require: false,
+      type: Number,
+      default: 0.3
+    }
   },
   mounted() {
-    const youxiang = {
-      app: 'QQyouxiang',
-      name: 'QQ邮箱',
-      time: Math.ceil(30 * Math.random()),
-      title: '来信提醒',
-      subTitle: 'http://github.com/BodomLake/webpack-demo',
-      detail: 'vue-draggable',
-      id: uuidv4()
-    }
-    this.tipList.push(youxiang)
-    for (let i = 0; i < 1; i++) {
-      const example = {
-        app: 'we-chat',
-        name: '微信',
-        time: Math.ceil(30 * Math.random()),
-        title: '公众号' + Math.ceil(100 * Math.random()),
-        subTitle: '您订阅的实战精英有新文章发布...',
-        detail: '猪肉上市公司财报浅析',
-        id: uuidv4(),
-      }
-      this.tipList.push(example)
-    }
+    // 计算容器尺寸
+    this.tipList.push(dongfangcaifu)
+    this.tipList.push(wechat)
+    this.tipList.push(qqmail)
+    this.tipList.push(zhifubao)
+    this.tipList.push(taobao)
+    this.tipList.push(eleme)
+    this.tipList.push(neteasemusic)
   },
   model: {
     prop: 'tipList',
@@ -125,14 +76,34 @@ export default {
   },
   data() {
     return {
+      tipList: [],
       // 被拖拽的Bar的id
       dragBarId: '',
       // 纵向位移量
       offsetY: 0,
+      baseOffsetY: 0,
       timer: new Timer(),
       // 拖拽的速度，决定是否要拉到底
       speed: 0,
-
+      // 子组件被点击的时候对应的xy坐标
+      startPos: {
+        pageX: 0,
+        pageY: 0,
+        clientY: 0,
+        clientX: 0
+      },
+      contRect: {
+        height: 0,
+        width: 0,
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        x: 0,
+        y: 0
+      },
+      dragOverTimer: 0,
+      scrolling: false,
     }
   },
   computed: {
@@ -140,19 +111,27 @@ export default {
       return 100 / this.displayNum + '%';
     },
     scrollOffset() {
-      return `translateY(${this.offsetY}px)`
+      return `translateY(${this.totalOffset}px)`
     },
+    totalOffset() {
+      return this.offsetY + this.baseOffsetY
+    },
+    transition() {
+      return this.scrolling ? '' : 'transform 0.3s ease-in-out';
+    }
   },
   methods: {
     enterApp(tid) {
       let app = this.tipList[tid]
       this.$emit('enterApp', app)
     },
-    startDrag(tid, startPos) {
-      // console.log('被拉拽的tid', tid)
+    /**
+     * 开始拖拽
+     */
+    startDrag(tid) {
       this.dragBarId = tid;
-      this.startPos = startPos;
       this.timer.start();
+      this.scrolling = true;
     },
     /**
      * 拖拽结束了
@@ -160,20 +139,112 @@ export default {
     endDrag() {
       this.timer.shutdown()
     },
-    crossDragOver(clientX) {
+    /**
+     * 让被选中的<TipBar>响应水平位移
+     * @param clientX
+     * @param clientY
+     */
+    crossDragOver(clientX, clientY) {
       for (let i = 0; i < this.$children.length; i++) {
         let child = this.$children[i]
         if (child.$el.id == this.dragBarId) {
-          child['crossDragOver'](clientX)
+          child['crossDragOver'](clientX, clientY)
           break;
         }
       }
     },
+    /**
+     * 外层dom响应<TipBar>的拉拽事件传播
+     * @param $event
+     */
     listDragStart($event) {
-      console.log($event.screenX, $event.screenY, 'list-drag-start')
+      console.log('x:', $event.pageX, 'y:', $event.pageY, 'list-drag-over')
     },
+    /**
+     * 外层dom响应<TipBar>的拉拽事件传播，处理是否要让本组件发生纵向位移，也就是滚动条
+     * @param $event
+     */
     listDragOver($event) {
-      // console.log($event.screenX, $event.screenY, 'list-drag-over')
+      // console.log('起始：', 'x', this.startPos.clientX, 'y', this.startPos.clientY)
+      // console.log('移动', 'x:', $event.clientX, 'y:', $event.clientY)
+      // 容器高度以及滚动高度
+      const containerHeight = this.$refs['container'].getBoundingClientRect().height;
+      const scrollHeight = this.$refs['container'].scrollHeight;
+      // 计算出超出的高度
+      const excessHeight = Math.abs(containerHeight - scrollHeight)
+      // 本次位移目的地 y轴坐标
+      const offset = $event.clientY - this.startPos.clientY;
+      // 向下拉，正数
+      if (inRegion(this.totalOffset, 0, containerHeight * this.overDragRatio) && this.totalOffset >= 0) {
+        this.offsetY = offset;
+        this.baseOffsetY = 0
+      } else if (inRegion(this.totalOffset, -(containerHeight * this.overDragRatio + excessHeight), 0) && this.totalOffset <= 0) {
+        this.offsetY = offset;
+      }
+      console.log('位移量', this.offsetY, containerHeight, scrollHeight, excessHeight, offset)
+    },
+    listDragEnd($event) {
+      this.scrolling = false;
+      // 容器高度以及滚动高度
+      const containerHeight = this.$refs['container'].getBoundingClientRect().height;
+      const scrollHeight = this.$refs['container'].scrollHeight;
+      // 计算出超出的高度
+      const excessHeight = Math.abs(containerHeight - scrollHeight)
+      console.log('拖拽结束了', containerHeight, scrollHeight)
+      // List处于最高位，并且向下拉的时候也就是
+      if (this.totalOffset > 0) {
+        this.baseOffsetY = 0
+        this.offsetY = 0
+      } else if (this.offsetY < 0 && Math.abs(this.totalOffset) > excessHeight) {
+        // 向上拉,但是也超出了scrollHeight的范围
+        // 让基础offset记录这次的位移长度，直接拉到最底，不能让容器超出既有范围
+        console.log('listDragEnd', this.totalOffset, this.baseOffsetY, this.offsetY)
+        this.offsetY = 0
+        this.baseOffsetY = containerHeight - scrollHeight
+      } else {        // 向下拉，却没有超出范围
+        // 让基础offset记录这次的位移长度
+        this.baseOffsetY += this.offsetY;
+        this.offsetY = 0;
+      }
+    },
+    clearAll() {
+      this.tipList = new Array(0);
+    },
+    disableScroll($event) {
+      $event.preventDefault();
+    },
+    md($event) {
+      // console.log('mousedown', $event)
+      this.startPos.clientX = $event.clientX;
+      this.startPos.clientY = $event.clientY;
+      this.startPos.pageX = $event.pageX;
+      this.startPos.pageY = $event.pageY;
+    },
+    wheel($event) {
+      // 容器高度以及滚动高度
+      const containerHeight = this.$refs['container'].getBoundingClientRect().height;
+      const scrollHeight = this.$refs['container'].scrollHeight;
+      // 计算出超出的高度
+      const excessHeight = Math.abs(containerHeight - scrollHeight)
+      const barHeight = containerHeight / this.displayNum;
+      const delta = barHeight / 2
+      console.log($event.deltaY, this.totalOffset, containerHeight * this.overDragRatio - delta, -(-delta + excessHeight + containerHeight * this.overDragRatio))
+
+      // 向上拉，totalOffset要减少
+      if ($event.deltaY < 0) {
+        if (this.totalOffset >= 0) {
+          this.baseOffsetY = 0
+        } else {
+          this.baseOffsetY += delta;
+        }
+      } else if ($event.deltaY > 0) {
+        // 向下拉，totalOffset要变大
+        if (this.baseOffsetY <= -excessHeight) {
+          this.baseOffsetY = -excessHeight
+        } else {
+          this.baseOffsetY -= delta;
+        }
+      }
     }
   }
 }
@@ -186,7 +257,7 @@ export default {
   position: relative;
   left: 50%;
   transform: translate(-50%, 0);
-  overflow-y: auto;
+  overflow-y: hidden;
   overflow-x: hidden;
   /*  display: flex;
     flex-wrap: wrap;
@@ -198,7 +269,7 @@ export default {
   height: 0px;
 }
 
-.tips-list .item {
+.tips-list .tip-item {
   width: 100%;
   justify-items: center;
 }
@@ -243,5 +314,10 @@ export default {
   font-size: 1.8vmin;
   user-select: none;
   cursor: url("/static/cursor/link.cur"), auto;
+}
+
+.list-container {
+  height: 100%;
+  width: 100%;
 }
 </style>

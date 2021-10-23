@@ -33,34 +33,34 @@
       <div class="right-cover cover"></div>
     </div>
     <!-- 左侧抽屉-->
-    <template v-if="upOffsetX > 0">
-      <div :style="{'z-index': upOffsetX >= barRect.width ? 2: -1}"
+    <template v-if="offsetX > 0">
+      <div :style="{'z-index': offsetX >= barRect.width ? 2: -1}"
            class="left-draw" @mousedown="md($event, 'left')" ref="left">
-        <div :style="{'z-index': upOffsetX >= barRect.width/3 ? 2: -1, 'opacity': upOffsetX >= barRect.width/3 ? 1: 0}">
+        <div :style="{'z-index': offsetX >= barRect.width/3 ? 2: -1, 'opacity': offsetX >= barRect.width/3 ? 1: 0}">
           左侧
         </div>
         <div
-          :style="{'z-index': upOffsetX >= barRect.width*2/3 ? 2: -1, 'opacity': upOffsetX >= barRect.width*2/3? 1: 0}">
+          :style="{'z-index': offsetX >= barRect.width*2/3 ? 2: -1, 'opacity': offsetX >= barRect.width*2/3? 1: 0}">
           查看
         </div>
-        <div :style="{'z-index': upOffsetX >= barRect.width ? 2: -1, 'opacity': upOffsetX >= barRect.width ? 1: 0}">清空
+        <div :style="{'z-index': offsetX >= barRect.width ? 2: -1, 'opacity': offsetX >= barRect.width ? 1: 0}">清空
         </div>
         <slot name="left-draw"></slot>
       </div>
     </template>
     <!-- 右侧抽屉 -->
-    <template v-if="upOffsetX < 0">
-      <div :style="{'z-index': upOffsetX >= barRect.width ? 2: -1}"
+    <template v-if="offsetX < 0">
+      <div :style="{'z-index': offsetX >= barRect.width ? 2: -1}"
            @mousedown="md($event, 'right')" class="right-draw" ref="right">
         <div
-          :style="{'z-index': upOffsetX <= -barRect.width ? 2: -1, 'opacity': upOffsetX <= -barRect.width ? 1: 0}">
+          :style="{'z-index': offsetX <= -barRect.width ? 2: -1, 'opacity': offsetX <= -barRect.width ? 1: 0}">
           清理
         </div>
         <div
-          :style="{'z-index': upOffsetX <= -barRect.width*2/3 ? 2: -1, 'opacity': upOffsetX <= -barRect.width*2/3? 1: 0}">
+          :style="{'z-index': offsetX <= -barRect.width*2/3 ? 2: -1, 'opacity': offsetX <= -barRect.width*2/3? 1: 0}">
           删除
         </div>
-        <div :style="{'z-index': upOffsetX <= -barRect.width/3 ? 2: -1, 'opacity': upOffsetX <= -barRect.width/3 ? 1: 0}">
+        <div :style="{'z-index': offsetX <= -barRect.width/3 ? 2: -1, 'opacity': offsetX <= -barRect.width/3 ? 1: 0}">
           右侧
         </div>
         <slot name="right-draw"></slot>
@@ -74,7 +74,7 @@
 import MyIcon from "@/components/ndg/MyIcon";
 
 import {Timer} from "@/components/ndg/timer";
-import Upper from './upper.js'
+import Upper from './drag.js'
 
 export default {
   name: "TipBar",
@@ -84,15 +84,13 @@ export default {
     return {
       timer: new Timer(),
       startPos: {
-        clientX: 0,
+        pageX: 0,
+        pageY: 0,
         clientY: 0,
+        clientX: 0
       },
-      // 上层 位移
-      upOffsetX: 0,
-      upOffsetY: 0,
-      // 下层 位移
-      btOffsetY: 0,
-      btOffsetX: 0,
+      offsetX: 0,
+      offsetY: 0,
       barRect: {
         height: 0,
         width: 0,
@@ -134,7 +132,7 @@ export default {
 
   },
   watch: {
-    "upOffsetX": {
+    "offsetX": {
       handler: function (val, oldVal) {
         if (val == 0) {
           this.dragState.dragToRight = false;
@@ -146,19 +144,19 @@ export default {
   },
   computed: {
     upOffset() {
-      return `translateX(${this.upOffsetX}px)`
+      return `translateX(${this.offsetX}px)`
     },
     dragOut() {
-      if (this.upOffsetX == 0) {
+      if (this.offsetX == 0) {
         return false;
       }
-      return Math.abs(this.upOffsetX) >= this.barRect.width * this.dragBackLimit
+      return Math.abs(this.offsetX) >= this.barRect.width * this.dragBackLimit
     },
     dragBack() {
-      if (this.upOffsetX != 0) {
+      if (this.offsetX != 0) {
         return false;
       }
-      return Math.abs(this.upOffsetX) >= this.barRect.width * (1 - this.dragBackLimit)
+      return Math.abs(this.offsetX) >= this.barRect.width * (1 - this.dragBackLimit)
     },
     leftDrawStyle() {
 
@@ -168,21 +166,6 @@ export default {
     }
   },
   methods: {
-    crossDragOver(clientX) {
-      console.log('响应父组件的调用')
-      // clientX是当前鼠标拖拽的横向位置
-      let offset = clientX - this.startPos.clientX;
-      if (this.dragState.dragToLeft) {
-        offset -= this.barRect.width
-      }
-      if (this.dragState.dragToRight) {
-        offset += this.barRect.width
-      }
-      this.upOffsetX = offset
-    },
-    crossDragEnd() {
-
-    },
     enterApp($event, tid) {
       this.$emit('enterApp', tid)
     },
