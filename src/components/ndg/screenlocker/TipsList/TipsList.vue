@@ -226,7 +226,7 @@ export default {
       const excessHeight = Math.abs(containerHeight - scrollHeight)
       const barHeight = containerHeight / this.displayNum;
       const delta = barHeight / 2
-      console.log($event.deltaY, this.totalOffset, containerHeight * this.overDragRatio - delta, -(-delta + excessHeight + containerHeight * this.overDragRatio))
+      // console.log($event.deltaY, this.totalOffset, containerHeight * this.overDragRatio - delta, -(-delta + excessHeight + containerHeight * this.overDragRatio))
 
       // 向上拉，totalOffset要减少
       if ($event.deltaY < 0) {

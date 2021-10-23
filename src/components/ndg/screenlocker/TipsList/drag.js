@@ -53,7 +53,7 @@ export default {
       // 位移长度不够，就返回原始位置
       if (this.tip.id == this.$parent.$data.dragBarId) {
         // 超出既定范围
-        let dragOut = Math.abs(this.offsetX) >= this.barRect.width * this.dragBackLimit
+        let dragOut = Math.abs(this.totalOffset) >= this.barRect.width * this.dragBackLimit
         console.log(dragOut, this.offsetX, this.barRect.width * this.dragBackLimit)
         if (!dragOut) {
           this.baseOffsetX = 0
