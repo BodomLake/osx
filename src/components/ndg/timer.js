@@ -29,9 +29,9 @@ export class Timer {
    */
   start(step, init) {
     // 没有指定默认50ms计时一次
-    step = step && isNaN(step) ? step : 50;
+    step = step && !isNaN(step) ? step : 50;
     // 没有指定初始时间，默认为0
-    this.time = init && isNaN(init) && isNaN ? init : 0;
+    this.time = init && !isNaN(init) ? init : 0;
     // 开始计时，并且返回计时器id
     this.timer = setInterval(() => {
       this.time += step;
@@ -62,7 +62,7 @@ export class Timer {
    */
   resume(step) {
     // 没有指定默认50ms计时一次
-    step = step && isNaN(step) ? step : 50;
+    step = step && !isNaN(step) ? step : 50;
     // 开始计时，并且返回计时器id
     this.timer = setInterval(() => {
       this.time += step;

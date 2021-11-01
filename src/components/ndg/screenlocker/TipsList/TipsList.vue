@@ -10,7 +10,9 @@
         <template v-for="(tip,tidx) in tipList">
           <div class="tip-item" :style="{'height': defaultHeight,}">
             <tip-bar :tip="tip" :tidx="tidx"
-                     @enterApp="enterApp" @dragEnd="endDrag" @startDrag="startDrag" @dragAct="crossDragOver">
+                     @enterApp="enterApp" @dragEnd="endDrag"
+                     @startDrag="startDrag" @dragAct="crossDragOver"
+                     @crossOffset="crossOffset" ref="tipbar">
             </tip-bar>
           </div>
         </template>
@@ -40,7 +42,7 @@ import {
   taobao,
   wechat,
   zhifubao
-} from "@/components/ndg/screenlocker/example";
+} from "@/components/ndg/screenlocker/TipsList/example";
 import {gradientSplit, inRegion} from "@/components/ndg/common/common";
 
 export default {
@@ -77,6 +79,8 @@ export default {
       tipList: [],
       // 被拖拽的Bar的id
       dragBarId: '',
+      // 被拖拽的Bar的index
+      dragBarIndex: 0,
       // 纵向位移量
       offsetY: 0,
       baseOffsetY: 0,
@@ -128,8 +132,9 @@ export default {
     /**
      * 开始拖拽
      */
-    startDrag(tid) {
+    startDrag(tid, tidx) {
       this.dragBarId = tid;
+      this.dragBarIndex = tidx;
       this.timer.start();
       this.scrolling = true;
     },
@@ -206,7 +211,8 @@ export default {
       }
     },
     clearAll() {
-      this.tipList = new Array(0);
+      let no = Math.floor(Math.random() * this.tipList.length)
+      this.tipList.splice(no, 1)
     },
     disableScroll($event) {
       $event.preventDefault();
@@ -243,6 +249,9 @@ export default {
           this.baseOffsetY -= delta;
         }
       }
+    },
+    crossOffset(clientX) {
+      this.$refs['tipbar'][this.dragBarIndex].crossOffset(clientX)
     }
   }
 }

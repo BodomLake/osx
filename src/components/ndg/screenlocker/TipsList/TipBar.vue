@@ -74,12 +74,12 @@
 import MyIcon from "@/components/ndg/MyIcon";
 
 import {Timer} from "@/components/ndg/timer";
-import Upper from './drag.js'
+import Drag from './drag.js'
 
 export default {
   name: "TipBar",
   components: {MyIcon},
-  mixins: [Upper],
+  mixins: [Drag],
   data() {
     return {
       timer: new Timer(),
@@ -89,7 +89,9 @@ export default {
         clientY: 0,
         clientX: 0
       },
+      // 临时位移（瞬变）
       offsetX: 0,
+      // 基础位移（记录）
       baseOffsetX: 0,
       barRect: {
         height: 0,

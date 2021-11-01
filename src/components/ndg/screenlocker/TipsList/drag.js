@@ -16,7 +16,8 @@ export default {
       this.startPos.clientY = $event.clientY;
       this.startPos.pageX = $event.pageX;
       this.startPos.pageY = $event.pageY;
-      this.$emit('startDrag', tid, this.startPos)
+      this.$emit('startDrag', tid, this.tidx)
+      // 设置为10ms触发一次计时
       this.timer.start(10);
       this.scrolling = true;
     },
@@ -26,21 +27,24 @@ export default {
       // console.log('δX', $event.clientX - this.startPos.clientX, 'δy', $event.clientY - this.startPos.clientY)
       let deltaX = Math.abs($event.clientX - this.startPos.clientX)
       let deltaY = Math.abs($event.clientY - this.startPos.clientY)
-      // 如果大于50的时候，
-
+      // console.log(deltaX, deltaY, this.timer.time, 'ms')
+      // 大于10ms的时候，判断
       if (this.timer.time >= 10) {
-        // 计算拖拽之后50ms内的位移方向，判断纵向还是横向拖拽
+        // 计算拖拽之后10ms内的位移方向，判断纵向还是横向拖拽
         console.log(this.horzDrag ? '横向' : '纵向')
         this.horzDrag = deltaX >= deltaY
+        // 告诉父组件<TipsList>拖拽行为是什么方向
         this.$emit('dragAct', this.horzDrag)
+        // 取消这次计时
         this.timer.shutdown();
       }
       // 如果是横向位移
       if (this.horzDrag && this.tip.id == this.$parent.$data.dragBarId) {
         let offset = $event.clientX - this.startPos.clientX;
         this.offsetX = offset;
+      } else {
+        this.$emit('crossOffset', $event.clientX);
       }
-
     },
     /**
      * 响应拉拽完成事件
@@ -73,5 +77,11 @@ export default {
     crossDragEnd() {
 
     },
-  }
+    crossOffset(clientX) {
+      if (this.horzDrag && this.tip.id == this.$parent.$data.dragBarId) {
+        let offset = clientX - this.startPos.clientX;
+        this.offsetX = offset;
+      }
+    }
+  },
 }
