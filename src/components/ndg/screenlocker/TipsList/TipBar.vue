@@ -7,7 +7,7 @@
          @dragover="dragOver($event, tip.id)"
          @mouseup="mu($event)">
       <div class="left-cover cover"></div>
-      <div class="middle-layer cover" @dblclick="enterApp($event, tip.id)">
+      <div class="middle-layer cover" @dblclick="enterApp($event, tidx)">
         <div class="app-icon">
           <div style="position: relative;height: 100%">
             <my-icon :class-name="tip.app"></my-icon>
@@ -161,8 +161,8 @@ export default {
     }
   },
   methods: {
-    enterApp($event, tid) {
-      this.$emit('enterApp', tid)
+    enterApp($event, tidx) {
+      this.$emit('enterApp', tidx)
     },
     checkBar($event, tid) {
       this.$emit('startDrag', tid, this.startPos)

@@ -33,6 +33,7 @@ export default {
     deskWidth() {
       return this.desks.length * 100 + "%"
     },
+    // 每移动一个桌面长度所需的位移，随着desks.length的变化而变化
     deskShiftOffset() {
       return 100 / this.desks.length
     },
@@ -72,7 +73,11 @@ export default {
         arr.push(height)
       })
       return arr
-    }
+    },
+    backgroundTransition(){
+      // 桌面个数的变化会因为transition的存在而导致晃动，所以要屏蔽该css属性一段时间
+      return this.deskSwitching ? '': `transform ${this.switchDeskTimeCost}ms ease-in-out`
+    },
   },
   watch: {
     "currentDeskNo": {

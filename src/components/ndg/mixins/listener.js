@@ -147,7 +147,7 @@ export default {
     },
   },
   beforeRouteLeave: function (to, from, next) {
-    if (to.path == '/mainEnter' && from.path == '/nestedDragGrid') {
+    if (from.path == '/nestedDragGrid') {
       console.log(this)
       window.removeEventListener('resize', this.resize)
       window.removeEventListener('keydown', this.keyDown)

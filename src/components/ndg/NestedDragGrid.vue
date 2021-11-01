@@ -5,7 +5,7 @@
     <shift-zone orientation="right" :flowOver="isDragging" @switchUnit="switchUnit" :size="3"></shift-zone>
     <!-- 不要用高斯模糊 否则动画会卡顿 'filter': modal.show? 'blur(4px)':'blur(0px)' ,建议使用 filter.js自行绘制高斯模糊背景 -->
     <div class="ndg-background"
-         :style="{'width': deskWidth,'transition': `all ${switchDeskTimeCost}ms ease-in-out`, 'transform': deskOffset}"
+         :style="{'width': deskWidth,'transition': backgroundTransition, 'transform': deskOffset}"
          @mousedown="mousedown($event)" @mousemove="mousemove($event)">
       <!-- 多个桌面 -->
       <template v-for="(desk, i) in desks">
@@ -655,7 +655,7 @@ export default {
   max-height: 100%;
   display: flex;
   flex-direction: row;
-  transition: all 0.5s ease-in-out;
+  transition: transform 0.5s ease-in-out;
 }
 
 /* 当前桌面 */

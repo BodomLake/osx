@@ -1,7 +1,7 @@
 <template>
   <div class="time">
     <!--<div style="display: inline; font-size: 12px;">{{ currentDate }}</div>-->
-    <div style="display: inline; font-size: 12px; color: white">{{ week }} {{ currentTime }}</div>
+    <div style="display: inline; font-size: 12px; color: white;user-select: none">{{ week }} {{ currentTime }}</div>
   </div>
 </template>
 

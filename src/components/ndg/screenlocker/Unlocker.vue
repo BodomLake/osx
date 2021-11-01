@@ -62,24 +62,22 @@ export default {
     },
   },
   mounted() {
-    this.mounteKeyResp();
+    window.addEventListener('keydown', this.keyBoard)
+  },
+  beforeDestroy() {
+    window.removeEventListener('keydown', this.keyBoard);
   },
   methods: {
-    mounteKeyResp() {
-      window.addEventListener('keydown', $event => {
-        let keyCode = $event.key
-        console.log($event.key)
-        if (!isNaN(keyCode)) {
-          this.kbInput(keyCode)
-        } else if (keyCode == 'Backspace') {
-          this.kbBackSpace()
-        } else if (keyCode == 'Escape') {
-          this.$emit('quitUnLockMode', this.msg)
-        }
-      })
-    },
-    quitKeyResp() {
-      window.removeEventListener('keydown');
+    keyBoard($event) {
+      let keyCode = $event.key
+      console.log($event.key)
+      if (!isNaN(keyCode)) {
+        this.kbInput(keyCode)
+      } else if (keyCode == 'Backspace') {
+        this.kbBackSpace()
+      } else if (keyCode == 'Escape') {
+        this.$emit('quitUnLockMode', this.msg)
+      }
     },
     kbInput(num) {
       this.clickedIndex = num;
