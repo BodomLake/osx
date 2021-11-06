@@ -84,4 +84,16 @@ export function inRegion(val, a, b) {
   return val >= low && val <= high;
 }
 
+export const splitToGroup = (d, g, group) => {
+  let sum = 0;
+  for (let i = 0; i <= g; i++) {
+    sum += group[i];
+  }
+  if (d > sum) {
+    g++;
+    g = splitToGroup(d, g, group)
+  }
+  return g;
+}
+
 export const blankEle = document.createElement('span')

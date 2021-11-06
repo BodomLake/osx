@@ -44,7 +44,7 @@
 <script>
 // 屏锁，上滑解锁，密码解锁
 import Unlocker from "@/components/ndg/screenlocker/Unlocker";
-import TimeMixin from "@/components/ndg/common/time";
+import TimeMixin from "@/components/ndg/common/sys-time";
 import TipsList from "@/components/ndg/screenlocker/TipsList/TipsList";
 
 export default {
