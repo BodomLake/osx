@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import Time from "@/components/ndg/topbar/Time";
+import Time from "@/components/ndg/topbar/time/Time";
 
 export default {
   name: "TopBar",

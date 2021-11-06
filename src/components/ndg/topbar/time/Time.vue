@@ -22,26 +22,27 @@
           </div>
         </div>
 
-
         <div class="selector-bar">
-          <div class="unit-select hoverHightLight" style="position: relative" @click="switchCalMode($event)">
-            <!-- 当月 月历-->
-            <template v-if="calMode == 1">
+
+          <div class="unit-select hoverHightLight" style="position: relative" @click="switchCalPeriod($event)">
+            <!-- 当月 -->
+            <template v-if="calPeriod == 1">
               <div class="text-center" style="width: 85%">{{ displayMonthName }} {{ displayDate.year }}</div>
             </template>
             <!-- 当年 12个月，以及下年四个月-->
-            <template v-if="calMode == 2">
+            <template v-if="calPeriod == 2">
               <div class="text-center" style="width: 85%">{{ displayDate.year }}</div>
             </template>
             <!-- 上下8年，一共显示2*8个年头，但是选择条中的所指示的是该年所在的十年，该十年前三年加上后上年，这是以下需要显示的 -->
-            <template v-if="calMode == 3">
+            <template v-if="calPeriod == 3">
               <div class="text-center" style="width: 85%">{{ yearGap }}</div>
             </template>
             <!-- 按照周历显示 -->
-            <template v-if="calMode == 0">
+            <template v-if="calPeriod == 0">
               <div class="text-center" style="width: 85%">{{ weekCal.duration }} 第{{ displayDate.weekNo }}周</div>
             </template>
           </div>
+
           <div class="up-arrow" @click="prevPeriod($event)">
             <div class="arrow upward"></div>
           </div>
@@ -52,10 +53,9 @@
 
         <div class="day-array" :style="[weekCalModeStyle]">
           <!-- 当月 月历-->
-          <template v-if="calMode == 1">
+          <template v-if="calPeriod == 1">
             <!-- 星期X栏目 -->
             <div class="day-array-row">
-              <!-- 月份模式 -->
               <template v-for="(week,i) in weekName">
                 <div class="day-array-box" :data-index="i">
                   <div class="text-center">{{ week }}
@@ -63,7 +63,7 @@
                 </div>
               </template>
             </div>
-            <!-- 月历模式：展示每一个月 -->
+
             <template v-for="week in menology">
               <div class="day-array-row">
                 <template v-for="day in week">
@@ -78,8 +78,8 @@
             </template>
           </template>
 
-          <!-- 年历模式，展示本年12个月以及下一年的前四个月 -->
-          <template v-if="calMode == 2">
+          <!-- 展示本年12个月以及下一年的前四个月 -->
+          <template v-if="calPeriod == 2">
             <div style="display: flex; flex-direction: row; flex-wrap: wrap; height: 100%; width: 100%">
               <template v-for="month in yearCal">
                 <div class="month-array-box" :data-month="month.month" :data-year="month.year">
@@ -92,7 +92,7 @@
           </template>
 
           <!-- 上下三年，10年跨度 -->
-          <template v-if="calMode == 3">
+          <template v-if="calPeriod == 3">
             <template v-for="i in 4">
               <div class="year-array-row">
                 <template v-for="j in 4">
@@ -109,7 +109,7 @@
           </template>
 
           <!-- 周历模式-->
-          <template v-if="calMode == 0">
+          <template v-if="calPeriod == 0">
             <!-- 星期X栏目 -->
             <div class="day-array-row" style="height: 50%">
               <!-- 星期模式 -->
@@ -155,9 +155,14 @@
 </template>
 
 <script>
-import TimeMixin from '../common/sys-time'
+import TimeMixin from '../../common/sys-time'
+// 分割一部分代码
+import YearMixin from './mixins/year'
+import MonthMixin from './mixins/month'
+import HistoryMixin from './mixins/history'
+import WeekMixin from './mixins/week'
 // 日历周期
-const calMode = {
+const calPeriod = {
   WEEK: 0,
   MONTH: 1,
   YEAR: 2,
@@ -185,7 +190,7 @@ export default {
 
       enterEvents: '',
       // 默认月历，加载这一年的所有月份表
-      calMode: calMode.WEEK,
+      calPeriod: calPeriod.MONTH,
       displayDate: {
         year: today.getFullYear(),
         month: today.getMonth() + 1,
@@ -204,7 +209,7 @@ export default {
   },
   mounted() {
   },
-  mixins: [TimeMixin],
+  mixins: [TimeMixin, WeekMixin, HistoryMixin, MonthMixin, YearMixin],
   computed: {
     timeBarRect() {
       return this.$refs['timeBar'] ? this.$refs['timeBar'].$el.getBoundingClientRect() : {};
@@ -215,18 +220,6 @@ export default {
     // 目前选择显示的 月份名称
     displayMonthName() {
       return monthName[this.displayDate.month]
-    },
-    // 当前显示的年份跨度(10年长度)
-    yearGap() {
-      let s = Math.abs(Math.floor(this.displayDate.year / 10))
-      return `${s * 10}-${s * 10 + 9}`
-    },
-    weekCalModeStyle() {
-      let height = this.calMode == calMode.WEEK ? '15%' : '45%'
-      return {maxHeight: height, minHeight: height}
-    },
-    currentWeek() {
-      return this.weekCal.days[this.displayDate.weekNo - 1];
     },
   },
   created() {
@@ -249,35 +242,20 @@ export default {
       this.displayDate.weekNo = this.calcWeekNo(today.getFullYear(), today.getMonth() + 1, today.getDate())
       this.menology = this.monthCalender(today.getFullYear(), today.getMonth() + 1)
     },
-    // 当月的数字是黑色的，其他月的是橘色的
-    currentMonthDayStyle(day) {
-      return {color: day.month != this.displayDate.month ? 'orange' : 'black'}
-    },
-    // 被选中的日期样式
-    checkedDayStyle(day) {
-      let isChecked = (day.year == this.checkedTime.year && day.month == this.checkedTime.month && day.date == this.checkedTime.date)
-      return {border: isChecked ? '3px solid white' : ''}
-    },
-    // 被选中的年份的样式
-    checkedYearStyle(year) {
-      return {border: year == this.checkedYear ? '3px solid white' : '1px solid transparent'}
-    },
-    // 选中一个年份
-    checkYear(year) {
-      this.checkedYear = year
-    },
+
     // 今年所显示的样式
     currentYearStyle(year) {
       return {backgroundColor: year == this.year ? 'rgba(62, 10, 10, 0.3)' : ''}
     },
 
+    // 响应点击事件，进入上一个周期
     prevPeriod($event) {
       $event.stopPropagation();
-      switch (this.calMode) {
-        case calMode.WEEK:
+      switch (this.calPeriod) {
+        case calPeriod.WEEK:
           this.prevWeek();
           break;
-        case calMode.MONTH:
+        case calPeriod.MONTH:
           if (this.displayDate.month == 1) {
             this.displayDate.month = 12;
             this.displayDate.year -= 1;
@@ -286,22 +264,23 @@ export default {
           }
           this.menology = this.monthCalender(this.displayDate.year, this.displayDate.month)
           break;
-        case calMode.YEAR:
+        case calPeriod.YEAR:
           this.displayDate.year -= 1;
           this.prevYear(this.displayDate.year);
           break;
-        case calMode.HISTORY:
+        case calPeriod.HISTORY:
 
         default:
       }
     },
+    // 响应点击事件，进入下一个周期
     nextPeriod($event) {
       $event.stopPropagation();
-      switch (this.calMode) {
-        case calMode.WEEK:
+      switch (this.calPeriod) {
+        case calPeriod.WEEK:
           this.nextWeek();
           break;
-        case calMode.MONTH:
+        case calPeriod.MONTH:
           if (this.displayDate.month == 12) {
             this.displayDate.month = 1;
             this.displayDate.year += 1;
@@ -310,29 +289,44 @@ export default {
           }
           this.menology = this.monthCalender(this.displayDate.year, this.displayDate.month)
           break;
-        case calMode.YEAR:
+        case calPeriod.YEAR:
           this.displayDate.year += 1;
           this.nextYear(this.displayDate.year);
           break;
-        case calMode.HISTORY:
+        case calPeriod.HISTORY:
 
         default:
       }
     },
     // 周前移一周
     prevWeek() {
-      this.displayDate.weekNo--;
+      if (this.displayDate.weekNo == 1) {
+        this.displayDate.weekNo = 53;
+        this.displayDate.year -= 1
+        this.weekCal.days = this.weekCalender(this.displayDate.year)
+      } else {
+        this.displayDate.weekNo--;
+      }
     },
     // 周历后移一周
     nextWeek() {
-      this.displayDate.weekNo++;
+      if (this.displayDate.weekNo == 53) {
+        this.displayDate.weekNo = 1;
+        this.displayDate.year += 1
+        this.weekCal.days = this.weekCalender(this.displayDate.year)
+      } else {
+        this.displayDate.weekNo++;
+      }
     },
+
+    // 周历模式，日历模式 背景色
     todayStyle(day) {
       let isToday = (day.year == new Date().getFullYear()
         && day.month == new Date().getMonth() + 1
         && day.date == new Date().getDate())
       return {backgroundColor: isToday ? 'rgba(62, 10, 10, 0.3)' : ''}
     },
+    // 选中一天
     checkDay($event, day) {
       $event.stopPropagation();
       Object.keys(day).forEach((key) => {
@@ -341,17 +335,18 @@ export default {
         }
       })
     },
-    switchCalMode($event) {
+    // 切换Calender的周期
+    switchCalPeriod($event) {
       $event.stopPropagation();
-      console.log(this.calMode)
-      if (this.calMode == calMode.MONTH) {
-        this.calMode = calMode.YEAR
-      } else if (this.calMode == calMode.YEAR) {
-        this.calMode = calMode.HISTORY
-      } else if (this.calMode == calMode.HISTORY) {
-        this.calMode = calMode.WEEK;
-      } else if (this.calMode == calMode.WEEK) {
-        this.calMode = calMode.MONTH;
+      console.log(this.calPeriod)
+      if (this.calPeriod == calPeriod.MONTH) {
+        this.calPeriod = calPeriod.YEAR
+      } else if (this.calPeriod == calPeriod.YEAR) {
+        this.calPeriod = calPeriod.HISTORY
+      } else if (this.calPeriod == calPeriod.HISTORY) {
+        this.calPeriod = calPeriod.WEEK;
+      } else if (this.calPeriod == calPeriod.WEEK) {
+        this.calPeriod = calPeriod.MONTH;
       }
     },
     monthNameArray(month) {
@@ -405,7 +400,7 @@ export default {
   width: 100%;
   transition: all 500ms ease-in-out;
   z-index: 2;
-  background-image: url("../../../assets/Beach.jpg");
+  background-image: url("../../../../assets/Beach.jpg");
   background-position: center;
   box-shadow: 1px -1px 1px 0.5px rgba(62, 10, 10, 0.3) inset;
 }

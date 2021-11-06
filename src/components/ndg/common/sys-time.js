@@ -1,6 +1,6 @@
-import Day from "@/components/ndg/topbar/Day";
-import Month from "@/components/ndg/topbar/Month";
-import Year from "@/components/ndg/topbar/Year";
+import Day from "@/components/ndg/topbar/time/def/Day";
+import Month from "@/components/ndg/topbar/time/def/Month";
+import Year from "@/components/ndg/topbar/time/def/Year";
 import {splitToGroup} from "@/components/ndg/common/common";
 
 let calender = new Date();
@@ -12,22 +12,22 @@ export default {
   name: 'time',
   created() {
     this.weekCal.days = this.weekCalender(this.year)
-    this.setWeekCal();
-    console.log('当前周', this.weekCal.days)
+    // console.log('本年所有周', this.weekCal.days)
     this.menology = this.monthCalender(this.year, this.month)
     // console.log('指定年月的月历', this.menology)
     this.yearCal = this.yearCalender(this.year)
-    console.log('指定年份的年历', this.yearCal)
+    // console.log('指定年份的年历', this.yearCal)
     this.history = this.initHistory(this.year);
-    console.log('上下3年,10年宽度', this.history)
+    // console.log('上下3年,10年宽度', this.history)
     // 每隔一秒钟更新一次
-    this.timer = window.setInterval(() => {
+    this.clockTimer = window.setInterval(() => {
       this.updateTime()
     }, 1000)
   },
   data() {
     return {
-      timer: {},
+      // 时钟计时器
+      clockTimer: {},
       calender: calender,
       // 星期几
       day: calender.getDay(),
@@ -94,7 +94,7 @@ export default {
     },
     // 停止计时
     pauseTime() {
-      window.clearInterval(this.timer)
+      window.clearInterval(this.clockTimer)
     },
     // 获取这一年的周历
     weekCalender(year) {
@@ -102,8 +102,6 @@ export default {
       let startDay = new Date(`1 1, ${year}`)
       // 计算该年最后一天是星期几？
       let lastDay = new Date(`12 31, ${year}`)
-
-      console.log('第一天', startDay, lastDay, '星期：', startDay.getDay(), lastDay.getDay())
       let formerDays = []
       let latterDays = []
       let yearDays = []
@@ -115,6 +113,7 @@ export default {
       const yearNum = year % 4 == 0 ? 366 : 365
       let md = this.monthDays(year);
       for (let i = 1; i <= yearNum; i++) {
+        // 用递归算出这一天是几月份的
         let groupNo = splitToGroup(i, 0, md);
         // 从一月一号开始
         let date = i;
@@ -203,18 +202,6 @@ export default {
     // 获取某年的年历
     yearCalender(year) {
       let months = new Array(16)
-      /*
-      // 循环每一月
-      for (let m = 0; m < 12; m++) {
-        // 当前月所有的日期
-        months[m] = this.monthCalender(year, m + 1);
-      }
-      // 下一年前期四个月
-      for (let m = 0; m < 4; m++) {
-        // 当前月所有的日期
-        months[m + 12] = this.monthCalender(year + 1, m + 1);
-      }
-       */
       for (let m = 0; m < 12; m++) {
         months[m] = new Month(year, m + 1)
       }
@@ -241,10 +228,6 @@ export default {
       return this.monthDayCount;
     },
 
-    // 矫正一下当前周 是 第几周，属于哪个时间，或者属于哪个时间段
-    setWeekCal() {
-    },
-
     // 根据年月日，返回他是这一年的第几周，数字上的，不是数组下标
     calcWeekNo(year, month, date) {
       let dayCounts = 0;
@@ -257,13 +240,9 @@ export default {
           }
         }
       }
-      // console.log('计算第几周：', dayCounts, date, month)
       // 补上本月的日期
       return Math.ceil((dayCounts + date) / 7);
     },
 
   }
 }
-
-
-
