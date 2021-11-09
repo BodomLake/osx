@@ -35,7 +35,7 @@
             </template>
             <!-- 上下8年，一共显示2*8个年头，但是选择条中的所指示的是该年所在的十年，该十年前三年加上后上年，这是以下需要显示的 -->
             <template v-if="calPeriod == 3">
-              <div class="text-center" style="width: 85%">{{ yearGap }}</div>
+              <div class="text-center" style="width: 85%">{{ yearGap.start }} - {{ yearGap.end }}</div>
             </template>
             <!-- 按照周历显示 -->
             <template v-if="calPeriod == 0">
@@ -54,86 +54,20 @@
         <div class="day-array" :style="[weekCalModeStyle]">
           <!-- 当月 月历-->
           <template v-if="calPeriod == 1">
-            <!-- 星期X栏目 -->
-            <div class="day-array-row">
-              <template v-for="(week,i) in weekName">
-                <div class="day-array-box" :data-index="i">
-                  <div class="text-center">{{ week }}
-                  </div>
-                </div>
-              </template>
-            </div>
-
-            <template v-for="week in menology">
-              <div class="day-array-row">
-                <template v-for="day in week">
-                  <div class="day-array-box" style="position: relative" @click="checkDay($event,day)"
-                       :style="[currentMonthDayStyle(day),checkedDayStyle(day), todayStyle(day)]">
-                    <div class="text-center">
-                      {{ day.date }}
-                    </div>
-                  </div>
-                </template>
-              </div>
-            </template>
+            <Month v-model="menology" :display-date="displayDate"></Month>
           </template>
-
           <!-- 展示本年12个月以及下一年的前四个月 -->
           <template v-if="calPeriod == 2">
-            <div style="display: flex; flex-direction: row; flex-wrap: wrap; height: 100%; width: 100%">
-              <template v-for="month in yearCal">
-                <div class="month-array-box" :data-month="month.month" :data-year="month.year">
-                  <div class="text-center">
-                    {{ month.monthName }}
-                  </div>
-                </div>
-              </template>
-            </div>
+            <Year v-model="yearCal" :display-date="displayDate" @goToMenology="goToMenology"></Year>
           </template>
-
           <!-- 上下三年，10年跨度 -->
           <template v-if="calPeriod == 3">
-            <template v-for="i in 4">
-              <div class="year-array-row">
-                <template v-for="j in 4">
-                  <div class="year-array-box" @click="checkYear(history[(i - 1) * 4 + j - 1].year)"
-                       :style="[checkedYearStyle(history[(i - 1) * 4 + j - 1].year),
-                       currentYearStyle(history[(i - 1) * 4 + j - 1].year)]">
-                    <div class="text-center">
-                      {{ history[(i - 1) * 4 + j - 1].year }}
-                    </div>
-                  </div>
-                </template>
-              </div>
-            </template>
+            <History v-model="history" :display-date="displayDate" @goToYearCal="goToYearCal"></History>
           </template>
-
           <!-- 周历模式-->
           <template v-if="calPeriod == 0">
-            <!-- 星期X栏目 -->
-            <div class="day-array-row" style="height: 50%">
-              <!-- 星期模式 -->
-              <template v-for="(week,i) in weekName">
-                <div class="day-array-box" :data-index="i">
-                  <div class="text-center">{{ week }}
-                  </div>
-                </div>
-              </template>
-            </div>
-            <div class="day-array-row" style="height: 50%">
-              <template v-for="day in currentWeek">
-                <div class="day-array-box" style="position: relative"
-                     :style="[todayStyle(day), checkedDayStyle(day)]"
-                     @click="checkDay($event,day)"
-                     :data-year="day.year" :data-month="day.month" :data-date="day.date">
-                  <div class="text-center">
-                    {{ day.date }}
-                  </div>
-                </div>
-              </template>
-            </div>
+            <Week v-model="weekCal.days" :display-date="displayDate" @chooseDay="chooseDay"></Week>
           </template>
-
         </div>
 
         <!-- 事件提醒列表 -->
@@ -156,11 +90,11 @@
 
 <script>
 import TimeMixin from '../../common/sys-time'
-// 分割一部分代码
-import YearMixin from './mixins/year'
-import MonthMixin from './mixins/month'
-import HistoryMixin from './mixins/history'
-import WeekMixin from './mixins/week'
+// 分割一部分代码:各个周期对应的子组件
+import Month from './display/Month'
+import Year from "./display/Year";
+import History from "./display/History";
+import Week from "./display/Week";
 // 日历周期
 const calPeriod = {
   WEEK: 0,
@@ -178,28 +112,28 @@ export default {
     return {
       showCalender: false,
       weekName: weekName,
-      // 默认被选中的是今天
       checkedTime: {
         year: today.getFullYear(),
         month: today.getMonth() + 1,
         date: today.getDate(),
         day: today.getDay()
       },
-      // History模式下，被选中的年份
-      checkedYear: today.getFullYear(),
-
       enterEvents: '',
       // 默认月历，加载这一年的所有月份表
       calPeriod: calPeriod.MONTH,
+
+      // selector-bar 选择条中显示的 年月日
       displayDate: {
         year: today.getFullYear(),
         month: today.getMonth() + 1,
         date: today.getDate(),
         day: today.getDay(),
-        /*        hour: today.getHours(),
-                min: today.getMinutes(),
-                sec: today.getSeconds(),
-                time: today.getTime(),*/
+        /*
+        hour: today.getHours(),
+        min: today.getMinutes(),
+        sec: today.getSeconds(),
+        time: today.getTime(),
+        */
         // 确定显示的这周是该年的第几周
         weekNo: this.calcWeekNo(today.getFullYear(), today.getMonth() + 1, today.getDate())
       }
@@ -209,7 +143,13 @@ export default {
   },
   mounted() {
   },
-  mixins: [TimeMixin, WeekMixin, HistoryMixin, MonthMixin, YearMixin],
+  components: {
+    'Month': Month,
+    'Year': Year,
+    'Week': Week,
+    'History': History,
+  },
+  mixins: [TimeMixin],
   computed: {
     timeBarRect() {
       return this.$refs['timeBar'] ? this.$refs['timeBar'].$el.getBoundingClientRect() : {};
@@ -220,6 +160,19 @@ export default {
     // 目前选择显示的 月份名称
     displayMonthName() {
       return monthName[this.displayDate.month]
+    },
+    // 周历模式下的样式：主要是高度被修改了
+    weekCalModeStyle() {
+      let height = this.calPeriod == calPeriod.WEEK ? '15%' : '45%'
+      return {maxHeight: height, minHeight: height}
+    },
+    // 当前显示的年份跨度(10年长度)
+    yearGap() {
+      let s = Math.abs(Math.floor(this.displayDate.year / 10))
+      return {
+        start: s * 10,
+        end: s * 10 + 9
+      }
     },
   },
   created() {
@@ -318,14 +271,8 @@ export default {
         this.displayDate.weekNo++;
       }
     },
-
     // 周历模式，日历模式 背景色
-    todayStyle(day) {
-      let isToday = (day.year == new Date().getFullYear()
-        && day.month == new Date().getMonth() + 1
-        && day.date == new Date().getDate())
-      return {backgroundColor: isToday ? 'rgba(62, 10, 10, 0.3)' : ''}
-    },
+
     // 选中一天
     checkDay($event, day) {
       $event.stopPropagation();
@@ -353,6 +300,22 @@ export default {
       return monthName[month > 12 ? month - 13 : month]
     },
 
+    // <Year>进入指定的某年某月的月历表
+    goToMenology(year, month) {
+      this.displayDate.month = month.month;
+      this.displayDate.year = month.year;
+      this.menology = this.monthCalender(month.year, month.month)
+      this.calPeriod = calPeriod.MONTH;
+    },
+    // <History>进入指定的年历表
+    goToYearCal(year) {
+      this.displayDate.year = year;
+      this.yearCal = this.yearCalender(year)
+      this.calPeriod = calPeriod.YEAR;
+    },
+    chooseDay(year, month, date, day) {
+
+    }
   }
   ,
 }
@@ -491,19 +454,6 @@ export default {
   /*  border-bottom: 1px greenyellow groove;*/
 }
 
-.month-array-row {
-  display: flex;
-  flex-wrap: nowrap;
-  flex-direction: row;
-  min-height: calc(calc(100% / 4));
-}
-
-.year-array-row {
-  display: flex;
-  flex-wrap: nowrap;
-  flex-direction: row;
-  min-height: calc(calc(100% / 4));
-}
 
 .day-array-box {
   min-width: calc(calc(100% / 7));
@@ -515,23 +465,6 @@ export default {
   user-select: none;
   font-size: 2vmin;
   font-family: "Avenir", Helvetica, Arial, sans-serif;
-}
-
-.month-array-box {
-  min-width: calc(calc(100% / 4));
-  max-width: calc(calc(100% / 4));
-  max-height: calc(calc(100% / 4));
-  box-sizing: border-box;
-  user-select: none;
-  position: relative;
-}
-
-.year-array-box {
-  min-width: calc(calc(100% / 4));
-  box-sizing: border-box;
-  height: 100%;
-  user-select: none;
-  position: relative;
 }
 
 .text-center {

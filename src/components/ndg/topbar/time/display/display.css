@@ -1,0 +1,71 @@
+.container {
+  max-height: 100%;
+  min-height: 100%;
+}
+
+.day-array-row {
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  min-height: calc(calc(100% / 7));
+  width: 100%;
+  box-sizing: border-box;
+  color: black;
+  /*  background-color: sandybrown;*/
+  /*  border-bottom: 1px greenyellow groove;*/
+}
+
+.day-array-box {
+  min-width: calc(calc(100% / 7));
+  max-width: calc(calc(100% / 7));
+  min-height: 100%;
+  max-height: 100%;
+  /*  border-right: 1px #03e9f4 groove;*/
+  box-sizing: border-box;
+  position: relative;
+  font-weight: 400;
+  user-select: none;
+  font-size: 2vmin;
+  font-family: "Avenir", Helvetica, Arial, sans-serif;
+}
+
+.month-array-box {
+  min-width: calc(calc(100% / 4));
+  max-width: calc(calc(100% / 4));
+  max-height: calc(calc(100% / 4));
+  box-sizing: border-box;
+  user-select: none;
+  position: relative;
+}
+
+.month-array-row {
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  min-height: calc(calc(100% / 4));
+}
+
+.year-array-row {
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  min-height: calc(calc(100% / 4));
+  max-height: calc(calc(100% / 4));
+}
+
+.year-array-box {
+  min-width: calc(calc(100% / 4));
+  max-width: calc(calc(100% / 4));
+  box-sizing: border-box;
+  user-select: none;
+  position: relative;
+}
+
+.text-center {
+  width: 100%;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  user-select: none;
+}

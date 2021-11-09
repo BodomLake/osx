@@ -139,10 +139,12 @@ export default {
     },
 
     nextYear(year) {
-      this.yearCal = this.yearCalender(year)
+      this.displayDate.year += 1;
+      this.yearCal = this.yearCalender(this.displayDate.year)
     },
     prevYear(year) {
-      this.yearCal = this.yearCalender(year)
+      this.displayDate.year -= 1;
+      this.yearCal = this.yearCalender(this.displayDate.year)
     },
 
     // 获取 某年某月的月历
@@ -230,18 +232,21 @@ export default {
 
     // 根据年月日，返回他是这一年的第几周，数字上的，不是数组下标
     calcWeekNo(year, month, date) {
+      console.log(year, month, date)
+      let startDay = new Date(`1 1, ${year}`)
       let dayCounts = 0;
       // 循环前面的月份
       if (month > 1) {
-        for (let m = 0; m < month-1; m++) {
+        for (let m = 0; m < month - 1; m++) {
           dayCounts += monthDayCount[m]
           if (m == 1 && year % 4 == 0) {
             dayCounts++;
           }
         }
       }
-      // 补上本月的日期
-      return Math.ceil((dayCounts + date) / 7);
+      // 补上本月的日期，以及前年末尾补充的日期
+      // console.log(Math.ceil((dayCounts + date + startDay.getDay()) / 7), dayCounts + date + startDay.getDay())
+      return Math.ceil((dayCounts + date + startDay.getDay()) / 7);
     },
 
   }

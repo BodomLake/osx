@@ -2,28 +2,37 @@ window.onload = init;
 console.ward = function() {}; // what warnings?
 
 function init() {
+  // 渲染Threejs基础摄像机
   var root = new THREERoot({
     createCameraControls: !true,
     antialias: window.devicePixelRatio === 1,
     fov: 80
   });
 
+  // 设置颜色
   root.renderer.setClearColor(0x000000, 0);
+  // 设备高宽像是比
   root.renderer.setPixelRatio(window.devicePixelRatio || 1);
+  // 设置相机位置
   root.camera.position.set(0, 0, 60);
 
   var width = 100;
   var height = 60;
 
+  // 滑出动画
   var slide = new Slide(width, height, "out");
+  // 图片加载器
   var l1 = new THREE.ImageLoader();
+  // 跨域的图片地址
   l1.setCrossOrigin("Anonymous");
   // https://s3-us-west-2.amazonaws.com/s.cdpn.io/175711/winter.jpg
   l1.load("./iMac.jpg", function(img) {
     slide.setImage(img);
   });
+  // 添加滑动
   root.scene.add(slide);
 
+  // 滑入动画
   var slide2 = new Slide(width, height, "in");
   var l2 = new THREE.ImageLoader();
   l2.setCrossOrigin("Anonymous");
@@ -32,14 +41,17 @@ function init() {
     slide2.setImage(img);
   });
 
+  // 添加滑块
   root.scene.add(slide2);
 
+  // 动画 时间线
   var tl = new TimelineMax({
     repeat: -1,
     repeatDelay: 1.0,
     yoyo: true
   });
 
+  // 把滑动动画 放入时间线中
   tl.add(slide.transition(), 0);
   tl.add(slide2.transition(), 0);
 
@@ -55,16 +67,18 @@ function init() {
 ////////////////////
 // CLASSES
 ////////////////////
-
+// 自定义的滑块
 function Slide(width, height, animationPhase) {
+  // 构建一个平面
   var plane = new THREE.PlaneGeometry(width, height, width * 2, height * 2);
-
+  // 使用BAS的工具分割平面
   THREE.BAS.Utils.separateFaces(plane);
-
+  // 滑块：几何体
   var geometry = new SlideGeometry(plane);
-
+  // 缓冲光谱
   geometry.bufferUVs();
 
+  // 给几何体geometry创建一系列 attr
   var aAnimation = geometry.createAttribute("aAnimation", 2);
   var aStartPosition = geometry.createAttribute("aStartPosition", 3);
   var aControl0 = geometry.createAttribute("aControl0", 3);
@@ -77,10 +91,13 @@ function Slide(width, height, animationPhase) {
   var maxDuration = 1.2;
   var maxDelayX = 0.9;
   var maxDelayY = 0.125;
+  // 延展系数
   var stretch = 0.11;
 
+  // 动画时间长度
   this.totalDuration = maxDuration + maxDelayX + maxDelayY + stretch;
 
+  // 用向量 定义位置（起始位置，结束位置，控制器位置）
   var startPosition = new THREE.Vector3();
   var control0 = new THREE.Vector3();
   var control1 = new THREE.Vector3();
@@ -88,6 +105,7 @@ function Slide(width, height, animationPhase) {
 
   var tempPoint = new THREE.Vector3();
 
+  // 获取控制点0
   function getControlPoint0(centroid) {
     var signY = Math.sign(centroid.y);
 
@@ -98,6 +116,7 @@ function Slide(width, height, animationPhase) {
     return tempPoint;
   }
 
+  // 获取控制点1
   function getControlPoint1(centroid) {
     var signY = Math.sign(centroid.y);
 
@@ -108,16 +127,19 @@ function Slide(width, height, animationPhase) {
     return tempPoint;
   }
 
+  // 对几何体geometry的多个（faceCount）切面做处理
   for (
     i = 0, i2 = 0, i3 = 0, i4 = 0;
     i < geometry.faceCount;
     i++, i2 += 6, i3 += 9, i4 += 12
   ) {
     var face = plane.faces[i];
+    // 算出该面的重心
     var centroid = THREE.BAS.Utils.computeCentroid(plane, face);
 
-    // animation
+    // animation 动画在这个范围内随机的时间长度
     var duration = THREE.Math.randFloat(minDuration, maxDuration);
+    // 重心x轴坐标在 《左半个，右半个》《0,0.9》之内 线性映射
     var delayX = THREE.Math.mapLinear(
       centroid.x,
       -width * 0.5,
@@ -127,6 +149,8 @@ function Slide(width, height, animationPhase) {
     );
     var delayY;
 
+    // 动画状态是 划入还是划出
+    // 获取Y重心在 <0,半高> <0, 0.125>上面的线性映射
     if (animationPhase === "in") {
       delayY = THREE.Math.mapLinear(
         Math.abs(centroid.y),
@@ -153,9 +177,11 @@ function Slide(width, height, animationPhase) {
 
     // positions
 
+    // 起始和终点位置都和质心一致
     endPosition.copy(centroid);
     startPosition.copy(centroid);
 
+    // 根据动画方向，按顺序填放动画控制器
     if (animationPhase === "in") {
       control0.copy(centroid).sub(getControlPoint0(centroid));
       control1.copy(centroid).sub(getControlPoint1(centroid));
@@ -165,6 +191,7 @@ function Slide(width, height, animationPhase) {
       control1.copy(centroid).add(getControlPoint1(centroid));
     }
 
+    // 设置动画的位置和范围
     for (v = 0; v < 9; v += 3) {
       aStartPosition.array[i3 + v] = startPosition.x;
       aStartPosition.array[i3 + v + 1] = startPosition.y;
@@ -184,13 +211,18 @@ function Slide(width, height, animationPhase) {
     }
   }
 
+  // 基础动画材质
   var material = new THREE.BAS.BasicAnimationMaterial(
     {
+      // 平坦着色器
       shading: THREE.FlatShading,
+      // 双面材质
       side: THREE.DoubleSide,
+      // 设置shader的公用变量
       uniforms: {
         uTime: { type: "f", value: 0 }
       },
+      // shader函数
       shaderFunctions: [
         THREE.BAS.ShaderChunk["cubic_bezier"],
         //THREE.BAS.ShaderChunk[(animationPhase === 'in' ? 'ease_out_cubic' : 'ease_in_cubic')],
@@ -224,12 +256,14 @@ function Slide(width, height, animationPhase) {
     }
   );
 
+  // Mesh填入几何体以及材质
   THREE.Mesh.call(this, geometry, material);
 
   this.frustumCulled = false;
 }
 Slide.prototype = Object.create(THREE.Mesh.prototype);
 Slide.prototype.constructor = Slide;
+// 挂载一个time并且劫持setter getter，和材质的uniforms uTime保值一致
 Object.defineProperty(Slide.prototype, "time", {
   get: function() {
     return this.material.uniforms["uTime"].value;
@@ -238,7 +272,7 @@ Object.defineProperty(Slide.prototype, "time", {
     this.material.uniforms["uTime"].value = v;
   }
 });
-
+// 给material设置一张图片
 Slide.prototype.setImage = function(image) {
   this.material.uniforms.map.value.image = image;
   this.material.uniforms.map.value.needsUpdate = true;
@@ -355,6 +389,7 @@ THREERoot.prototype = {
 ////////////////////
 
 var utils = {
+  // 把src的所有属性扩展到dst上且返回dst
   extend: function(dst, src) {
     for (var key in src) {
       dst[key] = src[key];
@@ -391,12 +426,15 @@ var utils = {
       return vec;
     };
   })(),
+  // 球形点
   spherePoint: (function() {
     return function(u, v) {
       u === undefined && (u = Math.random());
       v === undefined && (v = Math.random());
 
+      // θ
       var theta = 2 * Math.PI * u;
+      // ρ
       var phi = Math.acos(2 * v - 1);
 
       var vec = {};
@@ -409,6 +447,7 @@ var utils = {
   })()
 };
 
+// 创建一个动画刷
 function createTweenScrubber(tween, seekSpeed) {
   seekSpeed = seekSpeed || 0.001;
 
