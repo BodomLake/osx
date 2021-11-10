@@ -52,14 +52,13 @@ export default {
       require: false,
       type: Object,
       default: {},
-    }
+    },
   },
   computed: {
     // 现在是第几周
     currentWeek() {
       return this.weekCal[this.displayDate.weekNo - 1];
     },
-
   },
   methods: {
     todayStyle(day) {
@@ -77,6 +76,9 @@ export default {
     // 选中一天
     checkDay($event, day) {
       $event.stopPropagation();
+      setTimeout(() => {
+        this.$emit('chooseDay', day)
+      }, this.leaveDelay)
       Object.keys(day).forEach((key) => {
         if (this.checkedTime.hasOwnProperty(key)) {
           this.checkedTime[key] = day[key]

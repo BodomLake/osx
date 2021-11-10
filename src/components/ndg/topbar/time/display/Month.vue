@@ -51,7 +51,7 @@ export default {
       require: false,
       type: Object,
       default: {},
-    }
+    },
   },
   computed: {},
   methods: {
@@ -76,6 +76,7 @@ export default {
     // 选中一天
     checkDay($event, day) {
       $event.stopPropagation();
+      this.$emit('chooseDay', day)
       Object.keys(day).forEach((key) => {
         if (this.checkedTime.hasOwnProperty(key)) {
           this.checkedTime[key] = day[key]

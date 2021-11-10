@@ -51,23 +51,34 @@
           </div>
         </div>
 
-        <div class="day-array" :style="[weekCalModeStyle]">
+        <div class="day-array-zone" :style="[weekCalModeStyle]">
           <!-- 当月 月历-->
-          <template v-if="calPeriod == 1">
-            <Month v-model="menology" :display-date="displayDate"></Month>
-          </template>
+          <transition name="period-switch">
+            <template v-if="calPeriod === 1">
+              <Month v-model="menology" :display-date="displayDate" @chooseDay="chooseDay"></Month>
+            </template>
+          </transition>
+
           <!-- 展示本年12个月以及下一年的前四个月 -->
-          <template v-if="calPeriod == 2">
-            <Year v-model="yearCal" :display-date="displayDate" @goToMenology="goToMenology"></Year>
-          </template>
+          <transition name="period-switch">
+            <template v-if="calPeriod === 2">
+              <Year v-model="yearCal" :display-date="displayDate" @goToMenology="goToMenology"></Year>
+            </template>
+          </transition>
+
           <!-- 上下三年，10年跨度 -->
-          <template v-if="calPeriod == 3">
-            <History v-model="history" :display-date="displayDate" @goToYearCal="goToYearCal"></History>
-          </template>
+          <transition name="period-switch">
+            <template v-if="calPeriod === 3">
+              <History v-model="history" :display-date="displayDate" @goToYearCal="goToYearCal"></History>
+            </template>
+          </transition>
+
           <!-- 周历模式-->
-          <template v-if="calPeriod == 0">
-            <Week v-model="weekCal.days" :display-date="displayDate" @chooseDay="chooseDay"></Week>
-          </template>
+          <transition name="period-switch">
+            <template v-if="calPeriod === 0">
+              <Week v-model="weekCal.days" :display-date="displayDate" @chooseDay="chooseDay"></Week>
+            </template>
+          </transition>
         </div>
 
         <!-- 事件提醒列表 -->
@@ -89,12 +100,14 @@
 </template>
 
 <script>
+import Day from "@/components/ndg/topbar/time/def/Day";
 import TimeMixin from '../../common/sys-time'
 // 分割一部分代码:各个周期对应的子组件
 import Month from './display/Month'
 import Year from "./display/Year";
 import History from "./display/History";
 import Week from "./display/Week";
+
 // 日历周期
 const calPeriod = {
   WEEK: 0,
@@ -110,18 +123,16 @@ export default {
   name: "Time",
   data() {
     return {
+      // 显示开关
       showCalender: false,
+      // 星期的名字
       weekName: weekName,
-      checkedTime: {
-        year: today.getFullYear(),
-        month: today.getMonth() + 1,
-        date: today.getDate(),
-        day: today.getDay()
-      },
+      // 被选中的时间
+      checkedTime: new Day(today.getFullYear(), today.getMonth() + 1, today.getDate(), today.getDay()),
+      // 输入的事件
       enterEvents: '',
       // 默认月历，加载这一年的所有月份表
       calPeriod: calPeriod.MONTH,
-
       // selector-bar 选择条中显示的 年月日
       displayDate: {
         year: today.getFullYear(),
@@ -159,7 +170,7 @@ export default {
     },
     // 目前选择显示的 月份名称
     displayMonthName() {
-      return monthName[this.displayDate.month]
+      return monthName[this.displayDate.month - 1]
     },
     // 周历模式下的样式：主要是高度被修改了
     weekCalModeStyle() {
@@ -168,7 +179,7 @@ export default {
     },
     // 当前显示的年份跨度(10年长度)
     yearGap() {
-      let s = Math.abs(Math.floor(this.displayDate.year / 10))
+      let s = Math.abs(Math.floor((this.displayDate.year || today.getFullYear()) / 10))
       return {
         start: s * 10,
         end: s * 10 + 9
@@ -192,15 +203,11 @@ export default {
       this.displayDate.month = today.getMonth() + 1
       this.displayDate.date = today.getDate()
       this.displayDate.day = today.getDay()
-      this.displayDate.weekNo = this.calcWeekNo(today.getFullYear(), today.getMonth() + 1, today.getDate())
-      this.menology = this.monthCalender(today.getFullYear(), today.getMonth() + 1)
-    },
 
-    // 今年所显示的样式
-    currentYearStyle(year) {
-      return {backgroundColor: year == this.year ? 'rgba(62, 10, 10, 0.3)' : ''}
+      this.displayDate.weekNo = this.calcWeekNo(this.year, this.month, this.date)
+      this.menology = this.monthCalender(this.year, this.month)
+      this.yearCal = this.yearCalender(this.year)
     },
-
     // 响应点击事件，进入上一个周期
     prevPeriod($event) {
       $event.stopPropagation();
@@ -209,20 +216,14 @@ export default {
           this.prevWeek();
           break;
         case calPeriod.MONTH:
-          if (this.displayDate.month == 1) {
-            this.displayDate.month = 12;
-            this.displayDate.year -= 1;
-          } else {
-            this.displayDate.month -= 1;
-          }
-          this.menology = this.monthCalender(this.displayDate.year, this.displayDate.month)
+          this.prevMonth()
           break;
         case calPeriod.YEAR:
-          this.displayDate.year -= 1;
-          this.prevYear(this.displayDate.year);
+          this.prevYear();
           break;
         case calPeriod.HISTORY:
-
+          this.prevDecade();
+          break;
         default:
       }
     },
@@ -234,20 +235,14 @@ export default {
           this.nextWeek();
           break;
         case calPeriod.MONTH:
-          if (this.displayDate.month == 12) {
-            this.displayDate.month = 1;
-            this.displayDate.year += 1;
-          } else {
-            this.displayDate.month += 1;
-          }
-          this.menology = this.monthCalender(this.displayDate.year, this.displayDate.month)
+          this.nextMonth()
           break;
         case calPeriod.YEAR:
-          this.displayDate.year += 1;
-          this.nextYear(this.displayDate.year);
+          this.nextYear();
           break;
         case calPeriod.HISTORY:
-
+          this.nextDecade();
+          break;
         default:
       }
     },
@@ -271,16 +266,45 @@ export default {
         this.displayDate.weekNo++;
       }
     },
-    // 周历模式，日历模式 背景色
-
-    // 选中一天
-    checkDay($event, day) {
-      $event.stopPropagation();
-      Object.keys(day).forEach((key) => {
-        if (this.checkedTime.hasOwnProperty(key)) {
-          this.checkedTime[key] = day[key]
-        }
-      })
+    // 上个月
+    prevMonth() {
+      if (this.displayDate.month == 1) {
+        this.displayDate.month = 12;
+        this.displayDate.year -= 1;
+      } else {
+        this.displayDate.month -= 1;
+      }
+      this.menology = this.monthCalender(this.displayDate.year, this.displayDate.month)
+    },
+    // 下个月
+    nextMonth() {
+      if (this.displayDate.month == 12) {
+        this.displayDate.month = 1;
+        this.displayDate.year += 1;
+      } else {
+        this.displayDate.month += 1;
+      }
+      this.menology = this.monthCalender(this.displayDate.year, this.displayDate.month)
+    },
+    // 下一年
+    nextYear(year) {
+      this.displayDate.year += 1;
+      this.yearCal = this.yearCalender(this.displayDate.year)
+    },
+    // 上一年
+    prevYear(year) {
+      this.displayDate.year -= 1;
+      this.yearCal = this.yearCalender(this.displayDate.year)
+    },
+    // 上个十年
+    prevDecade() {
+      this.displayDate.year -= 10
+      this.history = this.initHistory(this.displayDate.year)
+    },
+    // 下个十年
+    nextDecade() {
+      this.displayDate.year += 10
+      this.history = this.initHistory(this.displayDate.year)
     },
     // 切换Calender的周期
     switchCalPeriod($event) {
@@ -299,12 +323,12 @@ export default {
     monthNameArray(month) {
       return monthName[month > 12 ? month - 13 : month]
     },
-
     // <Year>进入指定的某年某月的月历表
     goToMenology(year, month) {
-      this.displayDate.month = month.month;
-      this.displayDate.year = month.year;
-      this.menology = this.monthCalender(month.year, month.month)
+      this.displayDate.month = month;
+      this.displayDate.year = year;
+      console.log(year, month)
+      this.menology = this.monthCalender(year, month)
       this.calPeriod = calPeriod.MONTH;
     },
     // <History>进入指定的年历表
@@ -313,9 +337,16 @@ export default {
       this.yearCal = this.yearCalender(year)
       this.calPeriod = calPeriod.YEAR;
     },
-    chooseDay(year, month, date, day) {
-
-    }
+    chooseDay(day) {
+      Object.keys(day).forEach((key) => {
+        if (this.displayDate.hasOwnProperty(key)) {
+          this.displayDate[key] = day[key]
+        }
+        if (this.checkedTime.hasOwnProperty(key)) {
+          this.checkedTime[key] = day[key]
+        }
+      })
+    },
   }
   ,
 }
@@ -425,13 +456,14 @@ export default {
   transform: translate(-50%, -50%) rotate(-135deg);
 }
 
-.day-array {
+.day-array-zone {
   display: flex;
   width: 92%;
   margin: 0 auto;
   flex-direction: column;
   /*  background-color: skyblue;*/
   transition: all 500ms ease-in-out;
+  position: relative;
 }
 
 .hoverHightLight {
@@ -440,31 +472,6 @@ export default {
 
 .hoverHightLight:hover {
   color: white;
-}
-
-.day-array-row {
-  display: flex;
-  flex-wrap: nowrap;
-  flex-direction: row;
-  min-height: calc(calc(100% / 7));
-  width: 100%;
-  box-sizing: border-box;
-  color: black;
-  /*  background-color: sandybrown;*/
-  /*  border-bottom: 1px greenyellow groove;*/
-}
-
-
-.day-array-box {
-  min-width: calc(calc(100% / 7));
-  height: 100%;
-  /*  border-right: 1px #03e9f4 groove;*/
-  box-sizing: border-box;
-  position: relative;
-  font-weight: 400;
-  user-select: none;
-  font-size: 2vmin;
-  font-family: "Avenir", Helvetica, Arial, sans-serif;
 }
 
 .text-center {
@@ -534,4 +541,36 @@ input:focus {
   top: 50%;
   transform: translateY(-50%);
 }
+</style>
+<style scoped>
+.period-switch-leave {
+  transform: scale(1.0);
+  opacity: 1;
+}
+
+.period-switch-leave-to {
+  transform: scale(0.5);
+  opacity: 0.1;
+}
+
+.period-switch-leave-active {
+  transition: all 0.3s;
+  transition-delay: 0.1s;
+}
+
+.period-switch-enter {
+  transform: scale(0.5);
+  opacity: 0.1;
+}
+
+.period-switch-enter-to {
+  transform: scale(1.0);
+  opacity: 1;
+}
+
+.period-switch-enter-active {
+  transition: all 0.3s;
+  transition-delay: 0.3s;
+}
+
 </style>

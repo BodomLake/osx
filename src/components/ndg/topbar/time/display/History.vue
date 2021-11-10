@@ -42,6 +42,10 @@ export default {
       require: false,
       type: Object,
       default: {},
+    },
+    leaveDelay: {
+      type: Number,
+      default: 100
     }
   },
   computed: {
@@ -57,7 +61,7 @@ export default {
   methods: {
     // 今年所显示的样式
     currentYearStyle(year) {
-      return {backgroundColor: year == this.year ? 'rgba(62, 10, 10, 0.3)' : ''}
+      return {backgroundColor: year == today.getFullYear() ? 'rgba(62, 10, 10, 0.3)' : ''}
     },
     // 被选中的年份的样式
     checkedYearStyle(year) {
@@ -66,7 +70,9 @@ export default {
     // 选中一个年份
     checkYear(year) {
       this.checkedTime = year
-      this.$emit('goToYearCal', year);
+      setTimeout(()=>{
+        this.$emit('goToYearCal', year);
+      }, this.leaveDelay)
     },
     yearInGapStyle(year) {
       let inGap = year <= this.yearGap.end && year >= this.yearGap.start

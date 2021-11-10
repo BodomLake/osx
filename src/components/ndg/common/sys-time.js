@@ -138,15 +138,6 @@ export default {
         }, [[]])
     },
 
-    nextYear(year) {
-      this.displayDate.year += 1;
-      this.yearCal = this.yearCalender(this.displayDate.year)
-    },
-    prevYear(year) {
-      this.displayDate.year -= 1;
-      this.yearCal = this.yearCalender(this.displayDate.year)
-    },
-
     // 获取 某年某月的月历
     monthCalender(year, month) {
       // 计算改月第一周从几号开始，最后一周又是几号结束，依次填充，返回一个7*5的数组
@@ -232,7 +223,7 @@ export default {
 
     // 根据年月日，返回他是这一年的第几周，数字上的，不是数组下标
     calcWeekNo(year, month, date) {
-      console.log(year, month, date)
+      // console.log(year, month, date)
       let startDay = new Date(`1 1, ${year}`)
       let dayCounts = 0;
       // 循环前面的月份

@@ -1,5 +1,5 @@
 <template>
-  <div style="display: flex; flex-direction: row; flex-wrap: wrap; height: 100%; width: 100%">
+  <div class="container" style="display: flex; flex-direction: row; flex-wrap: wrap;">
     <template v-for="month in yearCal">
       <div class="month-array-box" @click="checkMonth(month)"
            :data-month="month.month" :data-year="month.year"
@@ -38,12 +38,16 @@ export default {
       require: false,
       type: Object,
       default: {},
+    },
+    leaveDelay: {
+      type: Number,
+      default: 100
     }
   },
   computed: {},
   methods: {
     currentMonthStyle(month) {
-      let sameMonth = month.month == this.month && month.year == this.year
+      let sameMonth = month.month == today.getMonth() + 1 && month.year == today.getFullYear()
       return {backgroundColor: sameMonth ? 'rgba(62, 10, 10, 0.3)' : ''}
     },
     checkedMonthStyle(month) {
@@ -55,7 +59,9 @@ export default {
       this.checkedTime.month = month.month;
       this.checkedTime.year = month.year;
       // 修改父组件的属性
-      this.$emit('goToMenology', month.year, month.month)
+      setTimeout(()=>{
+        this.$emit('goToMenology', month.year, month.month)
+      }, this.leaveDelay)
     },
     // 让当年的月份呈现黑色
     sameMonthStyle(month) {
