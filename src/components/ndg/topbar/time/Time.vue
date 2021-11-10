@@ -39,7 +39,7 @@
             </template>
             <!-- 按照周历显示 -->
             <template v-if="calPeriod == 0">
-              <div class="text-center" style="width: 85%">{{ weekCal.duration }} 第{{ displayDate.weekNo }}周</div>
+              <div class="text-center" style="width: 85%">第{{ displayDate.weekNo }}周</div>
             </template>
           </div>
 
@@ -107,6 +107,7 @@ import Month from './display/Month'
 import Year from "./display/Year";
 import History from "./display/History";
 import Week from "./display/Week";
+import {splitToGroup} from "@/components/ndg/common/common";
 
 // 日历周期
 const calPeriod = {
@@ -145,7 +146,7 @@ export default {
         sec: today.getSeconds(),
         time: today.getTime(),
         */
-        // 确定显示的这周是该年的第几周
+        // 确定显示的这周是该年的第几周 [1,53]
         weekNo: this.calcWeekNo(today.getFullYear(), today.getMonth() + 1, today.getDate())
       }
     }
@@ -250,27 +251,40 @@ export default {
     prevWeek() {
       if (this.displayDate.weekNo == 1) {
         this.displayDate.weekNo = 53;
-        this.displayDate.year -= 1
+        // 进入上一年
+        this.prevYear()
+        // 年份的改动，导致weekCal.days也要改动
         this.weekCal.days = this.weekCalender(this.displayDate.year)
       } else {
         this.displayDate.weekNo--;
       }
+      // 判断这一周的第一天属于第几个月？锁定 displayDate.year displayDate.month 所在月份
+      let day = this.weekCal.days[this.displayDate.weekNo - 1][0]
+      this.displayDate.month = day.month
+      this.menology = this.monthCalender(day.year, day.month)
     },
     // 周历后移一周
     nextWeek() {
       if (this.displayDate.weekNo == 53) {
         this.displayDate.weekNo = 1;
-        this.displayDate.year += 1
+        // 进入下一年
+        this.nextYear()
+        // 年份的改动，导致weekCal.days也要改动
         this.weekCal.days = this.weekCalender(this.displayDate.year)
       } else {
         this.displayDate.weekNo++;
       }
+      // 判断这一周属于第几个月？锁定 displayDate.year displayDate.month 所在月份
+      let day = this.weekCal.days[this.displayDate.weekNo - 1][0]
+      this.displayDate.month = day.month
+      this.menology = this.monthCalender(day.year, day.month)
     },
     // 上个月
     prevMonth() {
       if (this.displayDate.month == 1) {
         this.displayDate.month = 12;
-        this.displayDate.year -= 1;
+        // 进入上一年
+        this.prevYear()
       } else {
         this.displayDate.month -= 1;
       }
@@ -280,19 +294,20 @@ export default {
     nextMonth() {
       if (this.displayDate.month == 12) {
         this.displayDate.month = 1;
-        this.displayDate.year += 1;
+        // 进入下一年
+        this.nextYear();
       } else {
         this.displayDate.month += 1;
       }
       this.menology = this.monthCalender(this.displayDate.year, this.displayDate.month)
     },
     // 下一年
-    nextYear(year) {
+    nextYear() {
       this.displayDate.year += 1;
       this.yearCal = this.yearCalender(this.displayDate.year)
     },
     // 上一年
-    prevYear(year) {
+    prevYear() {
       this.displayDate.year -= 1;
       this.yearCal = this.yearCalender(this.displayDate.year)
     },
@@ -339,9 +354,6 @@ export default {
     },
     chooseDay(day) {
       Object.keys(day).forEach((key) => {
-        if (this.displayDate.hasOwnProperty(key)) {
-          this.displayDate[key] = day[key]
-        }
         if (this.checkedTime.hasOwnProperty(key)) {
           this.checkedTime[key] = day[key]
         }
