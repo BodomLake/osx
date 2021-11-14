@@ -55,28 +55,28 @@
           <!-- 当月 月历-->
           <transition name="period-switch">
             <template v-if="calPeriod === 1">
-              <Month v-model="menology" :display-date="displayDate" @chooseDay="chooseDay"></Month>
+              <Month v-model="menology" :display-date="displayDate" @chooseDay="chooseDay" ref="month"></Month>
             </template>
           </transition>
 
           <!-- 展示本年12个月以及下一年的前四个月 -->
           <transition name="period-switch">
             <template v-if="calPeriod === 2">
-              <Year v-model="yearCal" :display-date="displayDate" @goToMenology="goToMenology"></Year>
+              <Year v-model="yearCal" :display-date="displayDate" @goToMenology="goToMenology" ref="year"></Year>
             </template>
           </transition>
 
           <!-- 上下三年，10年跨度 -->
           <transition name="period-switch">
             <template v-if="calPeriod === 3">
-              <History v-model="history" :display-date="displayDate" @goToYearCal="goToYearCal"></History>
+              <History v-model="history" :display-date="displayDate" @goToYearCal="goToYearCal" ref="history"></History>
             </template>
           </transition>
 
           <!-- 周历模式-->
           <transition name="period-switch">
             <template v-if="calPeriod === 0">
-              <Week v-model="weekCal.days" :display-date="displayDate" @chooseDay="chooseDay"></Week>
+              <Week :display-date="displayDate" @chooseDay="chooseDay" :switch-duration="switchDuration" ref="week"></Week>
             </template>
           </transition>
         </div>
@@ -133,7 +133,7 @@ export default {
       // 输入的事件
       enterEvents: '',
       // 默认月历，加载这一年的所有月份表
-      calPeriod: calPeriod.MONTH,
+      calPeriod: calPeriod.WEEK,
       // selector-bar 选择条中显示的 年月日
       displayDate: {
         year: today.getFullYear(),
@@ -147,8 +147,15 @@ export default {
         time: today.getTime(),
         */
         // 确定显示的这周是该年的第几周 [1,53]
-        weekNo: this.calcWeekNo(today.getFullYear(), today.getMonth() + 1, today.getDate())
-      }
+        weekNo: 0,
+      },
+      throttleTimer: 0,
+    }
+  },
+  props: {
+    switchDuration: {
+      type: Number,
+      default: 300,
     }
   },
   beforeCreate() {
@@ -205,7 +212,7 @@ export default {
       this.displayDate.date = today.getDate()
       this.displayDate.day = today.getDay()
 
-      this.displayDate.weekNo = this.calcWeekNo(this.year, this.month, this.date)
+      this.displayDate.weekNo = 0
       this.menology = this.monthCalender(this.year, this.month)
       this.yearCal = this.yearCalender(this.year)
     },
@@ -249,35 +256,20 @@ export default {
     },
     // 周前移一周
     prevWeek() {
-      if (this.displayDate.weekNo == 1) {
-        this.displayDate.weekNo = 53;
-        // 进入上一年
-        this.prevYear()
-        // 年份的改动，导致weekCal.days也要改动
-        this.weekCal.days = this.weekCalender(this.displayDate.year)
-      } else {
-        this.displayDate.weekNo--;
+      if (Date.now() - this.throttleTimer < this.switchDuration) {
+        return;
       }
-      // 判断这一周的第一天属于第几个月？锁定 displayDate.year displayDate.month 所在月份
-      let day = this.weekCal.days[this.displayDate.weekNo - 1][0]
-      this.displayDate.month = day.month
-      this.menology = this.monthCalender(day.year, day.month)
+      this.$refs['week'].prevWeek()
+      this.throttleTimer = Date.now()
     },
     // 周历后移一周
     nextWeek() {
-      if (this.displayDate.weekNo == 53) {
-        this.displayDate.weekNo = 1;
-        // 进入下一年
-        this.nextYear()
-        // 年份的改动，导致weekCal.days也要改动
-        this.weekCal.days = this.weekCalender(this.displayDate.year)
-      } else {
-        this.displayDate.weekNo++;
+      if (Date.now() - this.throttleTimer < this.switchDuration) {
+
+        return;
       }
-      // 判断这一周属于第几个月？锁定 displayDate.year displayDate.month 所在月份
-      let day = this.weekCal.days[this.displayDate.weekNo - 1][0]
-      this.displayDate.month = day.month
-      this.menology = this.monthCalender(day.year, day.month)
+      this.$refs['week'].nextWeek()
+      this.throttleTimer = Date.now()
     },
     // 上个月
     prevMonth() {
@@ -360,7 +352,7 @@ export default {
       })
     },
   }
-  ,
+
 }
 </script>
 

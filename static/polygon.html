@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <title>Title</title>
 </head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.14.1/lodash.min.js"></script>
+<script src="../node_modules/vue/dist/vue.esm.js"></script>
 <style type="text/css">
   body {
     padding: 0;
@@ -59,15 +61,15 @@
 
   @keyframes ripple {
     0% {
-     /* height: 86px;
-      width: 50px;*/
-      transform: scale(1,1);
+      /* height: 86px;
+       width: 50px;*/
+      transform: scale(1, 1);
       opacity: 1;
     }
     100% {
-/*      height: 100px;
-      width: 60px;*/
-      transform: scale(1.2,1.2);
+      /*      height: 100px;
+            width: 60px;*/
+      transform: scale(1.2, 1.2);
       opacity: 0.1;
     }
   }
@@ -109,61 +111,142 @@
 </style>
 <style>
   .display-bar {
-    height: 20vmin;
+    height: 18vmin;
     display: block;
     width: 100%;
     display: flex;
     justify-content: center;
     flex-direction: column
   }
+
+  .bar-container {
+    width: 300px;
+    height: 80%;
+    border: 1px solid blue;
+    margin: 0 auto;
+    padding: 0;
+    position: relative;
+    background-color: crimson;
+    opacity: 1;
+    z-index: 1;
+  }
+
+  .card {
+    position: absolute;
+    width: 33.33%;
+    height: 100%;
+    border: 1px green solid;
+  }
 </style>
 <style>
-  .wrap{
-    height:55px;
+  .wrap {
+    height: 55px;
     width: 95px;
     position: relative;
     margin: 0px auto;
     background: url('./Wallpaper.jpg') 50% 50% no-repeat;
     background-size: auto 110px;
   }
-  .common{
+
+  .common {
     position: absolute;
     height: 100%;
     width: 100%;
     overflow: hidden;
-    left:0;
+    left: 0;
   }
-  .common:before{
-    content:'';
+
+  .common:before {
+    content: '';
     position: absolute;
-    background:url('./Wallpaper.jpg') 50% 50% no-repeat;
+    background: url('./Wallpaper.jpg') 50% 50% no-repeat;
     background-size: auto 110px;
     width: 95px;
     height: 110px;
   }
-  .left{
+
+  .left {
     transform: rotate(60deg);
   }
-  .left:before{
-    transform: rotate(-60deg) translate(24px,-14px);
+
+  .left:before {
+    transform: rotate(-60deg) translate(24px, -14px);
   }
-  .right{
+
+  .right {
     transform: rotate(-60deg);
   }
-  .right:before{
-    transform: rotate(60deg) translate(24px,14px);
+
+  .right:before {
+    transform: rotate(60deg) translate(24px, 14px);
     bottom: 0;
   }
 </style>
+<script>
+  function swapEle(arr, i1, i2) {
+    arr[i1] = arr.splice(i2, 1, arr[i1])[0]
+    return arr
+  }
+  window.onload = function () {
+    let VueDemo = new Vue({
+      $el: '#app',
+      template: `
+        <div id="flip-list-demo" class="demo">
+        <button v-on:click="shuffle">Shuffle</button>
+        <transition-group name="flip-list" tag="ul">
+          <li v-for="item in items" v-bind:key="item">
+            {{ item }}
+          </li>
+        </transition-group>
+        </div>
+      `,
+      data: {
+        items: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+      },
+      methods: {
+        shuffle: function () {
+          this.items = swapEle(this.items, Math.floor(Math.random() * 10), Math.floor(Math.random() * 10))
+        }
+      }
+    })
+  }
+</script>
+<script>
+  window.onload = function () {
+    console.log('开始脚本')
+    setTimeout(() => {
+      document.getElementById('s2').style.transform = 'translateX(-100%)'
+
+      // 动画开始
+      document.getElementById('t2').style.left = '0%'
+      document.getElementById('t3').style.left = '33.33%'
+
+      document.getElementById('t1').style.transition = ''
+      document.getElementById('t1').style.left = '100%'
+
+      setTimeout(() => {
+        // 关闭动画
+        document.getElementById('t2').style.transition = ''
+        document.getElementById('t1').style.transition = 'all 0.25s ease-in-out'
+        // 拖到
+        document.getElementById('t1').style.left = '66.66%'
+      }, 250)
+      setTimeout(() => {
+        document.getElementById('t2').style.transition = 'all 0.25s ease-in-out'
+      }, 500)
+    }, 800)
+  }
+
+</script>
 <body>
 <div class="display-bar">
   <div class='div'></div>
 </div>
 <div class="display-bar">
   <!--<div class=''>-->
-    <div class='one '></div>
-    <div class='two '></div>
-    <div class='three '></div>
+  <div class='one '></div>
+  <div class='two '></div>
+  <div class='three '></div>
   <!--</div>-->
 </div>
 <div class="display-bar">
@@ -172,6 +255,34 @@
     <div class='right common'></div>
   </div>
 </div>
+<div class="display-bar">
+  <div class="bar-container" style="width: 100px">
+    <div
+      style="width: 100%;padding: 0;display: flex;flex-direction: row;border: 1px solid crimson;height: 100%;transform: translateX(-100%);">
+      <div id="s1" style="min-width: 100%;height: 100%;border: 1px green solid;transition: all 0.5s ease-in-out"></div>
+      <div id="s2" style="min-width: 100%;height: 100%;border: 1px green solid;transition: all 0.5s ease-in-out"></div>
+      <div id="s3" style="min-width: 100%;height: 100%;border: 1px green solid;transition: all 0.5s ease-in-out"></div>
+    </div>
+  </div>
+</div>
+<div class="display-bar">
+  <div class="bar-container">
+    <div id="t1" class="card"
+         style="left: 0%;background-color: gray; transition: all 0.25s ease-in-out"></div>
+    <div id="t2" class="card"
+         style="left: 33.33%;background-color: yellowgreen;transition: all 0.25s ease-in-out"></div>
+    <div id="t3" class="card"
+         style="left: 66.66%;background-color: dodgerblue; transition: all 0.25s ease-in-out"></div>
+  </div>
+</div>
+<div class="display-bar">
+  <div class="bar-container" style="position: initial;display: flex;flex-direction: row;transition: all 0.8s ease">
+    <div style="height: 100%;min-width: 33.33%;background-color: gray;"></div>
+    <div style="height: 100%;min-width: 33.33%;max-width: 33.33%;background-color: yellowgreen;"></div>
+    <div style="height: 100%;min-width: 33.33%;background-color: dodgerblue;"></div>
+  </div>
+</div>
 
 </body>
+
 </html>

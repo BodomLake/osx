@@ -38,8 +38,8 @@ export function isInnerBox(vue) {
 /**
  * 从下标arr[i2]自身开始向后删除，填充(...item)也就是arr[i1]，以数组形式返回被删掉的元素
  */
-export function swapEle(arr, i1, i2) {
-  arr[i1] = arr.splice(i2, 1, arr[i1])[0]
+export function swapEle(arr, shiftedIndex, deletedIndex) {
+  arr[shiftedIndex] = arr.splice(deletedIndex, 1, arr[shiftedIndex])[0]
   return arr
 }
 

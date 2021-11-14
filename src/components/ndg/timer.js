@@ -90,9 +90,9 @@ export class Timer {
         if (oldVal === val) return val;
         this.$data[attr] = val;
         // 如果触发器是函数，就apply()执行它
-        this.$watch[attr] && typeof this.$watch[attr] === 'function' && (
-          this.$watch[attr].call(this, val, oldVal)
-        );
+        this.$watch[attr]
+        && typeof this.$watch[attr] === 'function'
+        && (this.$watch[attr].call(this, val, oldVal));
         return val;
       },
     })

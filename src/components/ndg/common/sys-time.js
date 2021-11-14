@@ -11,8 +11,8 @@ const monthName = ['一月', '二月', '三月', '四月', '五月', '六月', '
 export default {
   name: 'time',
   created() {
-    this.weekCal.days = this.weekCalender(this.year)
-    // console.log('本年所有周', this.weekCal.days)
+    this.weekCal = this.initWeekCal()
+    console.log('本周', this.weekCal)
     this.menology = this.monthCalender(this.year, this.month)
     // console.log('指定年月的月历', this.menology)
     this.yearCal = this.yearCalender(this.year)
@@ -48,13 +48,8 @@ export default {
       yearCal: [],
       // 10年 上下各三年
       history: [],
-      // 周历
-      weekCal: {
-        days: [],
-        // 默认从第一周开始
-        weekNo: 1,
-        duration: '',
-      },
+      // 默认本周周历
+      weekCal: [],
     }
   },
   props: {},
@@ -106,9 +101,8 @@ export default {
       let latterDays = []
       let yearDays = []
       for (let i = 1; i <= startDay.getDay(); i++) {
-        const m = this.monthDays(year - 1)[11];
-        // 上一年的十二月
-        formerDays.push(new Day(year - 1, 12, m - i + 1, startDay.getDay() - i))
+        // 上一年的十二月(31天)
+        formerDays.push(new Day(year - 1, 12, 31 - i + 1, startDay.getDay() - i))
       }
       const yearNum = year % 4 == 0 ? 366 : 365
       let md = this.monthDays(year);
@@ -124,7 +118,6 @@ export default {
         yearDays.push(new Day(year, groupNo + 1, date, day))
       }
       for (let i = 1; i < 7 - lastDay.getDay(); i++) {
-        const m = this.monthDays(year + 1)[0];
         // 下一年的一月
         latterDays.push(new Day(year + 1, 1, i, (lastDay.getDay() + i) % 7))
       }
@@ -137,7 +130,6 @@ export default {
           return retArr
         }, [[]])
     },
-
     // 获取 某年某月的月历
     monthCalender(year, month) {
       // 计算改月第一周从几号开始，最后一周又是几号结束，依次填充，返回一个7*5的数组
@@ -191,7 +183,6 @@ export default {
           return retArr
         }, [[]])
     },
-
     // 获取某年的年历
     yearCalender(year) {
       let months = new Array(16)
@@ -204,7 +195,6 @@ export default {
       }
       return months;
     },
-
     // 初始化上下3年
     initHistory(year) {
       let s = Math.abs(Math.floor(year / 10))
@@ -221,24 +211,33 @@ export default {
       return this.monthDayCount;
     },
 
+    // 返回今天所在的周的7天
+    initWeekCal() {
+      return Array.apply(null, {length: 7}).map((d, di) => {
+        let day = new Day()
+        day.pass(di - new Date().getDay())
+        return day
+      })
+    },
+
     // 根据年月日，返回他是这一年的第几周，数字上的，不是数组下标
     calcWeekNo(year, month, date) {
       // console.log(year, month, date)
+      // 第一个星期四 算作 每一年第一个星期的标志
       let startDay = new Date(`1 1, ${year}`)
-      let dayCounts = 0;
-      // 循环前面的月份
-      if (month > 1) {
-        for (let m = 0; m < month - 1; m++) {
-          dayCounts += monthDayCount[m]
-          if (m == 1 && year % 4 == 0) {
-            dayCounts++;
-          }
-        }
+      let startThursday;
+      // let firstSunday;
+      // 1月1号在第一个星期四之前，可能是 星期三 星期二 星期一 星期天
+      if (startDay.getDay() <= 3) {
+        startThursday = new Date(`1 ${4 - startDay.getDay()}, ${year}`)
+      } else if (startDay.getDay() > 3) {
+        startThursday = new Date(`1 ${11 - startDay.getDay()}, ${year}`)
       }
-      // 补上本月的日期，以及前年末尾补充的日期
-      // console.log(Math.ceil((dayCounts + date + startDay.getDay()) / 7), dayCounts + date + startDay.getDay())
-      return Math.ceil((dayCounts + date + startDay.getDay()) / 7);
-    },
 
+      let day = new Date(`${month} ${date}, ${year}`)
+      let dayCounts = (day.getTime() - startThursday.getTime()) / 1000 / 3600 / 24 + 4
+      // TODO 逻辑有问题
+      return Math.ceil(dayCounts / 7);
+    },
   }
 }

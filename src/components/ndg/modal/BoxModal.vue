@@ -24,7 +24,8 @@
          @click="($event)=>{$event.stopPropagation()}">
       <ShiftZone orientation="left" :flowOver="isDragging" @switchUnit="switchUnit" :delaySwitchTime="400"></ShiftZone>
       <div class="ndg-modal-content">
-        <Box v-model="box" :enableDrag="enableDrag" :showAppName='true' :appliedInModal="showModal" :modalIndex="modalIndex"
+        <Box v-model="box" :enableDrag="enableDrag" :showAppName='true' :appliedInModal="showModal"
+             :modalIndex="modalIndex"
              @shiftIntoModalFromDesk="shiftIntoModalFromDesk"
              @shiftIntoModalFromOtherModal="shiftIntoModalFromOtherModal"></Box>
       </div>
@@ -71,34 +72,6 @@ export default {
         }
       }
     },
-    /*    box: {
-          type: Object,
-          require: true,
-          default: () => {
-            return {
-              id: "",
-              name: "",
-              appGroups: [
-                [
-                  {
-                    name: "",
-                    id: ""
-                  }
-                ]
-              ],
-              displayNum: 0,
-              groupAppLimit: 9,
-              DOMRect: {
-                width: 0,
-                height: 0
-              },
-              outerDOMRect: {
-                width: 0,
-                height: 0
-              },
-            };
-          }
-        },*/
     name: {
       type: String,
       default: () => {
@@ -210,13 +183,11 @@ export default {
     if (Date.now() - this.updatedTimer < debounceTime) {
       // 重置为当前时间
       console.info(this.showModal);
-      this.updatedTimer = Date.now();
       return;
     }
-    this.updatedTimer = setTimeout(() => {
-      console.info("模态框重置destPos");
-      this.destRect = this.calcModalRect(this.portrait);
-    }, debounceTime);
+    console.info("模态框重置destPos");
+    this.destRect = this.calcModalRect(this.portrait);
+    this.updatedTimer = Date.now();
   },
   methods: {
     setModalIndex(index) {
@@ -232,7 +203,7 @@ export default {
       this.$forceUpdate();
       let modalContent = document.querySelector("div#ndg-modal-content-border");
       if (this.toggleTimer) {
-        clearTimeout(this.resizeTimer);
+        clearTimeout(this.toggleTimer);
       }
       this.toggleTimer = setTimeout(() => {
         if (!this.showModal) {         // 模态框开启动画
@@ -320,7 +291,6 @@ export default {
   --initHeight: var(--initHeight);
   --destWidth: var(--destWidth);
   --destHeight: var(--destHeight);
-
 }
 
 .ndg-modal {
