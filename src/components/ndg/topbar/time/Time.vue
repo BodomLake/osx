@@ -62,7 +62,7 @@
           <!-- 展示本年12个月以及下一年的前四个月 -->
           <transition name="period-switch">
             <template v-if="calPeriod === 2">
-              <Year v-model="yearCal" :display-date="displayDate" @goToMenology="goToMenology" ref="year"></Year>
+              <Year :display-date="displayDate" @goToMenology="goToMenology" ref="year"></Year>
             </template>
           </transition>
 
@@ -133,20 +133,13 @@ export default {
       // 输入的事件
       enterEvents: '',
       // 默认月历，加载这一年的所有月份表
-      calPeriod: calPeriod.WEEK,
+      calPeriod: calPeriod.YEAR,
       // selector-bar 选择条中显示的 年月日
       displayDate: {
         year: today.getFullYear(),
         month: today.getMonth() + 1,
         date: today.getDate(),
         day: today.getDay(),
-        /*
-        hour: today.getHours(),
-        min: today.getMinutes(),
-        sec: today.getSeconds(),
-        time: today.getTime(),
-        */
-        // 确定显示的这周是该年的第几周 [1,53]
         weekNo: 0,
       },
       throttleTimer: 0,
@@ -465,9 +458,12 @@ export default {
   width: 92%;
   margin: 0 auto;
   flex-direction: column;
-  /*  background-color: skyblue;*/
+/*    background-color: skyblue;*/
+    border-color: skyblue;
   transition: all 500ms ease-in-out;
   position: relative;
+  overflow-y: hidden;
+  overflow-x: hidden;
 }
 
 .hoverHightLight {

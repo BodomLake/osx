@@ -35,13 +35,15 @@ export default {
         this.horzDrag = deltaX >= deltaY
         // 告诉父组件<TipsList>拖拽行为是什么方向
         this.$emit('dragAct', this.horzDrag)
-        // 取消这次计时
+        // 取消这次计时 time归零
         this.timer.shutdown();
       }
       // 如果是横向位移
-      if (this.horzDrag && this.tip.id == this.$parent.$data.dragBarId) {
-        let offset = $event.clientX - this.startPos.clientX;
-        this.offsetX = offset;
+      // console.log(this.horzDrag, this.tip.id ,this.$parent.$parent)
+      if (this.horzDrag && this.tip.id == this.$parent.$parent.$data.dragBarId) {
+
+        this.offsetX = $event.clientX - this.startPos.clientX;
+        // console.log(this.offsetX);
       } else {
         this.$emit('crossOffset', $event.clientX);
       }
@@ -55,10 +57,10 @@ export default {
       this.timer.shutdown();
       this.scrolling = false;
       // 位移长度不够，就返回原始位置
-      if (this.tip.id == this.$parent.$data.dragBarId) {
+      if (this.tip.id == this.$parent.$parent.$data.dragBarId) {
         // 超出既定范围
         let dragOut = Math.abs(this.totalOffset) >= this.barRect.width * this.dragBackLimit
-        console.log(dragOut, this.offsetX, this.barRect.width * this.dragBackLimit)
+        // console.log(dragOut, this.offsetX, this.barRect.width * this.dragBackLimit)
         if (!dragOut) {
           this.baseOffsetX = 0
           this.offsetX = 0
@@ -72,16 +74,18 @@ export default {
     /**
      * 响应父组件使其本组件发生水平位移
      * @param clientX
-     * @param clientY
+     */
+    crossOffset(clientX) {
+      if (this.horzDrag && this.tip.id == this.$parent.$parent.$data.dragBarId) {
+        let offset = clientX - this.startPos.clientX;
+        this.offsetX = offset;
+      }
+    },
+    /**
+     * 响应父组件使其本组件发生水平位移
      */
     crossDragEnd() {
 
     },
-    crossOffset(clientX) {
-      if (this.horzDrag && this.tip.id == this.$parent.$data.dragBarId) {
-        let offset = clientX - this.startPos.clientX;
-        this.offsetX = offset;
-      }
-    }
   },
 }

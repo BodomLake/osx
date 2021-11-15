@@ -25,11 +25,13 @@ export default class Day extends Reactive {
     this.leap = this.year % 4 == 0
 
     this.$watch = {
+      // 月份变化引起月份名跟随改变
       month: (val, oldVal) => {
-        console.log(val, oldVal)
+        // console.log(val, oldVal)
         if (val != oldVal)
           this.monthName = monthName[val - 1]
       },
+      // 判断日期的变化是否要跨月？
       date: (newDate, date) => {
         // date的变化导致 (month year date day weekNo) 的变化
         let oldDay = new Date(`${this.month} ${date}, ${this.year}`)
@@ -41,6 +43,7 @@ export default class Day extends Reactive {
         this.weekNo = this.calcWeekNo(newDay.getFullYear(), newDay.getMonth() + 1, newDay.getDate());
         return newDay.getDate()
       },
+      // 监听year的变化，判断是否闰年
       year: (val, oldVal) => {
         this.leap = this.year % 4 == 0
       }

@@ -15,7 +15,7 @@ export default {
     console.log('本周', this.weekCal)
     this.menology = this.monthCalender(this.year, this.month)
     // console.log('指定年月的月历', this.menology)
-    this.yearCal = this.yearCalender(this.year)
+    // this.yearCal = this.yearCalender(this.year)
     // console.log('指定年份的年历', this.yearCal)
     this.history = this.initHistory(this.year);
     // console.log('上下3年,10年宽度', this.history)
@@ -43,9 +43,9 @@ export default {
       sec: calender.getSeconds(),
       monthDayCount: [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
       // 月历
-      menology: [[]],
+      // menology: [[]],
       // 年历
-      yearCal: [],
+      // yearCal: [],
       // 10年 上下各三年
       history: [],
       // 默认本周周历
@@ -91,6 +91,8 @@ export default {
     pauseTime() {
       window.clearInterval(this.clockTimer)
     },
+
+
     // 获取这一年的周历
     weekCalender(year) {
       // 计算该年第一天是星期几？
@@ -184,7 +186,7 @@ export default {
         }, [[]])
     },
     // 获取某年的年历
-    yearCalender(year) {
+/*    yearCalender(year) {
       let months = new Array(16)
       for (let m = 0; m < 12; m++) {
         months[m] = new Month(year, m + 1)
@@ -194,7 +196,7 @@ export default {
         months[m + 12] = new Month(year + 1, m + 1)
       }
       return months;
-    },
+    },*/
     // 初始化上下3年
     initHistory(year) {
       let s = Math.abs(Math.floor(year / 10))
@@ -218,26 +220,6 @@ export default {
         day.pass(di - new Date().getDay())
         return day
       })
-    },
-
-    // 根据年月日，返回他是这一年的第几周，数字上的，不是数组下标
-    calcWeekNo(year, month, date) {
-      // console.log(year, month, date)
-      // 第一个星期四 算作 每一年第一个星期的标志
-      let startDay = new Date(`1 1, ${year}`)
-      let startThursday;
-      // let firstSunday;
-      // 1月1号在第一个星期四之前，可能是 星期三 星期二 星期一 星期天
-      if (startDay.getDay() <= 3) {
-        startThursday = new Date(`1 ${4 - startDay.getDay()}, ${year}`)
-      } else if (startDay.getDay() > 3) {
-        startThursday = new Date(`1 ${11 - startDay.getDay()}, ${year}`)
-      }
-
-      let day = new Date(`${month} ${date}, ${year}`)
-      let dayCounts = (day.getTime() - startThursday.getTime()) / 1000 / 3600 / 24 + 4
-      // TODO 逻辑有问题
-      return Math.ceil(dayCounts / 7);
     },
   }
 }

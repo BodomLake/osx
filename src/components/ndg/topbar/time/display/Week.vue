@@ -1,5 +1,5 @@
 <template>
-  <div class="container" style="overflow-x: hidden">
+  <div class="container">
     <!-- 星期X栏目 -->
     <div class="day-array-row" style="height: 50%">
       <!-- 星期模式 -->
@@ -47,10 +47,6 @@ export default {
   },
   mounted() {
     this.initDisplayWeek()
-  },
-  model: {
-    prop: 'weekCal',
-    event: 'changeWeekCal'
   },
   props: {
     weekCal: {
@@ -193,7 +189,6 @@ export default {
         }
       })
     },
-
     // 返回今天所在的周的7天
     initWeekCal() {
       return Array.apply(null, {length: 7}).map((d, di) => {
@@ -215,14 +210,6 @@ export default {
         return new Day().pass(di - new Date().getDay() - 7)
       })
     },
-    /**
-     *         this.displayWeek.forEach((week, wi) => {
-          console.log('wi:', wi);
-          week.days.forEach(day => {
-            console.log(day.year, day.month, day.date)
-          })
-        })
-     */
   }
 }
 </script>

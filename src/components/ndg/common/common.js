@@ -95,5 +95,16 @@ export const splitToGroup = (d, g, group) => {
   }
   return g;
 }
+// 按照一定的组大小，分组，也就是数组维度上升
+export const splitArrayByGroup = (array, groupSize) => {
+  return array.reduce((retArr, ele, idx, arr) => {
+    // 第几轮？ 从0开始
+    if ((idx + 1) % groupSize == 0 && idx < arr.length - 1) {
+      retArr.push([])
+    }
+    retArr[Math.floor(idx / groupSize)].push(ele)
+    return retArr
+  }, [[]])
+}
 
 export const blankEle = document.createElement('span')

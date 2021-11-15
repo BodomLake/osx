@@ -6,26 +6,26 @@
          @dragend="listDragEnd($event)"
          @mousedown="md($event)"
          @wheel="wheel($event)">
+
       <div class="list-container" :style="{'transform': scrollOffset, 'transition': transition }" ref="container">
-        <template v-for="(tip,tidx) in tipList">
-          <div class="tip-item" :style="{'height': defaultHeight,}">
-            <tip-bar :tip="tip" :tidx="tidx"
-                     @enterApp="enterApp" @dragEnd="endDrag"
-                     @startDrag="startDrag" @dragAct="crossDragOver"
-                     @crossOffset="crossOffset" ref="tipbar">
-            </tip-bar>
-          </div>
-        </template>
-        <div class="rest-bar" v-show="tipList.length < displayNum && tipList.length >0">
-          <div class="rest-app-bar"></div>
-          <div class="clear-all" @click="clearAll">清除所有</div>
-        </div>
+        <transition-group tag="div" style="height: 100%;width: 100%" name="tipbar">
+          <template v-for="(tip,tidx) in tipList">
+            <div class="tip-item" :style="{'height': defaultHeight,}" :key="tip.id">
+              <tip-bar :tip="tip" :tidx="tidx" ref="tipbar"
+                       @enterApp="enterApp" @dragEnd="endDrag"
+                       @startDrag="startDrag" @dragAct="crossDragOver"
+                       @crossOffset="crossOffset">
+              </tip-bar>
+            </div>
+          </template>
+        </transition-group>
       </div>
+
     </div>
     <template>
-      <div class="outer-bar-locate rest-bar" v-show="tipList.length >= displayNum">
+      <div class="outer-bar-locate rest-bar" v-if="tipList.length > 0">
         <div class="rest-app-bar"></div>
-        <div class="clear-all" @click="clearAll">清除所有</div>
+        <div class="clear-all" @click="clearAll">清除</div>
       </div>
     </template>
   </div>
@@ -43,7 +43,7 @@ import {
   wechat,
   zhifubao
 } from "@/components/ndg/screenlocker/TipsList/example";
-import {gradientSplit, inRegion} from "@/components/ndg/common/common";
+import {inRegion} from "@/components/ndg/common/common";
 
 export default {
   name: "TipsList",
@@ -133,7 +133,9 @@ export default {
      * 开始拖拽
      */
     startDrag(tid, tidx) {
+      // 确定被拖拽的bar的id
       this.dragBarId = tid;
+      // 确定被拖拽的bar的下标
       this.dragBarIndex = tidx;
       this.timer.start();
       this.scrolling = true;
@@ -212,7 +214,7 @@ export default {
     },
     clearAll() {
       let no = Math.floor(Math.random() * this.tipList.length)
-      this.tipList.splice(no, 1)
+      this.tipList.splice(0, 1)
     },
     disableScroll($event) {
       $event.preventDefault();
@@ -326,5 +328,20 @@ export default {
 .list-container {
   height: 100%;
   width: 100%;
+}
+</style>
+<style scoped>
+.tipbar-leave {
+  transform: translateX(0%);
+  opacity: 1;
+}
+
+.tipbar-leave-to {
+  transform: translateX(100%);
+  opacity: 0.2;
+}
+
+.tipbar-leave-active {
+  transition: all 0.8s ease-in-out;
 }
 </style>

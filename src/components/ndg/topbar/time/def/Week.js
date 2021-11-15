@@ -8,6 +8,15 @@ export default class Week {
     this.order = order
   }
 
+  // 初始化
+  initWeekDays() {
+    return Array.apply(null, {length: 7}).map((d, di) => {
+      // 默认今天
+      return new Day().pass(di - new Date().getDay())
+    })
+  }
+
+  // 向前移动n周
   formerWeek(n) {
     n = n || -1
     for (let i = 0; i < this.days.length; i++) {
@@ -15,18 +24,11 @@ export default class Week {
     }
   }
 
+  // 向后移动n周
   latterWeek(n) {
     n = n || 1
     for (let i = 0; i < this.days.length; i++) {
       this.days[i].pass(7 * n)
     }
-  }
-
-  // 初始化
-  initWeekDays() {
-    return Array.apply(null, {length: 7}).map((d, di) => {
-      // 默认今天
-      return new Day().pass(di - new Date().getDay())
-    })
   }
 }

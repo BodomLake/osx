@@ -19,7 +19,7 @@
 
 <script>
 const today = new Date()
-// 16(10+3+3) 年 为一个周期 一次 10年
+// 总计八行，显示4行，每次移动±2行的距离
 export default {
   name: "History",
   data() {
