@@ -43,6 +43,11 @@ export default {
       type: Object,
       default: {},
     },
+    // 切换公历的动画时间
+    switchDuration: {
+      type: Number,
+      default: 250,
+    },
     leaveDelay: {
       type: Number,
       default: 100

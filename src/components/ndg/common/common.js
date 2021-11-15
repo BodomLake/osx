@@ -95,6 +95,7 @@ export const splitToGroup = (d, g, group) => {
   }
   return g;
 }
+
 // 按照一定的组大小，分组，也就是数组维度上升
 export const splitArrayByGroup = (array, groupSize) => {
   return array.reduce((retArr, ele, idx, arr) => {

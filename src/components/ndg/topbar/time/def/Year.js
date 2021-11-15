@@ -1,11 +1,13 @@
 import Reactive from "@/components/ndg/common/Reactive";
 import Month from "@/components/ndg/topbar/time/def/Month";
+import {v4 as uuidv4} from "uuid";
 
 export default class Year extends Reactive {
-  constructor(year, monthsArr) {
+  constructor(year, monthsArr,id) {
     super()
     this.year = year || new Date().getFullYear();
     this.months = monthsArr || this.initYearMonths(this.year);
+    this.id = id || uuidv4()
     // 是否是闰年
     this.leap = year % 4 == 0;
 

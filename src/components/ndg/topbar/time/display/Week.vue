@@ -14,7 +14,7 @@
       <!-- 每一个显示条，预先渲染好，方便无延迟划入划出 -->
       <div v-for="(week, wi) in displayWeek" class="week-days-bar"
            :key="week.id" :id="week.id" :data-index="wi" :data-order="week.order"
-           :style="{width:barWidth, left: offset(week.order), visibility: hidden(week.order), transition: anime}">
+           :style="{width: barWidth, left: offset(week.order), visibility: hidden(week.order), transition: anime}">
         <div v-for="day in week.days" class="day-array-box" @click="checkDay($event,day)"
              :style="[todayStyle(day), checkedDayStyle(day)]"
              :data-year="day.year" :data-month="day.month" :data-date="day.date">
@@ -163,21 +163,6 @@ export default {
     // TODO 处理一下跨年情况
     initDisplayWeek() {
       // 默认长度为奇数
-      /*      return Array.apply(null, {length: this.buffer + 1}).map((week, wi) => {
-              if (wi == 0) {
-                // 首组
-                console.log(this.initPrevWeekCal());
-                return new Week(this.initPrevWeekCal(), uuidv4(), wi)
-              } else if (wi == 2) {
-                //  尾组
-                console.log(this.initNextWeekCal());
-                return new Week(this.initNextWeekCal(), uuidv4(), wi)
-              } else {
-                // 中间组
-                console.log(this.initWeekCal());
-                return new Week(this.weekCal, uuidv4(), wi)
-              }
-            })*/
       this.displayWeek = Array.apply(null, {length: this.buffer + 1})
       this.displayWeek.forEach((week, wi) => {
         if (wi == 0) {

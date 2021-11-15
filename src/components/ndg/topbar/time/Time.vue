@@ -62,21 +62,24 @@
           <!-- 展示本年12个月以及下一年的前四个月 -->
           <transition name="period-switch">
             <template v-if="calPeriod === 2">
-              <Year :display-date="displayDate" @goToMenology="goToMenology" ref="year"></Year>
+              <Year :display-date="displayDate" :switch-duration="switchDuration" @goToMenology="goToMenology"
+                    ref="year"></Year>
             </template>
           </transition>
 
           <!-- 上下三年，10年跨度 -->
           <transition name="period-switch">
             <template v-if="calPeriod === 3">
-              <History v-model="history" :display-date="displayDate" @goToYearCal="goToYearCal" ref="history"></History>
+              <History v-model="history" :display-date="displayDate" :switch-duration="switchDuration"
+                       @goToYearCal="goToYearCal" ref="history"></History>
             </template>
           </transition>
 
           <!-- 周历模式-->
           <transition name="period-switch">
             <template v-if="calPeriod === 0">
-              <Week :display-date="displayDate" @chooseDay="chooseDay" :switch-duration="switchDuration" ref="week"></Week>
+              <Week :display-date="displayDate" @chooseDay="chooseDay" :switch-duration="switchDuration"
+                    ref="week"></Week>
             </template>
           </transition>
         </div>
@@ -148,7 +151,7 @@ export default {
   props: {
     switchDuration: {
       type: Number,
-      default: 300,
+      default: 250,
     }
   },
   beforeCreate() {
@@ -204,14 +207,17 @@ export default {
       this.displayDate.month = today.getMonth() + 1
       this.displayDate.date = today.getDate()
       this.displayDate.day = today.getDay()
-
+      // TODO
       this.displayDate.weekNo = 0
       this.menology = this.monthCalender(this.year, this.month)
-      this.yearCal = this.yearCalender(this.year)
+      // this.yearCal = this.yearCalender(this.year)
     },
     // 响应点击事件，进入上一个周期
     prevPeriod($event) {
       $event.stopPropagation();
+      if (Date.now() - this.throttleTimer < this.switchDuration) {
+        return;
+      }
       switch (this.calPeriod) {
         case calPeriod.WEEK:
           this.prevWeek();
@@ -227,10 +233,14 @@ export default {
           break;
         default:
       }
+      this.throttleTimer = Date.now()
     },
     // 响应点击事件，进入下一个周期
     nextPeriod($event) {
       $event.stopPropagation();
+      if (Date.now() - this.throttleTimer < this.switchDuration) {
+        return;
+      }
       switch (this.calPeriod) {
         case calPeriod.WEEK:
           this.nextWeek();
@@ -246,23 +256,15 @@ export default {
           break;
         default:
       }
+      this.throttleTimer = Date.now()
     },
     // 周前移一周
     prevWeek() {
-      if (Date.now() - this.throttleTimer < this.switchDuration) {
-        return;
-      }
       this.$refs['week'].prevWeek()
-      this.throttleTimer = Date.now()
     },
     // 周历后移一周
     nextWeek() {
-      if (Date.now() - this.throttleTimer < this.switchDuration) {
-
-        return;
-      }
       this.$refs['week'].nextWeek()
-      this.throttleTimer = Date.now()
     },
     // 上个月
     prevMonth() {
@@ -289,12 +291,12 @@ export default {
     // 下一年
     nextYear() {
       this.displayDate.year += 1;
-      this.yearCal = this.yearCalender(this.displayDate.year)
+      this.$refs['year'].nextYear()
     },
     // 上一年
     prevYear() {
       this.displayDate.year -= 1;
-      this.yearCal = this.yearCalender(this.displayDate.year)
+      this.$refs['year'].prevYear()
     },
     // 上个十年
     prevDecade() {
@@ -458,8 +460,8 @@ export default {
   width: 92%;
   margin: 0 auto;
   flex-direction: column;
-/*    background-color: skyblue;*/
-    border-color: skyblue;
+  /*    background-color: skyblue;*/
+  border-color: skyblue;
   transition: all 500ms ease-in-out;
   position: relative;
   overflow-y: hidden;
