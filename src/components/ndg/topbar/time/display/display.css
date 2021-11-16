@@ -56,33 +56,5 @@
   border: 1px solid white;
 }
 
-.year-array-row {
-  display: flex;
-  flex-wrap: nowrap;
-  flex-direction: row;
-  min-height: calc(calc(100% / 4));
-  max-height: calc(calc(100% / 4));
-}
 
-.year-array-box {
-  min-width: calc(calc(100% / 4));
-  max-width: calc(calc(100% / 4));
-  min-width: calc(calc(100% / 4));
-  max-width: calc(calc(100% / 4));
-  box-sizing: border-box;
-  user-select: none;
-  position: relative;
-}
 
-.year-array-box:hover {
-  border: 1px solid white;
-}
-
-.text-center {
-  width: 100%;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  user-select: none;
-}

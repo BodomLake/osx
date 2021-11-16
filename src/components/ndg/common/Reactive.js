@@ -2,7 +2,14 @@ export default class Reactive {
   constructor($data, $watch) {
     this.$data = $data || {};
     this.$watch = $watch || {};
+    // 默认可以改变 否定的否定就是 mutable
+    this.immutable = false;
   }
+
+  setImmutable(flag) {
+    this.immutable = flag
+  }
+
   // 添加响应式
   defineReactive(key) {
     if (!this.hasOwnProperty(key)) {

@@ -1,21 +1,24 @@
 <template>
-  <div class="container" name="row-array-container">
-    <template v-for="(row, ri) in displayYearRows">
-      <div class="row-array" :key="ri" :data-index="ri" :data-order="row.order"
-           :style="{top: offset(row.order), visibility: hidden(row.order), transition: anime}">
-        <template v-for="(month,mi) in row.months">
-          <!-- 每一行，都是4个月 -->
-          <div class="row-array-box" @click="checkMonth(month)"
-               :data-month="month.month" :data-year="month.year"
-               :style="[currentMonthStyle(month), checkedMonthStyle(month),sameMonthStyle(month)]">
-            <div class="text-center">
-              {{ month.year }}
-              {{ month.monthName }}
+  <div class="container" name="row-array-container0">
+    <div class="display-zone">
+      <template v-for="(row, ri) in displayRows">
+        <div class="row-array" :key="ri" :data-index="ri" :data-order="row.order"
+             :style="{top: offset(row.order), visibility: hidden(row.order), transition: anime}">
+          <template v-for="(month,mi) in row.months">
+            <!-- 每一行，都是4个月 -->
+            <div class="row-array-box" @click="checkMonth(month)"
+                 :data-month="month.month" :data-year="month.year"
+                 :style="[currentMonthStyle(month), checkedMonthStyle(month),sameMonthStyle(month)]">
+              <div class="text-center">
+                <!--              {{ month.year }}-->
+                {{ month.monthName }}
+              </div>
             </div>
-          </div>
-        </template>
-      </div>
-    </template>
+          </template>
+        </div>
+      </template>
+    </div>
+
   </div>
 </template>
 <script>
@@ -43,7 +46,7 @@ export default {
       checkedTime: new Month(today.getFullYear(), today.getMonth() + 1),
       // 总计9（3*3）行，也就是（3*4）*3个月 36个月，
       // 跨度3年（去年，今年，明年，后年的1-4月）被规划为10行()，每次滑动±3行的距离
-      displayYearRows: displayYearRows,
+      displayRows: displayYearRows,
       // 默认显示今年
       displayYear: new Date().getFullYear(),
       // 默认下一年
@@ -90,34 +93,39 @@ export default {
   mounted() {
   },
   methods: {
-    // 跳到明年
+    // 重置到今天所在周期
+    reset() {
+      this.displayRows = displayRows;
+    },
+    // 跳到明年 上拉
     nextYear() {
       this.animeWard = 'down'
       // 先修改order
-      this.displayYearRows.forEach((row, ri) => {
-        row.order = (row.order - 3) < 0 ? row.order - 3 + this.displayYearRows.length : row.order - 3
+      this.displayRows.forEach((row, ri) => {
+        row.order = (row.order - 3) < 0 ? row.order - 3 + this.displayRows.length : row.order - 3
       })
+      this.displayYear++;
       // 处理 7 8 9的下标
       setTimeout(() => {
         let bars = Array.from(document.getElementsByClassName('row-array'))
         bars.forEach((bar, bid) => {
           // 找出中位之后所有的bar 的data-order
           if (bar.dataset.order >= 7) {
-            this.displayYearRows[parseInt(bar.dataset.index)].months.forEach((month, mi) => {
-              month.latterMonth(40)
+            this.displayRows[parseInt(bar.dataset.index)].months.forEach((month, mi) => {
+              month.laterMonth(this.displayRows.length * 4)
             })
           }
         })
       }, 10)
     },
     // 跳到去年 下拉
-    // 0 -9 =》
     prevYear() {
       this.animeWard = 'up'
       // 先修改order 除了  7 8 9 全部下拉， 0 1 2
-      this.displayYearRows.forEach((row, ri) => {
-        row.order = (row.order + 3) % this.displayYearRows.length
+      this.displayRows.forEach((row, ri) => {
+        row.order = (row.order + 3) % this.displayRows.length
       })
+      this.displayYear--;
       // 处理 0 1 2的下标
       setTimeout(() => {
         let bars = Array.from(document.getElementsByClassName('row-array'))
@@ -126,8 +134,10 @@ export default {
           if (bar.dataset.order < 3) {
             // 找到数组下标
             let barIndex = parseInt(bar.dataset.index)
-            this.displayYearRows[barIndex].months.forEach((month, mi) => {
+            this.displayRows[barIndex].months.forEach((month, mi) => {
+              // 下一年
               month.year = this.displayDate.year - 1;
+              // 后四个月
               month.month = 4 * bar.dataset.order + mi + 1
             })
           }
@@ -136,7 +146,7 @@ export default {
     },
     // 位移属性
     offset(order) {
-      return 100 * order / (this.displayYearRows.length || 1) + '%'
+      return 100 * order / (this.displayRows.length || 1) + '%'
     },
     currentMonthStyle(month) {
       let sameMonth = month.month == today.getMonth() + 1 && month.year == today.getFullYear()
@@ -151,14 +161,14 @@ export default {
       this.checkedTime.month = month.month;
       this.checkedTime.year = month.year;
       // 修改父组件的属性
-      setTimeout(() => {
-        this.$emit('goToMenology', month.year, month.month)
-      }, this.leaveDelay)
+      // setTimeout(() => {
+      this.$emit('goToMenology', month.year, month.month)
+      // }, this.leaveDelay)
     },
     // 让当年的月份呈现黑色
     sameMonthStyle(month) {
       let sameMonth = month.year == this.displayDate.year
-      return {color: !sameMonth ? 'black' : 'black'}
+      return {color: !sameMonth ? 'orange' : 'black'}
     },
     // 是否要显示复位的元素
     hidden(order) {
@@ -166,6 +176,17 @@ export default {
       const downSide = this.animeWard == 'down' && order > 6;
       return upSide || downSide ? 'hidden' : 'initial'
     },
+    setYearCal(year) {
+      // 设置当前显示的年份
+      this.displayYear = year;
+      // 修改数据锁定这一年的情况，以及上下
+      this.displayRows.forEach((row, ri) => {
+        row.months.forEach((month, mi) => {
+          // console.log(year - this.displayYear, month.year)
+          month.year += year - this.displayYear
+        })
+      })
+    }
   }
 }
 </script>
@@ -174,18 +195,30 @@ export default {
 .container {
   min-height: 100%;
   /* 25% * 10*/
-  max-height: 250%;
-  height: 250%;
+  max-height: 100%;
+  height: 100%;
   max-width: 100%;
   min-width: 100%;
   width: 100%;
   position: absolute;
+  top: 0;
   left: 0;
   right: 0;
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
-  top: 0%;
+}
+
+.display-zone {
+  min-height: 250%;
+  /* 25% * 10*/
+  max-height: 250%;
+  height: 250%;
+  max-width: 100%;
+  min-width: 100%;
+  top: 0;
+  left: 0;
+  position: absolute;
   transform: translateY(-30%);
 }
 
@@ -211,7 +244,7 @@ export default {
   width: 25%;
   box-sizing: border-box;
   position: relative;
-  border: 1px solid crimson;
+  /*  border: 1px solid crimson;*/
 }
 
 .row-array-box:hover {

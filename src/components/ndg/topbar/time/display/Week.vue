@@ -31,22 +31,34 @@
 import Day from "@/components/ndg/topbar/time/def/Day";
 import Week from "@/components/ndg/topbar/time/def/Week";
 import {v4 as uuidv4} from "uuid";
-
+// 默认长度为3
+const displayWeek = Array.apply(null, {length: 3}).map((week, wi) => {
+  if (wi == 0) {
+    return new Week(wi).formerWeek(1)
+  } else if (wi == 2) {
+    return new Week(wi).laterWeek(1)
+  } else {
+    return new Week(wi)
+  }
+})
 const weekName = ['周天', '周一', '周二', '周三', '周四', '周五', '周六',]
 const today = new Date()
 export default {
   name: "Week",
   data() {
     return {
-      checkedTime: new Day(),
+      checkedTime: {
+        year: today.getFullYear(),
+        month: today.getMonth() + 1,
+        date: today.getDate()
+      },
       weekName: weekName,
       // 初始化 左中右三个周期
-      displayWeek: [],
+      displayWeek: displayWeek,
       animeWard: 'left',
     }
   },
   mounted() {
-    this.initDisplayWeek()
   },
   props: {
     weekCal: {
@@ -84,6 +96,10 @@ export default {
   },
   watch: {},
   methods: {
+    // 重置到今天所在周期
+    reset() {
+      this.displayWeek = displayWeek;
+    },
     // 今日的背景色
     todayStyle(day) {
       let isToday = (day.year == new Date().getFullYear()
@@ -135,7 +151,7 @@ export default {
         bars.forEach((bar, bid) => {
           // 找出中位之后所有的bar 的data-order
           if (this.buffer / 2 < bar.dataset.order) {
-            this.displayWeek[parseInt(bar.dataset.index)].latterWeek(3)
+            this.displayWeek[parseInt(bar.dataset.index)].laterWeek(3)
           }
         })
       }, 1)
@@ -158,42 +174,6 @@ export default {
           }
         })
       }, 1)
-    },
-
-    // TODO 处理一下跨年情况
-    initDisplayWeek() {
-      // 默认长度为奇数
-      this.displayWeek = Array.apply(null, {length: this.buffer + 1})
-      this.displayWeek.forEach((week, wi) => {
-        if (wi == 0) {
-          this.$set(this.displayWeek, wi, new Week(this.initPrevWeekCal(), uuidv4(), wi))
-        } else if (wi == 2) {
-          this.$set(this.displayWeek, wi, new Week(this.initNextWeekCal(), uuidv4(), wi))
-        } else {
-          this.$set(this.displayWeek, wi, new Week(this.weekCal, uuidv4(), wi))
-        }
-      })
-    },
-    // 返回今天所在的周的7天
-    initWeekCal() {
-      return Array.apply(null, {length: 7}).map((d, di) => {
-        // 默认今天
-        return new Day().pass(di - new Date().getDay())
-      })
-    },
-    // 返回某个年月日之后的那个星期
-    initNextWeekCal() {
-      return Array.apply(null, {length: 7}).map((d, di) => {
-        // 默认今天
-        return new Day().pass(di - new Date().getDay() + 7)
-      })
-    },
-    // 返回某个年月日之前的那个星期
-    initPrevWeekCal() {
-      return Array.apply(null, {length: 7}).map((d, di) => {
-        // 默认今天
-        return new Day().pass(di - new Date().getDay() - 7)
-      })
     },
   }
 }
@@ -228,6 +208,15 @@ export default {
   box-sizing: border-box;
   color: black;
   opacity: 1;
+}
+
+.text-center {
+  width: 100%;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  user-select: none;
 }
 </style>
 <style scoped>

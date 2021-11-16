@@ -27,7 +27,6 @@ export default class Day extends Reactive {
     this.$watch = {
       // 月份变化引起月份名跟随改变
       month: (val, oldVal) => {
-        // console.log(val, oldVal)
         if (val != oldVal)
           this.monthName = monthName[val - 1]
       },

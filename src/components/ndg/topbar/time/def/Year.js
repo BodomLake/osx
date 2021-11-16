@@ -17,6 +17,7 @@ export default class Year extends Reactive {
     this.$watch = {
       year: (val, oldVal) => {
         this.leap = year % 4 == 0;
+        return val
       }
     }
     this.defineReactive('year')
@@ -39,7 +40,7 @@ export default class Year extends Reactive {
   }
 
   // 向后推n年
-  latterYear(n) {
+  laterYear(n) {
     this.year -= Math.abs(n) || 0
     this.months = this.initYearMonths(this.year)
     return this

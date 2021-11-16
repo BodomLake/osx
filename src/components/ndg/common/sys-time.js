@@ -43,7 +43,7 @@ export default {
       sec: calender.getSeconds(),
       monthDayCount: [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
       // 月历
-      // menology: [[]],
+      menology: [[]],
       // 年历
       // yearCal: [],
       // 10年 上下各三年
@@ -100,7 +100,7 @@ export default {
       // 计算该年最后一天是星期几？
       let lastDay = new Date(`12 31, ${year}`)
       let formerDays = []
-      let latterDays = []
+      let laterDays = []
       let yearDays = []
       for (let i = 1; i <= startDay.getDay(); i++) {
         // 上一年的十二月(31天)
@@ -121,9 +121,9 @@ export default {
       }
       for (let i = 1; i < 7 - lastDay.getDay(); i++) {
         // 下一年的一月
-        latterDays.push(new Day(year + 1, 1, i, (lastDay.getDay() + i) % 7))
+        laterDays.push(new Day(year + 1, 1, i, (lastDay.getDay() + i) % 7))
       }
-      return Array.prototype.concat(formerDays.reverse(), yearDays, latterDays)
+      return Array.prototype.concat(formerDays.reverse(), yearDays, laterDays)
         .reduce((retArr, day, idx, arr) => {
           if ((idx + 1) % 7 == 0 && idx < arr.length - 1) {
             retArr.push([])
@@ -145,10 +145,10 @@ export default {
       let formerDays = new Array(firstDay.getDay() - 0).fill()
       // 为了保证六行日期，所以要追加可能必要的7天
       const fillRest = days.length + formerDays.length <= 35 ? 7 : 0
-      let latterDays = new Array(fillRest + 6 - lastDay.getDay()).fill()
+      let laterDays = new Array(fillRest + 6 - lastDay.getDay()).fill()
 
       // 第一天，最后一天 分别是 周几？
-      // console.log(firstDay.getDay(), lastDay.getDay(), formerDays.length, latterDays.length)
+      // console.log(firstDay.getDay(), lastDay.getDay(), formerDays.length, laterDays.length)
       // 上个月末
       for (let index in formerDays) {
         // 如果是一月份，上个(12)月属于去年
@@ -163,16 +163,16 @@ export default {
         days[index] = new Day(year, month, parseInt(index) + 1, (firstDay.getDay() + parseInt(index)) % 7)
       }
       // 下个月初
-      for (let index in latterDays) {
+      for (let index in laterDays) {
         // 如果是十二月份，下个(1)月属于下一年
-        latterDays[index] = new Day(
+        laterDays[index] = new Day(
           month == 12 ? year + 1 : year,
           month == 12 ? 1 : month + 1,
           parseInt(index) + 1,
           (lastDay.getDay() + 1 + parseInt(index)) % 7);
       }
-      // console.log("上月", formerDays, "下月", latterDays, "本月", days)
-      return Array.prototype.concat(formerDays.reverse(), days, latterDays)
+      // console.log("上月", formerDays, "下月", laterDays, "本月", days)
+      return Array.prototype.concat(formerDays.reverse(), days, laterDays)
         .reduce((retArr, day, idx, arr) => {
           // 第几轮？ 从0开始
           let round = Math.floor(idx / 7)

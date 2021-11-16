@@ -67,10 +67,10 @@
             </template>
           </transition>
 
-          <!-- 上下三年，10年跨度 -->
+          <!-- 上下11年，10年跨度，总计8行，32年 -->
           <transition name="period-switch">
             <template v-if="calPeriod === 3">
-              <History v-model="history" :display-date="displayDate" :switch-duration="switchDuration"
+              <History :display-date="displayDate" :switch-duration="switchDuration"
                        @goToYearCal="goToYearCal" ref="history"></History>
             </template>
           </transition>
@@ -136,7 +136,7 @@ export default {
       // 输入的事件
       enterEvents: '',
       // 默认月历，加载这一年的所有月份表
-      calPeriod: calPeriod.YEAR,
+      calPeriod: calPeriod.MONTH,
       // selector-bar 选择条中显示的 年月日
       displayDate: {
         year: today.getFullYear(),
@@ -207,10 +207,12 @@ export default {
       this.displayDate.month = today.getMonth() + 1
       this.displayDate.date = today.getDate()
       this.displayDate.day = today.getDay()
-      // TODO
-      this.displayDate.weekNo = 0
+      // TODO 让所有子组件的周期频率（年历，月历，日历，周历）的历程 回到今天所在的那个周期内
       this.menology = this.monthCalender(this.year, this.month)
-      // this.yearCal = this.yearCalender(this.year)
+      //  周
+      //  年
+      //  日
+      //  月
     },
     // 响应点击事件，进入上一个周期
     prevPeriod($event) {
@@ -298,15 +300,15 @@ export default {
       this.displayDate.year -= 1;
       this.$refs['year'].prevYear()
     },
-    // 上个十年
+    // 上个十年，上滑2行距离
     prevDecade() {
-      this.displayDate.year -= 10
-      this.history = this.initHistory(this.displayDate.year)
+      this.displayDate.year -= 12
+      this.$refs['history'].prevDecade()
     },
-    // 下个十年
+    // 下个十年，下滑2行距离
     nextDecade() {
-      this.displayDate.year += 10
-      this.history = this.initHistory(this.displayDate.year)
+      this.displayDate.year += 12
+      this.$refs['history'].nextDecade()
     },
     // 切换Calender的周期
     switchCalPeriod($event) {
@@ -336,8 +338,12 @@ export default {
     // <History>进入指定的年历表
     goToYearCal(year) {
       this.displayDate.year = year;
-      this.yearCal = this.yearCalender(year)
+      // 先让 template 响应 组件切换
       this.calPeriod = calPeriod.YEAR;
+      // 然后获取组件<Year></Year>
+      this.$nextTick(() => {
+        this.$refs['year'].setYearCal(year);
+      })
     },
     chooseDay(day) {
       Object.keys(day).forEach((key) => {
@@ -346,8 +352,8 @@ export default {
         }
       })
     },
-  }
 
+  }
 }
 </script>
 
@@ -377,7 +383,7 @@ export default {
 .calender-container {
   width: 42vmin;
   height: 75vmin;
-  position: fixed;
+  position: absolute;
   right: 0;
   z-index: 1;
   top: 4vh;
@@ -457,7 +463,7 @@ export default {
 
 .day-array-zone {
   display: flex;
-  width: 92%;
+  width: 90%;
   margin: 0 auto;
   flex-direction: column;
   /*    background-color: skyblue;*/
@@ -557,11 +563,10 @@ input:focus {
 
 .period-switch-leave-active {
   transition: all 0.3s;
-  transition-delay: 0.1s;
 }
 
 .period-switch-enter {
-  transform: scale(0.5);
+  transform: scale(0.2);
   opacity: 0.1;
 }
 
@@ -572,7 +577,6 @@ input:focus {
 
 .period-switch-enter-active {
   transition: all 0.3s;
-  transition-delay: 0.3s;
 }
 
 </style>

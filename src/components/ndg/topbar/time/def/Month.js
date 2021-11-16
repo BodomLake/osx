@@ -46,7 +46,7 @@ export default class Month extends Reactive {
     this.month -= n || 0;
   }
 
-  latterMonth(n) {
+  laterMonth(n) {
     this.month += n || 0;
   }
 
@@ -55,7 +55,7 @@ export default class Month extends Reactive {
     this.year -= n || 0;
   }
 
-  latterYear(n) {
+  laterYear(n) {
     this.year += n || 0;
   }
 }
