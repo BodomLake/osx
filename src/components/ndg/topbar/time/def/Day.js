@@ -6,6 +6,8 @@ const monthDayCount = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 export default class Day extends Reactive {
   constructor(year, month, date, day) {
     super()
+
+    /* 属性初始化 */
     // 几几年
     this.year = year || new Date().getFullYear();
     // 几月
@@ -20,9 +22,9 @@ export default class Day extends Reactive {
     this.dayName = weekDayName[this.day]
     // 响应的月份名字
     this.monthName = monthName[this.month - 1]
-
     // 响应的leap true为闰年
     this.leap = this.year % 4 == 0
+    /* 属性初始化结束 */
 
     this.$watch = {
       // 月份变化引起月份名跟随改变
@@ -54,15 +56,23 @@ export default class Day extends Reactive {
       year: this.year
     }
 
-    // 让this.month变成响应式的数据
     this.defineReactive('month')
     this.defineReactive('date')
+    this.defineReactive('year')
   }
 
   // 默认过一天
   pass(number) {
     this.date += number || 0
     return this
+  }
+
+  printDay() {
+    console.log(`${this.year}, '年', ${this.month}, '月', ${this.date}, '号', ${this.dayName}`)
+  }
+
+  toString() {
+    return `${this.year},${this.month},${this.date}`;
   }
 
   // 根据年月日，返回他是这一年的第几周，数字上的，不是数组下标

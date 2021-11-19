@@ -1,25 +1,27 @@
 <template>
   <div class="container">
-    <!-- 星期X栏目 -->
-    <div class="day-array-row" style="height: 50%">
-      <!-- 星期模式 -->
-      <template v-for="(week,i) in weekName">
-        <div class="day-array-box" :data-index="i">
-          <div class="text-center">{{ week }}
+    <div class="display-zone">
+      <!-- 星期X栏目 -->
+      <div class="day-array-container">
+        <div class="day-array-row">
+          <div v-for="(week,wi) in weekName" class="day-array-box" :data-index="wi">
+            <div class="text-center">
+              {{ week }}
+            </div>
           </div>
         </div>
-      </template>
-    </div>
-    <div class="weeks-container" name="weeks-container-anime">
-      <!-- 每一个显示条，预先渲染好，方便无延迟划入划出 -->
-      <div v-for="(week, wi) in displayWeek" class="week-days-bar"
-           :key="week.id" :id="week.id" :data-index="wi" :data-order="week.order"
-           :style="{width: barWidth, left: offset(week.order), visibility: hidden(week.order), transition: anime}">
-        <div v-for="day in week.days" class="day-array-box" @click="checkDay($event,day)"
-             :style="[todayStyle(day), checkedDayStyle(day)]"
-             :data-year="day.year" :data-month="day.month" :data-date="day.date">
-          <div class="text-center">
-            {{ day.date }}
+      </div>
+      <div class="weeks-container" name="weeks-container-anime">
+        <!-- 每一个显示条，预先渲染好，方便无延迟划入划出 -->
+        <div v-for="(week, wi) in displayWeek" class="week-days-row"
+             :key="week.id" :id="week.id" :data-index="wi" :data-order="week.order"
+             :style="{width: barWidth, left: offset(week.order), visibility: hidden(week.order), transition: anime}">
+          <div v-for="day in week.days" class="day-array-box" @click="checkDay($event,day)"
+               :style="[todayStyle(day), checkedDayStyle(day)]"
+               :data-year="day.year" :data-month="day.month" :data-date="day.date">
+            <div class="text-center">
+              {{ day.date }}
+            </div>
           </div>
         </div>
       </div>
@@ -31,6 +33,7 @@
 import Day from "@/components/ndg/topbar/time/def/Day";
 import Week from "@/components/ndg/topbar/time/def/Week";
 import {v4 as uuidv4} from "uuid";
+import {swapEle} from "@/components/ndg/common/common";
 // 默认长度为3
 const displayWeek = Array.apply(null, {length: 3}).map((week, wi) => {
   if (wi == 0) {
@@ -70,11 +73,6 @@ export default {
           return new Day().pass(di - new Date().getDay())
         })
       },
-    },
-    displayDate: {
-      require: false,
-      type: Object,
-      default: {},
     },
     buffer: {
       require: false,
@@ -138,16 +136,14 @@ export default {
     },
     // 向左拉动
     nextWeek() {
-      // console.log('进入下一周')
-      // 改动order
+      console.log('进入下一周')
       this.animeWard = 'left'
-      // 先修改order
       this.displayWeek.forEach((week, wi) => {
         week.order = (week.order - 1) < 0 ? week.order - 1 + this.displayWeek.length : week.order - 1
       })
       // 处理Bar最后一个week
       setTimeout(() => {
-        let bars = Array.from(document.getElementsByClassName('week-days-bar'))
+        let bars = Array.from(document.getElementsByClassName('week-days-row'))
         bars.forEach((bar, bid) => {
           // 找出中位之后所有的bar 的data-order
           if (this.buffer / 2 < bar.dataset.order) {
@@ -159,14 +155,13 @@ export default {
     },
     // 向右拉动
     prevWeek() {
-      // console.log('进入上一周')
+      console.log('进入上一周')
       this.animeWard = 'right'
       this.displayWeek.forEach((week, wi) => {
         week.order = (week.order + 1) % this.displayWeek.length
       })
-      // 处理Bar第一个week
       setTimeout(() => {
-        let bars = Array.from(document.getElementsByClassName('week-days-bar'))
+        let bars = Array.from(document.getElementsByClassName('week-days-row'))
         bars.forEach((bar, bid) => {
           // 找出中位之前所有的bar 的data-order
           if (this.buffer / 2 > bar.dataset.order) {
@@ -180,34 +175,93 @@ export default {
 </script>
 
 <style scoped>
-@import "display.css";
+
+.container {
+  max-height: 100%;
+  min-height: 100%;
+  height: 100%;
+  max-width: 100%;
+  min-width: 100%;
+  width: 100%;
+  position: relative;
+  left: 0;
+  right: 0;
+}
+
+.display-zone {
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-height: 100%;
+  max-height: 100%;
+  height: 100%;
+  max-width: 100%;
+  min-width: 100%;
+  overflow: hidden;
+}
 
 .weeks-container {
+  position: relative;
   width: 300%;
-  box-sizing: border-box;
   color: black;
   height: 50%;
+  transform: translateX(-33.33%);
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
-  position: relative;
-  left: -100%;
-  /*  transition: left 1550ms ease-in-out;*/
+  box-sizing: border-box;
 }
 
-.week-days-bar {
+.week-days-row {
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  box-sizing: border-box;
+    position: absolute;
   min-width: 33.33%;
   max-width: 33.33%;
   min-height: 100%;
   max-height: 100%;
   /*  border: 1px green solid;*/
-  position: absolute;
+  color: black;
+  opacity: 1;
+}
+
+.day-array-container {
+  position: relative;
+  max-height: 50%;
+  min-height: 50%;
+  height: 50%;
+  width: 100%;
+}
+
+.day-array-row {
   display: flex;
   flex-wrap: nowrap;
   flex-direction: row;
+  height: 100%;
+  width: 100%;
   box-sizing: border-box;
   color: black;
-  opacity: 1;
+}
+
+.day-array-box {
+  min-width: calc(calc(100% / 7));
+  max-width: calc(calc(100% / 7));
+  width: calc(calc(100% / 7));
+  min-height: 100%;
+  max-height: 100%;
+  /*  border-right: 1px #03e9f4 groove;*/
+  box-sizing: border-box;
+  position: relative;
+  font-weight: 400;
+  user-select: none;
+  font-size: 2vmin;
+  font-family: "Avenir", Helvetica, Arial, sans-serif;
+}
+
+.week-days-row > .day-array-box:hover {
+  border: 1px solid white;
 }
 
 .text-center {
@@ -220,5 +274,7 @@ export default {
 }
 </style>
 <style scoped>
-
+.weeks-container-anime-move {
+  transition: 0.3s all ease-in-out;
+}
 </style>

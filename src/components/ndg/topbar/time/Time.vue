@@ -55,14 +55,14 @@
           <!-- 当月 月历-->
           <transition name="period-switch">
             <template v-if="calPeriod === 1">
-              <Month v-model="menology" :display-date="displayDate" @chooseDay="chooseDay" ref="month"></Month>
+              <Month @chooseDay="chooseDay" ref="month"></Month>
             </template>
           </transition>
 
           <!-- 展示本年12个月以及下一年的前四个月 -->
           <transition name="period-switch">
             <template v-if="calPeriod === 2">
-              <Year :display-date="displayDate" :switch-duration="switchDuration" @goToMenology="goToMenology"
+              <Year :switch-duration="switchDuration" @goToMenology="goToMenology"
                     ref="year"></Year>
             </template>
           </transition>
@@ -70,16 +70,14 @@
           <!-- 上下11年，10年跨度，总计8行，32年 -->
           <transition name="period-switch">
             <template v-if="calPeriod === 3">
-              <History :display-date="displayDate" :switch-duration="switchDuration"
-                       @goToYearCal="goToYearCal" ref="history"></History>
+              <History :switch-duration="switchDuration" @goToYearCal="goToYearCal" ref="history"></History>
             </template>
           </transition>
 
           <!-- 周历模式-->
           <transition name="period-switch">
             <template v-if="calPeriod === 0">
-              <Week :display-date="displayDate" @chooseDay="chooseDay" :switch-duration="switchDuration"
-                    ref="week"></Week>
+              <Week @chooseDay="chooseDay" :switch-duration="switchDuration" ref="week"></Week>
             </template>
           </transition>
         </div>
@@ -208,7 +206,6 @@ export default {
       this.displayDate.date = today.getDate()
       this.displayDate.day = today.getDay()
       // TODO 让所有子组件的周期频率（年历，月历，日历，周历）的历程 回到今天所在的那个周期内
-      this.menology = this.monthCalender(this.year, this.month)
       //  周
       //  年
       //  日
@@ -270,25 +267,11 @@ export default {
     },
     // 上个月
     prevMonth() {
-      if (this.displayDate.month == 1) {
-        this.displayDate.month = 12;
-        // 进入上一年
-        this.prevYear()
-      } else {
-        this.displayDate.month -= 1;
-      }
-      this.menology = this.monthCalender(this.displayDate.year, this.displayDate.month)
+      this.$refs['month'].prevMonth();
     },
     // 下个月
     nextMonth() {
-      if (this.displayDate.month == 12) {
-        this.displayDate.month = 1;
-        // 进入下一年
-        this.nextYear();
-      } else {
-        this.displayDate.month += 1;
-      }
-      this.menology = this.monthCalender(this.displayDate.year, this.displayDate.month)
+      this.$refs['month'].nextMonth();
     },
     // 下一年
     nextYear() {

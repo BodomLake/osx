@@ -6,24 +6,24 @@
             <folder2 :apps="item.apps" :color="item.color"></folder2>
           </div>
         </draggable>-->
-    <button v-on:click="shuffle">Shuffle</button>
-    <div id="flip-list-demo" class="demo">
-      <transition-group name="flip-list" tag="div" class="div">
-        <div class="item" v-for="item in items" v-bind:key="item.order">
-          {{ item.days }}
-        </div>
-      </transition-group>
+    <button @click="nextWeek">NextWeek</button>
+    <div style="width: 700px; height: 200px;margin: 0px auto;color: white">
+      <Week :display-date="displayDate" ref="week"></Week>
     </div>
+
   </div>
 </template>
 <script>
+let today = new Date()
 // import draggable from "vuedraggable";
 import Folder2 from "./Folder2";
 import {swapEle} from "@/components/ndg/common/common";
+import Week from "@/components/ndg/topbar/time/display/Week";
 
 export default {
   name: "draggableDND",
   components: {
+    Week,
     Folder2
   },
   data() {
@@ -109,7 +109,14 @@ export default {
       // 内部被拖拽！
       innerDragEvent: false,
       // items: [1, 2, 3, 4, 5, 6, 7, 8, 9, 0],
-      items: []
+      items: [],
+      displayDate: {
+        year: today.getFullYear(),
+        month: today.getMonth() + 1,
+        date: today.getDate(),
+        day: today.getDay(),
+        weekNo: 0,
+      },
     }
   },
   mounted() {
@@ -166,6 +173,10 @@ export default {
       let temp = this.items[1]
       this.$set(this.items, 1, this.items[0])
       this.$set(this.items, 0, temp)
+      // this.items = swapEle(this.items, 1, 0)
+    },
+    nextWeek() {
+      this.$refs['week'].nextWeek()
     }
   }
 };
@@ -173,6 +184,8 @@ export default {
 
 <style scoped>
 .drag {
+  height: 100%;
+  width: 100%;
 }
 
 /*定义要拖拽元素的样式*/
@@ -244,18 +257,25 @@ export default {
 
 <style scoped>
 .flip-list-move {
-  transition: transform 1s;
+  transition: transform 0.5s;
 }
 
 .div {
+  position: absolute;
   display: flex;
   flex-wrap: nowrap;
   flex-direction: row;
-  width: 100%;
+  min-width: 200%;
+  max-width: 200%;
+  width: 200%;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  left: -50%;
 }
 
 #flip-list-demo {
-  width: 100%;
+  width: 50%;
+  height: 200px;
   box-sizing: border-box;
   color: black;
   height: fit-content;
@@ -263,10 +283,12 @@ export default {
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
-  position: absolute;
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
-.item {
+.box {
   min-width: 10%;
   max-width: 10%;
   max-height: 100%;

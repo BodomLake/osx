@@ -25,7 +25,7 @@ import History from "@/components/ndg/topbar/time/def/History";
 const displayHistory = splitArrayByGroup(new History().years, 4).map((row, ri) => {
   return ({order: ri, yearsGroup: row})
 })
-console.log(displayHistory)
+// console.log(displayHistory)
 export default {
   name: "History",
   data() {
@@ -39,11 +39,6 @@ export default {
     }
   },
   props: {
-    displayDate: {
-      require: false,
-      type: Object,
-      default: {},
-    },
     // 切换公历的动画时间
     switchDuration: {
       type: Number,
@@ -109,16 +104,8 @@ export default {
       this.animeWard = 'down'
       // 根据下一个十年，开始在第几行？根据两者行数差，确定offset
       let offset = 4;
-      /*      let firstDisRow = this.getDisplayZoneBar().slice(0, 1)[0].yearsGroup
-            for (let i = 0; i < firstDisRow.length; i++) {
-              if (firstDisRow[i].year == this.decadeNo * 10) {
-                offset = i <= 1 ? 2 : 3
-                break;
-              }
-            }*/
       // 序列号递增1
       this.decadeNo++;
-      // console.log(offset, firstDisRow)
       this.displayRows.forEach((row, ri) => {
         row.order = (row.order - offset) < 0 ? row.order - offset + this.displayRows.length : row.order - offset
       })
@@ -143,7 +130,6 @@ export default {
       this.displayRows.forEach((row, ri) => {
         row.order = (row.order + offset) % this.displayRows.length
       })
-      // 处理 0 1 2的下标
       setTimeout(() => {
         let bars = Array.from(document.getElementsByClassName("year-array-row"))
         bars.forEach((bar, bid) => {
@@ -179,7 +165,6 @@ export default {
   height: 100%;
   max-width: 100%;
   min-width: 100%;
-
 }
 
 .display-zone {

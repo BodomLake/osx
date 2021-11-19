@@ -1,5 +1,4 @@
 import Day from "@/components/ndg/topbar/time/def/Day";
-import Month from "@/components/ndg/topbar/time/def/Month";
 import Year from "@/components/ndg/topbar/time/def/Year";
 import {splitToGroup} from "@/components/ndg/common/common";
 
@@ -12,7 +11,7 @@ export default {
   name: 'time',
   created() {
     this.weekCal = this.initWeekCal()
-    console.log('本周', this.weekCal)
+    // console.log('本周', this.weekCal)
     this.menology = this.monthCalender(this.year, this.month)
     // console.log('指定年月的月历', this.menology)
     // this.yearCal = this.yearCalender(this.year)
@@ -91,9 +90,7 @@ export default {
     pauseTime() {
       window.clearInterval(this.clockTimer)
     },
-
-
-    // 获取这一年的周历
+    // 获取这一年的所有周历
     weekCalender(year) {
       // 计算该年第一天是星期几？
       let startDay = new Date(`1 1, ${year}`)
@@ -185,18 +182,6 @@ export default {
           return retArr
         }, [[]])
     },
-    // 获取某年的年历
-/*    yearCalender(year) {
-      let months = new Array(16)
-      for (let m = 0; m < 12; m++) {
-        months[m] = new Month(year, m + 1)
-      }
-      for (let m = 0; m < 4; m++) {
-        // 当前月所有的日期
-        months[m + 12] = new Month(year + 1, m + 1)
-      }
-      return months;
-    },*/
     // 初始化上下3年
     initHistory(year) {
       let s = Math.abs(Math.floor(year / 10))

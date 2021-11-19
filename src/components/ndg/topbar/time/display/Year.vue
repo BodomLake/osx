@@ -1,5 +1,5 @@
 <template>
-  <div class="container" name="row-array-container0">
+  <div class="container" name="row-array-container">
     <div class="display-zone">
       <template v-for="(row, ri) in displayRows">
         <div class="row-array" :key="ri" :data-index="ri" :data-order="row.order"
@@ -18,7 +18,6 @@
         </div>
       </template>
     </div>
-
   </div>
 </template>
 <script>
@@ -50,7 +49,7 @@ export default {
       // 默认显示今年
       displayYear: new Date().getFullYear(),
       // 默认下一年
-      animeWard: 'down'
+      animeWard: 'down',
     }
   },
   props: {
@@ -62,12 +61,6 @@ export default {
         return new Year()
       },
     },
-    // 显示的日期
-    displayDate: {
-      require: false,
-      type: Object,
-      default: {},
-    },
     // 切换年份的动画时间
     switchDuration: {
       type: Number,
@@ -78,7 +71,6 @@ export default {
       type: Number,
       default: 100
     },
-    //
     buffer: {
       require: false,
       type: Number,
@@ -167,7 +159,7 @@ export default {
     },
     // 让当年的月份呈现黑色
     sameMonthStyle(month) {
-      let sameMonth = month.year == this.displayDate.year
+      let sameMonth = month.year == this.displayYear
       return {color: !sameMonth ? 'orange' : 'black'}
     },
     // 是否要显示复位的元素
