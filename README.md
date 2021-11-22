@@ -1,6 +1,6 @@
 # webpack-demo
 
-> demo for exp
+> OSX-like Desktop 一个类似OSX系统桌面的桌面
 
 ## Build Setup
 
