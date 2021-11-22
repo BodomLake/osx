@@ -1,7 +1,7 @@
 {
-  "name": "webpack-demo",
+  "name": "osx",
   "version": "1.0.0",
-  "description": "demo for exp",
+  "description": "osx-like desktop",
   "author": "BodomLake <7922944021@qq.com>",
   "private": true,
   "scripts": {
