@@ -20,7 +20,8 @@
             <template v-for="(day,di) in row.days">
               <div class="day-array-box" @click="checkDay($event,day)"
                    :style="[currentMonthDayStyle(day),checkedDayStyle(day), todayStyle(day)]"
-                   :key="di" :data-year="day.year" :data-month="day.month" :data-date="day.date">
+                   :key="di" :data-year="day.year" :data-month="day.month" :data-date="day.date"
+                   :data-weekNo="day.weekNo">
                 <div class="text-center">
                   {{ day.date }}
                 </div>
@@ -40,28 +41,38 @@ import Week from "@/components/ndg/topbar/time/def/Week";
 const weekName = ['周天', '周一', '周二', '周三', '周四', '周五', '周六',]
 const monthDayCount = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 const today = new Date()
-// 先找到本月第一周
-const menology = [];
-// 前推到今天所在月份的一号
-const firstDay = new Day().pass(-(today.getDate() - 1))
-console.log(firstDay)
-// 相差多少周，weekDelta是一个正数
-const weekDelta = Math.floor((today.getDate() + firstDay.day - 1) / 7)
-console.log('相差多少周', weekDelta)
-const startWeek = new Week(6, new Day(firstDay.year, firstDay.month, firstDay.date, firstDay.day))
-// 前面6个星期
-const formerWeeks = new Array(6).fill().map((ele, wi) => {
-  return (new Week(wi + 0, new Day(firstDay.year, firstDay.month, firstDay.date, firstDay.day))).formerWeek(6 - wi)
-})
-// 后面9(4+5)个星期
-const laterWeeks = new Array(11).fill().map((week, wi) => {
-  return (new Week(wi + 7, new Day(firstDay.year, firstDay.month, firstDay.date, firstDay.day))).laterWeek(wi + 1)
-})
-menology.push(...formerWeeks)
-menology.push(startWeek)
-menology.push(...laterWeeks)
-// 总计15个周总计105天，远远大于3个月(<=93<14*7)的长度
-console.log(formerWeeks, laterWeeks, menology)
+
+
+function initMenology(year, month) {
+  year = year || today.getFullYear()
+  month = month || today.getMonth() + 1
+  const firstDate = new Date(year, month - 1, 1);
+  // 先找到本月第一周
+  const menology = [];
+  // 前推到今天所在月份的一号
+  // const firstDay = new Day().pass(-(today.getDate() - 1))
+  const firstDay = new Day(firstDate.getFullYear(), firstDate.getMonth() + 1, firstDate.getDate(), firstDate.getDay())
+  console.log(firstDay)
+  // 相差多少周，weekDelta是一个正数
+  const weekDelta = Math.floor((today.getDate() + firstDay.day - 1) / 7)
+  // console.log('相差多少周', weekDelta)
+  const startWeek = new Week(6, new Day(firstDay.year, firstDay.month, firstDay.date, firstDay.day))
+  // 前面6个星期
+  const formerWeeks = new Array(6).fill().map((ele, wi) => {
+    return (new Week(wi + 0, new Day(firstDay.year, firstDay.month, firstDay.date, firstDay.day))).formerWeek(6 - wi)
+  })
+  // 后面9(4+5)个星期
+  const laterWeeks = new Array(11).fill().map((week, wi) => {
+    return (new Week(wi + 7, new Day(firstDay.year, firstDay.month, firstDay.date, firstDay.day))).laterWeek(wi + 1)
+  })
+  menology.push(...formerWeeks)
+  menology.push(startWeek)
+  menology.push(...laterWeeks)
+  // 总计15个周总计105天，远远大于3个月(<=93<14*7)的长度
+  // console.log(formerWeeks, laterWeeks, menology)
+  return menology;
+}
+
 export default {
   name: 'Month',
   data() {
@@ -69,7 +80,7 @@ export default {
     return {
       checkedTime: new Day(today.getFullYear(), today.getMonth() + 1, today.getDate(), today.getDay()),
       weekName: weekName,
-      displayRows: menology,
+      displayRows: initMenology(),
       animeWard: 'down',
       // 现在显示的 哪一年 哪一月？
       displayDate: {
@@ -85,6 +96,25 @@ export default {
       type: Number,
       default: 250,
     },
+  },
+  watch: {
+    "displayDate.month": {
+      handler: function (val, oldVal) {
+        console.log(val, oldVal)
+        if (val == 0) {
+          this.displayDate.year -= 1
+          this.displayDate.month = 12;
+        }
+        if (val == 13) {
+          this.displayDate.year += 1
+          this.displayDate.month = 1;
+        }
+        // 避免重复上传通知
+        if (val > 0 && val < 13) {
+          this.$emit('switchPeriod', this.displayDate.year, this.displayDate.month)
+        }
+      },
+    }
   },
   computed: {
     anime() {
@@ -144,17 +174,12 @@ export default {
       this.displayRows.forEach((row, ri) => {
         row.order = (row.order - offset) < 0 ? row.order - offset + this.displayRows.length : row.order - offset
       })
-      if (this.displayDate.month == 12) {
-        this.displayDate.month = 1;
-        this.displayDate.year++;
-      } else {
-        this.displayDate.month++;
-      }
+      this.displayDate.month++;
       setTimeout(() => {
         let rows = Array.from(document.getElementsByClassName("week-days-array-row"))
         rows.forEach((bar, bid) => {
           if (bar.dataset.order >= this.displayRows.length - offset) {
-            console.log('修改index=', parseInt(bar.dataset.index), '修改order', bar.dataset.order)
+            // console.log('修改index=', parseInt(bar.dataset.index), '修改order', bar.dataset.order)
             this.displayRows[parseInt(bar.dataset.index)].laterWeek(18)
           }
         })
@@ -172,26 +197,26 @@ export default {
       this.displayRows.forEach((row, ri) => {
         row.order = (row.order + offset) % this.displayRows.length
       })
+      this.displayDate.month--;
       setTimeout(() => {
         let bars = Array.from(document.getElementsByClassName("week-days-array-row"))
         bars.forEach((bar, bid) => {
           if (bar.dataset.order < offset) {
-            console.log('修改index=', parseInt(bar.dataset.index), '修改order', bar.dataset.order)
+            // console.log('修改index=', parseInt(bar.dataset.index), '修改order', bar.dataset.order)
             this.displayRows[parseInt(bar.dataset.index)].formerWeek(18)
           }
         })
       }, 10)
-      if (this.displayDate.month == 1) {
-        this.displayDate.month = 12;
-        this.displayDate.year--;
-      } else {
-        this.displayDate.month--;
-      }
     },
     // 获取某年的每月日数
     monthDays(year) {
       this.monthDayCount[1] = year % 4 == 0 ? 29 : 28;
       return this.monthDayCount;
+    },
+    goToMenology(year, month) {
+      this.displayRows = initMenology(year, month)
+      this.displayDate.month = month
+      this.displayDate.year = year
     },
   }
 }

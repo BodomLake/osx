@@ -15,26 +15,24 @@ export default class Month extends Reactive {
     this.$data = {
       month: this.month,
     }
+    //（-35 一月 -24 十二月）  （-23 一月 -12 十二月） （-11 一月 0 十二月 ）
+    //（1 一月 12 十二月） （13 一月 24 十二月）（25 一月 36 十二月）
     this.$watch = {
       month: (val, oldVal) => {
-        if (val != oldVal) {
-          // 根据差值来判断是否要进（年）位 大于11 或者小于 -11必会跨年
-          let delta = 0;
-          if (val > 0) {
-            delta = Math.ceil((val) / 12) - 1
-          } else if (val <= 0) {
-            delta = Math.ceil(val / 12) -1
-          }
-          this.year += delta;
-          if (val % 12 == 0 || val % 12 == -0) {
-            val = 12
-          } else if (val == 0) {
-            val = 12
-          } else {
-            val = val % 12
-          }
+        if (val > 0) {
+          // 每12个月，递进一次年份
+          this.year += Math.floor((val - 1) / 12)
+          // 12进制
+          val = val % 12 == 0 ? 12 : val % 12
           this.monthName = monthName[val - 1]
-          return Math.abs(val)
+          return val
+        } else {
+          // 每12个月，递退一次年份
+          this.year += Math.floor((val - 1) / 12)
+          // 十二进制
+          val = val % 12 == 0 ? 12 : 12 + val % 12
+          this.monthName = monthName[val - 1]
+          return val
         }
       },
     }

@@ -39,7 +39,7 @@
             </template>
             <!-- 按照周历显示 -->
             <template v-if="calPeriod == 0">
-              <div class="text-center" style="width: 85%">第{{ displayDate.weekNo }}周</div>
+              <div class="text-center" style="width: 85%">{{ displayDate.weekInfo }}</div>
             </template>
           </div>
 
@@ -55,14 +55,15 @@
           <!-- 当月 月历-->
           <transition name="period-switch">
             <template v-if="calPeriod === 1">
-              <Month @chooseDay="chooseDay" ref="month"></Month>
+              <Month :switch-duration="switchDuration" @chooseDay="chooseDay" @switchPeriod="setMonth"
+                     ref="month"></Month>
             </template>
           </transition>
 
           <!-- 展示本年12个月以及下一年的前四个月 -->
           <transition name="period-switch">
             <template v-if="calPeriod === 2">
-              <Year :switch-duration="switchDuration" @goToMenology="goToMenology"
+              <Year :switch-duration="switchDuration" @goToMenology="goToMenology" @switchPeriod="setYear"
                     ref="year"></Year>
             </template>
           </transition>
@@ -70,14 +71,15 @@
           <!-- 上下11年，10年跨度，总计8行，32年 -->
           <transition name="period-switch">
             <template v-if="calPeriod === 3">
-              <History :switch-duration="switchDuration" @goToYearCal="goToYearCal" ref="history"></History>
+              <History :switch-duration="switchDuration" @goToYearCal="goToYearCal" @switchPeriod="setHistory"
+                       ref="history"></History>
             </template>
           </transition>
 
           <!-- 周历模式-->
           <transition name="period-switch">
             <template v-if="calPeriod === 0">
-              <Week @chooseDay="chooseDay" :switch-duration="switchDuration" ref="week"></Week>
+              <Week @chooseDay="chooseDay" :switch-duration="switchDuration" @switchPeriod="setWeek" ref="week"></Week>
             </template>
           </transition>
         </div>
@@ -141,7 +143,9 @@ export default {
         month: today.getMonth() + 1,
         date: today.getDate(),
         day: today.getDay(),
-        weekNo: 0,
+        // 默认是今天的weekNo
+        weekInfo: `第${new Day().weekNo}周`,
+        decadeNo: Math.floor(today.getFullYear() / 10),
       },
       throttleTimer: 0,
     }
@@ -275,12 +279,10 @@ export default {
     },
     // 下一年
     nextYear() {
-      this.displayDate.year += 1;
       this.$refs['year'].nextYear()
     },
     // 上一年
     prevYear() {
-      this.displayDate.year -= 1;
       this.$refs['year'].prevYear()
     },
     // 上个十年，上滑2行距离
@@ -296,7 +298,7 @@ export default {
     // 切换Calender的周期
     switchCalPeriod($event) {
       $event.stopPropagation();
-      console.log(this.calPeriod)
+      // console.log(this.calPeriod)
       if (this.calPeriod == calPeriod.MONTH) {
         this.calPeriod = calPeriod.YEAR
       } else if (this.calPeriod == calPeriod.YEAR) {
@@ -315,8 +317,12 @@ export default {
       this.displayDate.month = month;
       this.displayDate.year = year;
       console.log(year, month)
-      this.menology = this.monthCalender(year, month)
       this.calPeriod = calPeriod.MONTH;
+      // 然后获取组件<Month></Month>
+      this.$nextTick(() => {
+        this.$refs['month'].goToMenology(year, month);
+      })
+      this.menology = this.monthCalender(year, month)
     },
     // <History>进入指定的年历表
     goToYearCal(year) {
@@ -335,7 +341,19 @@ export default {
         }
       })
     },
-
+    setMonth(year, month) {
+      this.displayDate.month = month
+      this.displayDate.year = year
+    },
+    setYear(year) {
+      this.displayDate.year = year;
+    },
+    setHistory(decadeNo) {
+      this.displayDate.decadeNo = decadeNo;
+    },
+    setWeek(weekInfo) {
+      this.displayDate.weekInfo = weekInfo
+    },
   }
 }
 </script>

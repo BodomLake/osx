@@ -81,18 +81,19 @@ export default class Day extends Reactive {
     // 第一个星期四 算作 每一年第一个星期的标志
     let startDay = new Date(`1 1, ${year}`)
     let startThursday;
-    // 1月1号在第一个星期四之前，可能是 星期三 星期二 星期一 星期天
-    if (startDay.getDay() <= 3) {
-      startThursday = new Date(`1 ${4 - startDay.getDay()}, ${year}`)
-    } else if (startDay.getDay() > 3) {
-      startThursday = new Date(`1 ${11 - startDay.getDay()}, ${year}`)
-      // 如果这一年的第一天是 星期五 或者 星期六 就算1号 (+ 2号)是 第零周
-      return 0;
-    }
     let day = new Date(`${month} ${date}, ${year}`)
-    let dayCounts = (day.getTime() - startThursday.getTime()) / 1000 / 3600 / 24 + 4
-    // console.log(dayCounts)
-    // TODO 逻辑有问题
-    return dayCounts > 0 ? Math.ceil(dayCounts / 7) : 1;
+    let dayCounts;
+    // 1月1号在第一个星期四之前，可能是 星期三 星期二 星期一 星期天 (不存在第零周)
+    if (startDay.getDay() <= 4) {
+      startThursday = new Date(`1 ${4 - startDay.getDay()}, ${year}`)
+      dayCounts = startDay.getDay() + (day.getTime() - startDay.getTime()) / 1000 / 3600 / 24 + 1
+      return Math.ceil(dayCounts / 7);
+    } else if (startDay.getDay() > 4) {
+      // 如果这一年的第一天是 星期五 或者 星期六 （存在第零周：相当于1月1号 (+ 1月2号)是 第零周的日期）
+      startThursday = new Date(`1 ${11 - startDay.getDay()}, ${year}`)
+      // 距离第一周第一天有多久时间
+      dayCounts = (day.getTime() - startThursday.getTime()) / 1000 / 3600 / 24 + 4
+      return dayCounts < 0 ? 0 : Math.ceil(dayCounts / 7);
+    }
   }
 }

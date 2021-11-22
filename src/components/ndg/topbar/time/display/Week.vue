@@ -18,7 +18,7 @@
              :style="{width: barWidth, left: offset(week.order), visibility: hidden(week.order), transition: anime}">
           <div v-for="day in week.days" class="day-array-box" @click="checkDay($event,day)"
                :style="[todayStyle(day), checkedDayStyle(day)]"
-               :data-year="day.year" :data-month="day.month" :data-date="day.date">
+               :data-year="day.year" :data-month="day.month" :data-date="day.date" :data-weekNo="day.weekNo">
             <div class="text-center">
               {{ day.date }}
             </div>
@@ -32,8 +32,7 @@
 <script>
 import Day from "@/components/ndg/topbar/time/def/Day";
 import Week from "@/components/ndg/topbar/time/def/Week";
-import {v4 as uuidv4} from "uuid";
-import {swapEle} from "@/components/ndg/common/common";
+
 // 默认长度为3
 const displayWeek = Array.apply(null, {length: 3}).map((week, wi) => {
   if (wi == 0) {
@@ -90,7 +89,7 @@ export default {
     },
     anime() {
       return `left ${this.switchDuration}ms ease-in-out`
-    }
+    },
   },
   watch: {},
   methods: {
@@ -145,11 +144,11 @@ export default {
       setTimeout(() => {
         let bars = Array.from(document.getElementsByClassName('week-days-row'))
         bars.forEach((bar, bid) => {
-          // 找出中位之后所有的bar 的data-order
           if (this.buffer / 2 < bar.dataset.order) {
             this.displayWeek[parseInt(bar.dataset.index)].laterWeek(3)
           }
         })
+        this.updateDisplay()
       }, 1)
 
     },
@@ -163,12 +162,20 @@ export default {
       setTimeout(() => {
         let bars = Array.from(document.getElementsByClassName('week-days-row'))
         bars.forEach((bar, bid) => {
-          // 找出中位之前所有的bar 的data-order
           if (this.buffer / 2 > bar.dataset.order) {
             this.displayWeek[parseInt(bar.dataset.index)].formerWeek(3)
           }
         })
+        this.updateDisplay()
       }, 1)
+    },
+    updateDisplay() {
+      let middleBarIndex = document.querySelector('.week-days-row[data-order="1"]').dataset.index
+      let days = this.displayWeek[parseInt(middleBarIndex)].days
+      const weekInfo = days[0].weekNo == days[6].weekNo ?
+        `第${days[0].weekNo}周` : `第${days[0].weekNo}周/第${days[6].weekNo}周`
+      // console.log(weekInfo)
+      this.$emit('switchPeriod', weekInfo)
     },
   }
 }
@@ -217,7 +224,7 @@ export default {
   flex-wrap: nowrap;
   flex-direction: row;
   box-sizing: border-box;
-    position: absolute;
+  position: absolute;
   min-width: 33.33%;
   max-width: 33.33%;
   min-height: 100%;

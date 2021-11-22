@@ -141,15 +141,6 @@ export default {
         })
       }, 10)
     },
-    // 返回order == 3 4 5 6
-    getDisplayZoneBar() {
-      return Array.from(document.getElementsByClassName("year-array-row")).reduce((retArr, bar, barIdx, barArr) => {
-        if (bar.dataset.order >= 3 && bar.dataset.order <= 6) {
-          retArr.push(this.displayRows[parseInt(bar.dataset.index)])
-        }
-        return retArr
-      }, [])
-    }
   }
 }
 </script>

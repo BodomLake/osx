@@ -8,7 +8,7 @@
             <!-- 每一行，都是4个月 -->
             <div class="row-array-box" @click="checkMonth(month)"
                  :data-month="month.month" :data-year="month.year"
-                 :style="[currentMonthStyle(month), checkedMonthStyle(month),sameMonthStyle(month)]">
+                 :style="[currentMonthStyle(month), checkedMonthStyle(month), sameMonthStyle(month)]">
               <div class="text-center">
                 <!--              {{ month.year }}-->
                 {{ month.monthName }}
@@ -26,20 +26,20 @@ import Year from "@/components/ndg/topbar/time/def/Year";
 import {inRegion, splitArrayByGroup, swapEle} from "@/components/ndg/common/common";
 
 const today = new Date()
-const displayYearRows = [];
-splitArrayByGroup(
-  Array.prototype.concat(
-    Array.apply(null, {length: 3}).map((year, yi) => {
-      return new Year(new Date().getFullYear() - 2 / 2 + yi).months
-    }),
-    new Year(new Date().getFullYear() + 2).months.slice(0, 4)
-  ).flat(), 4)
-  .forEach((r, ri) => {
-    displayYearRows.push({months: r, order: ri})
-  })
+
 export default {
   name: "Year",
   data() {
+    const displayYearRows = splitArrayByGroup(
+      Array.prototype.concat(
+        Array.apply(null, {length: 3}).map((year, yi) => {
+          return new Year(new Date().getFullYear() - 2 / 2 + yi).months
+        }),
+        new Year(new Date().getFullYear() + 2).months.slice(0, 4)
+      ).flat(), 4)
+      .map((r, ri) => {
+        return {months: r, order: ri}
+      })
     return {
       // 被点击，选中的时间是那个月，那一年
       checkedTime: new Month(today.getFullYear(), today.getMonth() + 1),
@@ -47,7 +47,7 @@ export default {
       // 跨度3年（去年，今年，明年，后年的1-4月）被规划为10行()，每次滑动±3行的距离
       displayRows: displayYearRows,
       // 默认显示今年
-      displayYear: new Date().getFullYear(),
+      displayYear: today.getFullYear(),
       // 默认下一年
       animeWard: 'down',
     }
@@ -96,7 +96,7 @@ export default {
       this.displayRows.forEach((row, ri) => {
         row.order = (row.order - 3) < 0 ? row.order - 3 + this.displayRows.length : row.order - 3
       })
-      this.displayYear++;
+
       // 处理 7 8 9的下标
       setTimeout(() => {
         let bars = Array.from(document.getElementsByClassName('row-array'))
@@ -108,6 +108,8 @@ export default {
             })
           }
         })
+        this.displayYear++;
+        this.$emit('switchPeriod', this.displayYear)
       }, 10)
     },
     // 跳到去年 下拉
@@ -117,7 +119,7 @@ export default {
       this.displayRows.forEach((row, ri) => {
         row.order = (row.order + 3) % this.displayRows.length
       })
-      this.displayYear--;
+
       // 处理 0 1 2的下标
       setTimeout(() => {
         let bars = Array.from(document.getElementsByClassName('row-array'))
@@ -126,14 +128,13 @@ export default {
           if (bar.dataset.order < 3) {
             // 找到数组下标
             let barIndex = parseInt(bar.dataset.index)
-            this.displayRows[barIndex].months.forEach((month, mi) => {
-              // 下一年
-              month.year = this.displayDate.year - 1;
-              // 后四个月
-              month.month = 4 * bar.dataset.order + mi + 1
+            this.displayRows[parseInt(bar.dataset.index)].months.forEach((month, mi) => {
+              month.formerMonth(this.displayRows.length * 4)
             })
           }
         })
+        this.displayYear--;
+        this.$emit('switchPeriod', this.displayYear)
       }, 10)
     },
     // 位移属性
@@ -166,20 +167,23 @@ export default {
     hidden(order) {
       const upSide = this.animeWard == 'up' && order < 3;
       const downSide = this.animeWard == 'down' && order > 6;
-      return upSide || downSide ? 'hidden' : 'initial'
+      return upSide || downSide ? 'hidden' : 'initial';
     },
     setYearCal(year) {
       // 设置当前显示的年份
-      this.displayYear = year;
+      console.log('设定为', year, '显示年', this.displayYear, '今年', today.getFullYear())
+
       // 修改数据锁定这一年的情况，以及上下
       this.displayRows.forEach((row, ri) => {
         row.months.forEach((month, mi) => {
-          // console.log(year - this.displayYear, month.year)
+          console.log(month.year)
           month.year += year - this.displayYear
         })
       })
-    }
-  }
+      this.displayYear = year;
+    },
+  },
+
 }
 </script>
 
