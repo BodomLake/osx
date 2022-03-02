@@ -1,6 +1,6 @@
-# webpack-demo
+# Desktop
 
-> OSX-like Desktop Ò»¸öÀàËÆOSXÏµÍ³×ÀÃæµÄ×ÀÃæ
+> OSX-like Desktop ä¸€ä¸ªç±»ä¼¼OSXç³»ç»Ÿæ¡Œé¢çš„æ¡Œé¢
 
 ## Build Setup
 
